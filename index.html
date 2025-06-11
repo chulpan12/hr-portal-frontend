@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamofEnC - Welcome</title>
+    <style>
+        /* 폰트 및 기본 스타일 초기화 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #e0e0e0; /* 기본 텍스트 색상을 밝은 회색으로 */
+            background-color: #121212; /* 배경을 어두운 색으로 */
+            overflow: hidden; /* 스크롤바 숨김 */
+        }
+
+        /* 메인 컨테이너 스타일 */
+        .hero-container {
+            display: flex; /* Flexbox 레이아웃 사용 */
+            flex-direction: column; /* 아이템을 세로로 정렬 */
+            justify-content: center; /* 수직 중앙 정렬 */
+            align-items: center; /* 수평 중앙 정렬 */
+            width: 100%;
+            height: 100vh; /* 뷰포트 전체 높이 사용 */
+            text-align: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            background: radial-gradient(circle, rgba(30, 38, 51, 1) 0%, #121212 70%); /* 은은한 방사형 그라데이션 배경 */
+        }
+
+        /* 메인 타이틀 스타일 */
+        .main-title {
+            font-size: 3.5rem; /* 폰트 크기 증가 */
+            font-weight: 900; /* 가장 굵은 폰트 두께 */
+            margin: 0;
+            /* 텍스트에 화려한 그라데이션 효과 적용 */
+            background: linear-gradient(45deg, #4f80c8, #7a54a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(122, 84, 168, 0.3); /* 은은한 텍스트 그림자 */
+        }
+
+        /* 서브 텍스트 스타일 */
+        .sub-text {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #a0a0a0; /* 메인 텍스트보다 약간 어두운 색 */
+            margin-top: 1rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* 행동 유도(CTA) 버튼 스타일 */
+        .cta-button {
+            display: inline-block;
+            margin-top: 2.5rem;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(45deg, #007BFF, #6f42c1);
+            border: none;
+            border-radius: 50px; /* 둥근 모서리 */
+            text-decoration: none; /* 밑줄 제거 */
+            cursor: pointer;
+            transition: all 0.3s ease; /* 부드러운 전환 효과 */
+            box-shadow: 0 4px 20px rgba(111, 66, 193, 0.4); /* 입체감을 주는 그림자 */
+        }
+
+        /* 버튼에 마우스를 올렸을 때의 효과 */
+        .cta-button:hover {
+            transform: translateY(-5px); /* 살짝 위로 이동 */
+            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.5); /* 그림자 효과 강화 */
+        }
+
+        /* 모바일 화면을 위한 미디어 쿼리 */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            .sub-text {
+                font-size: 1rem;
+            }
+            .cta-button {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-container">
+        <h1 class="main-title">Community of Practice</h1>
+        <p class="sub-text">당신의 상상이 현실이 되는 공간, COP에 오신 것을 환영합니다!</p>
+        <a href="./quiz_info.html" class="cta-button">게임 하러가기</a>
+    </div>
+
+</body>
+</html>

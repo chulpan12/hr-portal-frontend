@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamofEnC - 게임 소개</title>
+    <style>
+        /* 폰트 및 기본 스타일 초기화 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #e0e0e0;
+            background-color: #121212;
+            scroll-behavior: smooth; /* 부드러운 스크롤 효과 */
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 20px;
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin: 0;
+            background: linear-gradient(45deg, #00A6ED, #B57BFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(181, 123, 255, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            margin-top: 1rem;
+        }
+        
+        /* 컨텐츠 섹션 스타일 */
+        .content-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-bottom: 8rem;
+        }
+        
+        /* 모바일에서 1열로 변경 */
+        @media (max-width: 768px) {
+            .content-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            /* 모바일에서 이미지 순서 변경 */
+            .content-section:nth-child(even) .image-wrapper {
+                order: -1;
+            }
+        }
+        
+        /* 짝수 번째 섹션은 이미지와 텍스트 순서 변경 */
+        .content-section:nth-child(even) {
+            direction: rtl; /* RTL을 사용하여 순서 뒤집기 */
+        }
+        .content-section > * {
+            direction: ltr; /* 자식 요소는 다시 LTR로 */
+        }
+
+        /* 이미지 래퍼 */
+        .image-wrapper {
+            position: relative;
+            perspective: 1000px; /* 3D 효과를 위한 원근감 */
+        }
+        
+        .image-wrapper img {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s ease;
+        }
+        
+        .image-wrapper:hover img {
+            transform: rotateY(-10deg) rotateX(5deg) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 166, 237, 0.3);
+        }
+        
+        /* 텍스트 컨텐츠 */
+        .text-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+        }
+
+        .text-content p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #b0b0b0;
+        }
+        
+        .text-content .highlight {
+            background: linear-gradient(to top, rgba(181, 123, 255, 0.3) 50%, transparent 50%);
+            color: #fff;
+            font-weight: 700;
+            padding: 0 2px;
+        }
+        
+        /* 이벤트 섹션 */
+        .event-section {
+            text-align: center;
+            background-color: #1a1a1a;
+            padding: 4rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 6rem;
+        }
+        
+        .event-section h2 {
+            font-size: 2.5rem;
+            color: #B57BFF;
+            margin-bottom: 1rem;
+        }
+        
+        .event-section p {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            line-height: 1.7;
+        }
+
+        /* CTA 버튼 */
+        .cta-button {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 18px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(45deg, #007BFF, #6f42c1);
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(111, 66, 193, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.5);
+        }
+
+        /* 등장 애니메이션을 위한 초기 상태 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        /* JS로 추가될 활성 클래스 */
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 모바일 화면을 위한 미디어 쿼리 */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .text-content h2, .event-section h2 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 페이지 헤더 -->
+        <header class="header reveal">
+            <h1>도전, 이앤씨의 꿈!</h1>
+            <p>당신의 지식과 순발력으로 랭킹에 도전하세요!</p>
+        </header>
+
+        <!-- 첫 번째 소개 섹션 -->
+        <section class="content-section reveal">
+            <div class="image-wrapper">
+                <!-- 이미지 경로를 assets 폴더로 변경 -->
+                <img src="./assets/screenshot-1.png" alt="장애물 피하기 스크린샷">
+            </div>
+            <div class="text-content">
+                <h2>장애물을 피하고!</h2>
+                <p>쉴새없이 나타나는 장애물들을 점프로 피하며 최대한 멀리 달려보세요. 순발력이 곧 생존으로 이어집니다!</p>
+            </div>
+        </section>
+
+        <!-- 두 번째 소개 섹션 -->
+        <section class="content-section reveal">
+            <div class="image-wrapper">
+                 <!-- 이미지 경로를 assets 폴더로 변경 -->
+                <img src="./assets/screenshot-2.png" alt="퀴즈 풀기 스크린샷">
+            </div>
+            <div class="text-content">
+                <h2>퀴즈를 풀고!</h2>
+                <p>달리는 도중 만나는 퀴즈 몬스터의 문제를 맞춰보세요! 정답을 맞추면 점수를 획득할 수 있습니다.</p>
+            </div>
+        </section>
+
+        <!-- 이벤트 및 랭킹 안내 -->
+        <section class="event-section reveal">
+            <h2>🏆 랭킹 이벤트</h2>
+            <p>
+                <span class="highlight">3등 안에 들면 특별한 상품</span>이 기다립니다!
+                <br>
+                이벤트 기간(<span class="highlight">2025년 6월 16일 ~ 6월 20일</span>) 동안 등록된 랭킹만 해당됩니다.
+            </p>
+            <a href="https://app.dreamofenc.com" data-turbo="false" class="cta-button">지금 바로 도전하기!</a>
+        </section>
+    </div>
+
+    <script>
+        // 스크롤 시 애니메이션 효과를 위한 JavaScript
+        const revealElements = document.querySelectorAll('.reveal');
+
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+            
+            revealElements.forEach(el => {
+                const elementTop = el.getBoundingClientRect().top;
+                const elementVisible = 150; // 요소가 화면 하단에서 150px 위로 올라왔을 때 애니메이션 시작
+
+                if (elementTop < windowHeight - elementVisible) {
+                    el.classList.add('active');
+                } else {
+                    // 스크롤을 다시 올렸을 때 애니메이션을 반복하고 싶지 않다면 이 부분을 주석 처리하거나 삭제
+                    // el.classList.remove('active'); 
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', revealOnScroll);
+        
+        // 페이지 로드 시 처음 보이는 요소에도 애니메이션 적용
+        revealOnScroll();
+    </script>
+</body>
+</html>
