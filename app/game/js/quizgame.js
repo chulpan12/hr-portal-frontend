@@ -166,11 +166,11 @@ function preload() {
     // 이미지가 스케치 파일과 같은 폴더에 있다면 'your_start_screen_image.png' 처럼 파일 이름만 적어도 됩니다.
     // 하위 폴더 (예: 'assets')에 있다면 경로를 포함해주세요.
     bgFarImage = loadImage('../assets/background_far.png'); // 원경이미지
-    bgGroundImage = loadImage('..assets/background_ground.png');
-    bgMidImage = loadImage('..assets/background_mid.png');
-    bgNearImage = loadImage('..assets/background_near.png');
-    bgMountainsImage = loadImage('..assets/background_mountain.png');
-    startScreenBackgroundImage = loadImage('..assets/background_start.gif');
+    bgGroundImage = loadImage('../assets/background_ground.png');
+    bgMidImage = loadImage('../assets/background_mid.png');
+    bgNearImage = loadImage('../assets/background_near.png');
+    bgMountainsImage = loadImage('../assets/background_mountain.png');
+    startScreenBackgroundImage = loadImage('../assets/background_start.gif');
 }
 
 function setup() {
