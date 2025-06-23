@@ -1834,9 +1834,9 @@ function startQuizTimer() {
 
 // --- Ranking Functions --- (Flask 연동)
 async function loadRankingsFromServer() { /* ... (same as before) ... */ 
-    console.log(`Attempting to load rankings from: https://api.dreamofenc.com/api/get_rankings`);
+    console.log(`Attempting to load rankings from: https://api.dreamofenc.com/api/game/get_rankings`);
     try {
-        const response = await fetch(`https://api.dreamofenc.com/api/get_rankings`);
+        const response = await fetch(`https://api.dreamofenc.com/api/game/get_rankings`);
         if (!response.ok) {
             console.error(`HTTP error! status: ${response.status}, statusText: ${response.statusText}`);
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -1867,9 +1867,9 @@ async function saveRankingToServer(nickname, score, hearts, timeMillis) { /* ...
         time: formatTime(timeMillis),
         rawTime: timeMillis,
     };
-    console.log(`Attempting to save ranking to server: https://api.dreamofenc.com/api/add_ranking`, newEntry);
+    console.log(`Attempting to save ranking to server: https://api.dreamofenc.com/api/game/add_ranking`, newEntry);
     try {
-        const response = await fetch(`https://api.dreamofenc.com/api/add_ranking`, {
+        const response = await fetch(`https://api.dreamofenc.com/api/game/add_ranking`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify(newEntry),

@@ -443,7 +443,7 @@
             // 댓글 불러오기 함수
             async function loadComments() {
                 try {
-                    const response = await fetch('https://api.dreamofenc.com/api/get_comments');
+                    const response = await fetch('https://api.dreamofenc.com/api/game/get_comments');
                     const comments = await response.json();
                     
                     commentDisplayArea.innerHTML = ''; // 기존 댓글 비우기
@@ -493,7 +493,7 @@
                 };
 
                 try {
-                    const response = await fetch('https://api.dreamofenc.com/api/add_comment', {
+                    const response = await fetch('https://api.dreamofenc.com/api/game/add_comment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newComment)
