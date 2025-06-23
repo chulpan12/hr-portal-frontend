@@ -165,12 +165,12 @@ function preload() {
     // 'assets/your_start_screen_image.png' 부분은 실제 이미지 파일의 경로와 이름으로 바꿔주세요.
     // 이미지가 스케치 파일과 같은 폴더에 있다면 'your_start_screen_image.png' 처럼 파일 이름만 적어도 됩니다.
     // 하위 폴더 (예: 'assets')에 있다면 경로를 포함해주세요.
-    bgFarImage = loadImage('assets/background_far.png'); // 원경이미지
-    bgGroundImage = loadImage('assets/background_ground.png');
-    bgMidImage = loadImage('assets/background_mid.png');
-    bgNearImage = loadImage('assets/background_near.png');
-    bgMountainsImage = loadImage('assets/background_mountain.png');
-    startScreenBackgroundImage = loadImage('assets/background_start.gif');
+    bgFarImage = loadImage('../../assets/background_far.png'); // 원경이미지
+    bgGroundImage = loadImage('../..assets/background_ground.png');
+    bgMidImage = loadImage('../..assets/background_mid.png');
+    bgNearImage = loadImage('../..assets/background_near.png');
+    bgMountainsImage = loadImage('../..assets/background_mountain.png');
+    startScreenBackgroundImage = loadImage('../..assets/background_start.gif');
 }
 
 function setup() {
@@ -1834,9 +1834,9 @@ function startQuizTimer() {
 
 // --- Ranking Functions --- (Flask 연동)
 async function loadRankingsFromServer() { /* ... (same as before) ... */ 
-    console.log(`Attempting to load rankings from: /api/get_rankings`);
+    console.log(`Attempting to load rankings from: https://api.dreamofenc.com/api/get_rankings`);
     try {
-        const response = await fetch(`/api/get_rankings`);
+        const response = await fetch(`https://api.dreamofenc.com/api/get_rankings`);
         if (!response.ok) {
             console.error(`HTTP error! status: ${response.status}, statusText: ${response.statusText}`);
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -1867,9 +1867,9 @@ async function saveRankingToServer(nickname, score, hearts, timeMillis) { /* ...
         time: formatTime(timeMillis),
         rawTime: timeMillis,
     };
-    console.log(`Attempting to save ranking to server: /api/add_ranking`, newEntry);
+    console.log(`Attempting to save ranking to server: https://api.dreamofenc.com/api/add_ranking`, newEntry);
     try {
-        const response = await fetch(`/api/add_ranking`, {
+        const response = await fetch(`https://api.dreamofenc.com/api/add_ranking`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify(newEntry),
