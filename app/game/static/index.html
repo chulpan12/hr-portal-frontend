@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>이앤씨 퀴즈 어드벤처 (이앤씨의 꿈)</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        /* ========================================
+         * 1. 기본 페이지 및 레이아웃 설정
+         * ======================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        html, body {
+            width: 100%;
+            height: 100dvh; /* 뷰포트 전체 높이 사용 */
+            margin: 0;
+            padding: 0;
+            background-color: #121212; /* 배경을 어두운 색으로 */
+            color: #e0e0e0; /* 기본 텍스트 색상을 밝은 회색으로 */
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden; /* 스크롤바 숨김 */
+            overscroll-behavior: none; /* 모바일에서 당겼을 때 새로고침/바운스 방지 */
+        }
+
+        .page-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: radial-gradient(circle, rgba(30, 38, 51, 1) 0%, #121212 70%);
+        }
+
+        /* ========================================
+         * 2. 게임 컨텐츠 영역 (캔버스 + 설명)
+         * ======================================== */
+        main.game-content {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-container {
+            line-height: 0;
+            /* ★★★ 수정: 설명 영역과의 간격은 instructions-area에서 관리 */
+            margin-bottom: 0; 
+        }
+
+        #game-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border: 2px solid #5a6a8c;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(79, 128, 200, 0.3);
+        }
+
+        /* ========================================
+         * 3. ★★★ 설명 및 크레딧 텍스트 (수정) ★★★
+         * ======================================== */
+        .instructions-area {
+            text-align: center;
+            line-height: 1.3;           /* 줄간격: 1.7 -> 1.3으로 줄임 */
+            width: 100%;                /* 너비: 부모 요소에 꽉 차게 설정 */
+            box-sizing: border-box;     /* 패딩과 테두리를 너비 계산에 포함 */
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-top: 15px;           /* 게임 캔버스와의 간격 */
+        }
+        
+        .instructions-area .title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 15px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        
+        .instructions-area .key-info {
+            font-size: 0.9em;
+            font-weight: 700;
+            margin: 10px 0;             /* 줄간격 미세 조정 */
+            background: linear-gradient(45deg, #4f80c8, #7a54a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .instructions-area .tip {
+            font-size: 0.85em;
+            color: #a0a0a0;
+            margin: 4px 0;              /* 줄간격 미세 조정 */
+        }
+
+        .instructions-area .tip2 {
+            font-size: 1em;
+            color: pink;
+            margin: 4px 0;              /* 줄간격 미세 조정 */
+        }
+
+        .credit-text {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #777;
+            text-align: center;
+        }
+        
+        .comment-link {
+            display: block;
+            margin-top: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: yellow;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .comment-link:hover {
+            color: #4dc4ff;
+        }
+
+        /* ========================================
+         * 4. 랭킹 입력 오버레이 (기존과 동일)
+         * ======================================== */
+        #rankingInputDOMContainer {
+            display: none;
+            position: fixed;
+            top: 36%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            background-color: rgba(20, 25, 33, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px solid #4f80c8;
+            box-shadow: 0 0 40px rgba(79, 128, 200, 0.4);
+            color: #e0e0e0;
+            text-align: center;
+            width: 400px;
+            max-width: 90%; /* 화면이 좁을 때를 대비한 최대 너비 */
+            box-sizing: border-box;
+        }
+        #rankingInputDOMContainer h2 {
+            margin-top: 0;
+            font-weight: 900;
+            font-size: 1.6rem;
+            background: linear-gradient(45deg, #4f80c8, #7a54a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        #rankingInputDOMContainer p { 
+            margin-bottom: 20px; 
+            color: #a0a0a0; 
+            /* ★ 추가: 단어가 길 경우 줄바꿈 처리 */
+            word-break: keep-all; 
+        }
+        #rankingInputDOMContainer input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #5a6a8c;
+            background-color: #121212;
+            color: #e0e0e0;
+            width: 80%;
+            text-align: center;
+            font-size: 1rem;
+        }
+        #rankingInputDOMContainer button {
+            margin-top: 20px;
+            padding: 12px 35px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(45deg, #007BFF, #6f42c1);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(111, 66, 193, 0.4);
+        }
+        #rankingInputDOMContainer button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.5);
+        }
+        
+        /* ========================================
+         * 5. 모바일 조작 버튼 스타일 (기존과 동일)
+         * ======================================== */
+        #mobile-controls {
+            display: flex !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 25px;
+            box-sizing: border-box;
+            justify-content: space-between;
+            align-items: flex-end;
+            z-index: 200;
+            pointer-events: none;
+        }
+        @media (hover: none) and (pointer: coarse) {
+            #mobile-controls {
+                display: flex;
+            }
+        }
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #007BFF, #6f42c1);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 32px;
+            font-weight: bold;
+            user-select: none;
+            pointer-events: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 4px 20px rgba(111, 66, 193, 0.4);
+            transition: all 0.2s ease;
+        }
+        .d-pad, .action-pad {
+            display: flex;
+            gap: 25px;
+        }
+        .control-btn:active {
+            transform: translateY(2px) scale(0.95);
+            box-shadow: 0 2px 10px rgba(0, 123, 255, 0.5);
+        }
+        
+        /* ========================================
+         * 6. 댓글 모달(팝업) 스타일 (기존과 동일)
+         * ======================================== */
+        #comment-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none; /* JS로 제어 */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #1e1e2d;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #4f80c8;
+            box-shadow: 0 0 50px rgba(79, 128, 200, 0.5);
+            width: 90%;
+            max-width: 500px;
+            height: 80%;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .modal-content h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #fff;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .close-button:hover {
+            color: #fff;
+        }
+
+        .comment-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .comment-item {
+            background: #2a2a3e;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 3px solid #7a54a8;
+        }
+        .comment-item strong {
+            color: #4f80c8;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .comment-item p {
+            margin: 0;
+            color: #ccc;
+            word-wrap: break-word;
+        }
+
+        #comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        #comment-form input, #comment-form textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #5a6a8c;
+            background: #121212;
+            color: #e0e0e0;
+            font-family: inherit;
+        }
+        
+        #comment-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        #comment-form button {
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(45deg, #007BFF, #6f42c1);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        #comment-form button:hover {
+             opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <main class="game-content">
+            <div id="game-container"></div>
+            
+            <!-- ★★★ 수정된 HTML 구조 ★★★ -->
+            <div class="instructions-area">
+                <p class="title">장애물은 피하고, ★몬스터는 잡아 퀴즈를 풀어 점수를 획득★하세요!</p>
+                <p class="key-info">
+                    <strong>이동:</strong> ← → (또는 A, D) &nbsp;&nbsp;|&nbsp;&nbsp; 
+                    <strong>점프:</strong> ↑ (또는 W, 스페이스바) &nbsp;&nbsp;|&nbsp;&nbsp; 
+                    <strong>퀴즈 답변:</strong> 숫자키 1-4 &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <strong>모바일:</strong> 하단 조작버튼 사용
+                </p>
+                <p class="tip"><strong>Tip 1:</strong> 문제를 틀리거나 장애물과 충돌하면 하트가 줄어듭니다. 하트를 먹으면 회복돼요!</p>
+                <p class="tip"><strong>Tip 2:</strong> 3연속으로 정답을 맞추면 FEVER TIME! 방어막(S)은 충돌을 1회 막아줍니다.</p>
+                <p class="tip2"><strong>Tip 3:</strong> 장애물은 피하는거고, 괴물은 일부러 부딪히는 겁니다. 피하지 마세요 ㅎㅎ</p>
+                <p style="font-size : 20px; margin: 0;"><a href="#" id="open-comment-modal" class="comment-link">재미있었다면 여기를 눌러 게임/COP에 대한 소감을 남겨주세요!  (직번/성명 → 커피쿠폰 가능성?!)</a></p>
+            </div>
+            <!-- ★★★ 여기까지 ★★★ -->
+        </main>
+        
+        <p class="credit-text">
+            ※ 본 게임은 Google Gemini AI의 도움을 받아 JavaScript 기반으로 제작되었습니다. (문의사항 및 오류제보 : 노무후생그룹 장세융 차장(☎ 4705))
+        </p>
+    </div>
+    
+    <div id="rankingInputDOMContainer"></div>
+    
+    <div id="mobile-controls">
+        <div class="d-pad">
+            <button id="btn-left" class="control-btn">◀</button>
+            <button id="btn-right" class="control-btn">▶</button>
+        </div>
+        <div class="action-pad">
+            <button id="btn-jump" class="control-btn">▲</button>
+        </div>
+    </div>
+
+    <div id="comment-modal-overlay">
+        <div class="modal-content">
+            <button class="close-button" id="close-comment-modal">&times;</button>
+            <h2>게임/COP에 대한 소감 남기기</h2>
+            <div class="comment-list" id="comment-display-area">
+                <!-- 댓글이 여기에 동적으로 추가됩니다 -->
+            </div>
+            <form id="comment-form">
+                <input type="text" id="comment-author" placeholder="이름" required maxlength="20">
+                <textarea id="comment-text" placeholder="소감을 남겨주세요..." required maxlength="300"></textarea>
+                <button type="submit">등록</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 스크립트 로드 (롤백 버전에 맞춤) -->
+    <script src="/static/js/questionsData.js"></script> 
+    <script src="/static/js/quizgame.js?v=1.41" defer></script> 
+
+    <!-- 댓글 모달 제어 스크립트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalOverlay = document.getElementById('comment-modal-overlay');
+            const openModalBtn = document.getElementById('open-comment-modal');
+            const closeModalBtn = document.getElementById('close-comment-modal');
+            const commentForm = document.getElementById('comment-form');
+            const commentDisplayArea = document.getElementById('comment-display-area');
+
+            // ★★★ 스크롤 문제 해결을 위한 코드 추가 ★★★
+            // 댓글 목록 영역에서 터치 스크롤 이벤트가 발생하면,
+            // 이벤트가 body까지 퍼져나가는 것을 막아 preventDefault() 호출을 방지합니다.
+            commentDisplayArea.addEventListener('touchmove', (e) => {
+                e.stopPropagation();
+            });
+
+            // 댓글 불러오기 함수
+            async function loadComments() {
+                try {
+                    const response = await fetch('/api/get_comments');
+                    const comments = await response.json();
+                    
+                    commentDisplayArea.innerHTML = ''; // 기존 댓글 비우기
+                    if (comments.length === 0) {
+                        commentDisplayArea.innerHTML = '<p style="text-align:center; color:#888;">아직 남겨진 소감이 없습니다.</p>';
+                    } else {
+                        comments.forEach(comment => {
+                            const commentEl = document.createElement('div');
+                            commentEl.className = 'comment-item';
+                            commentEl.innerHTML = `<strong>${escapeHtml(comment.author)}</strong><p>${escapeHtml(comment.text)}</p>`;
+                            commentDisplayArea.appendChild(commentEl);
+                        });
+                    }
+                } catch (error) {
+                    console.error('댓글을 불러오는 데 실패했습니다:', error);
+                    commentDisplayArea.innerHTML = '<p style="text-align:center; color:red;">댓글을 불러오는 중 오류 발생</p>';
+                }
+            }
+            
+            // 모달 열기
+            openModalBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modalOverlay.style.display = 'flex';
+                loadComments();
+            });
+
+            // 모달 닫기
+            function closeModal() {
+                modalOverlay.style.display = 'none';
+            }
+            closeModalBtn.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            // 댓글 제출 처리
+            commentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const authorInput = document.getElementById('comment-author');
+                const textInput = document.getElementById('comment-text');
+
+                const newComment = {
+                    author: authorInput.value,
+                    text: textInput.value
+                };
+
+                try {
+                    const response = await fetch('/api/add_comment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newComment)
+                    });
+
+                    if (response.ok) {
+                        authorInput.value = '';
+                        textInput.value = '';
+                        await loadComments();
+                        commentDisplayArea.scrollTop = commentDisplayArea.scrollHeight;
+                    } else {
+                        alert('댓글 등록에 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('댓글 등록 중 오류 발생:', error);
+                    alert('댓글 등록 중 오류가 발생했습니다.');
+                }
+            });
+
+            function escapeHtml(text) {
+                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+        });
+    </script>
+</body>
+</html>
