@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamofEnC - Blog</title>
+    <link rel="stylesheet" href="./assets/blog.css">
+</head>
+<body>
+
+    <div class="container">
+        <!-- 페이지 타이틀 -->
+        <h1 class="page-title">My Personal Blog</h1>
+
+        <!-- 블로그 글 목록이 표시될 영역 -->
+        <div id="post-list-view">
+            <div id="post-list-container" class="post-list">
+                <!-- 자바스크립트로 포스트 카드가 여기에 채워집니다. -->
+            </div>
+        </div>
+
+        <!-- 블로그 글 상세 내용이 표시될 영역 (초기에는 숨김) -->
+        <div id="post-detail-view" style="display: none;">
+            <!-- 자바스크립트로 포스트 상세 내용이 여기에 채워집니다. -->
+        </div>
+        
+        <!-- 홈으로 돌아가기 버튼 -->
+        <a href="./index.html" class="back-button" style="margin-right: 10px;">홈으로</a>
+        
+        <!-- 목록으로 돌아가기 버튼 (상세보기에만 표시됨) -->
+        <button id="back-to-list" class="back-button" style="display: none;">목록으로</button>
+
+    </div>
+
+    <!-- 블로그 데이터 및 렌더링 스크립트 -->
+    <script src="./blog_posts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const postListContainer = document.getElementById('post-list-container');
+            const postListView = document.getElementById('post-list-view');
+            const postDetailView = document.getElementById('post-detail-view');
+            const backToListButton = document.getElementById('back-to-list');
+
+            // URL에서 특정 게시물 ID를 확인 (예: blog.html?id=1)
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+
+            // 게시물 목록 또는 상세 내용을 표시하는 함수
+            const renderContent = () => {
+                if (postId) {
+                    const post = blogPosts.find(p => p.id === parseInt(postId));
+                    if (post) {
+                        displayPostDetail(post);
+                    } else {
+                        displayPostList();
+                        postDetailView.innerHTML = '<p>해당 게시물을 찾을 수 없습니다.</p>';
+                    }
+                } else {
+                    displayPostList();
+                }
+            };
+
+            // 게시물 목록 표시
+            const displayPostList = () => {
+                postListView.style.display = 'block';
+                postDetailView.style.display = 'none';
+                backToListButton.style.display = 'none';
+
+                postListContainer.innerHTML = ''; // 기존 목록 초기화
+                blogPosts.forEach(post => {
+                    const postCard = document.createElement('div');
+                    postCard.className = 'post-card';
+                    postCard.dataset.id = post.id;
+                    postCard.innerHTML = `
+                        <h2 class="post-title">${post.title}</h2>
+                        <p class="post-meta">${post.date} by ${post.author}</p>
+                        <div class="post-content">${post.content}</div>
+                    `;
+                    postCard.addEventListener('click', () => {
+                        window.location.href = `?id=${post.id}`;
+                    });
+                    postListContainer.appendChild(postCard);
+                });
+            };
+
+            // 게시물 상세 내용 표시
+            const displayPostDetail = (post) => {
+                postListView.style.display = 'none';
+                postDetailView.style.display = 'block';
+                backToListButton.style.display = 'inline-block';
+
+                postDetailView.innerHTML = `
+                    <h2 class="post-title">${post.title}</h2>
+                    <p class="post-meta">${post.date} by ${post.author}</p>
+                    <div class="post-content">${post.content}</div>
+                `;
+            };
+
+            // '목록으로' 버튼 이벤트 리스너
+            backToListButton.addEventListener('click', () => {
+                window.location.href = 'blog.html';
+            });
+
+            renderContent();
+        });
+    </script>
+
+</body>
+</html> 
