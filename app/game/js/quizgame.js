@@ -46,7 +46,7 @@ let bgSkyImage, bgMountainsImage, bgMidHillsImage, bgNearDetailsImage; // 예시
 
 // New Producer Screen Variables (제작자 화면 변수) - ⭐ 수정된 부분
 const CREDITS_SCREENS = [
-    { main: "POSCO E&C COP", sub: "presents" }, // 첫 번째 화면 (부제목 없음)
+    { main: "POSCO E&C", sub: "presents" }, // 첫 번째 화면 (부제목 없음)
     { main: "S.Jang", sub: "Directed by" } // 두 번째 화면
     // 여기에 더 많은 화면을 추가할 수 있습니다.
 ];
