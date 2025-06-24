@@ -10,7 +10,7 @@
 
     <div class="container">
         <!-- 페이지 타이틀 -->
-        <h1 class="page-title">My Personal Blog</h1>
+        <h1 class="page-title">HR지원실 AI</h1>
 
         <!-- 블로그 글 목록이 표시될 영역 -->
         <div id="post-list-view">
@@ -27,6 +27,9 @@
         <!-- 홈으로 돌아가기 버튼 -->
         <a href="../../index.html" class="back-button" style="margin-right: 10px;">홈으로</a>
         
+        <!-- 새 글 작성 버튼 (목록보기에만 표시됨) -->
+        <a href="editor.html" id="new-post-button" class="back-button" style="margin-right: 10px;">새 글 작성</a>
+
         <!-- 목록으로 돌아가기 버튼 (상세보기에만 표시됨) -->
         <button id="back-to-list" class="back-button" style="display: none;">목록으로</button>
 
@@ -39,6 +42,7 @@
             const postListView = document.getElementById('post-list-view');
             const postDetailView = document.getElementById('post-detail-view');
             const backToListButton = document.getElementById('back-to-list');
+            const newPostButton = document.getElementById('new-post-button');
 
             // --- API 설정 ---
             // 실제 배포된 백엔드 API 주소를 사용해야 합니다.
@@ -79,6 +83,7 @@
                 postListView.style.display = 'block';
                 postDetailView.style.display = 'none';
                 backToListButton.style.display = 'none';
+                newPostButton.style.display = 'inline-block';
 
                 postListContainer.innerHTML = ''; // 기존 목록 초기화
                 posts.forEach(post => {
@@ -120,6 +125,7 @@
                 postListView.style.display = 'none';
                 postDetailView.style.display = 'block';
                 backToListButton.style.display = 'inline-block';
+                newPostButton.style.display = 'none';
 
                 postDetailView.innerHTML = `
                     <h2 class="post-title">${post.title}</h2>
