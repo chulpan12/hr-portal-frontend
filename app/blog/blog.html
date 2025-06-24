@@ -33,7 +33,6 @@
     </div>
 
     <!-- 블로그 데이터 및 렌더링 스크립트 -->
-    <script src="blog_posts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const postListContainer = document.getElementById('post-list-container');
@@ -41,46 +40,79 @@
             const postDetailView = document.getElementById('post-detail-view');
             const backToListButton = document.getElementById('back-to-list');
 
-            // URL에서 특정 게시물 ID를 확인 (예: blog.html?id=1)
+            // --- API 설정 ---
+            // 실제 배포된 백엔드 API 주소를 사용해야 합니다.
+            // 예: https://api.dreamofenc.com
+            // 로컬 테스트 시: http://127.0.0.1:8000
+            const API_BASE_URL = 'https://api.dreamofenc.com'; 
+
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('id');
 
-            // 게시물 목록 또는 상세 내용을 표시하는 함수
             const renderContent = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('id');
+
                 if (postId) {
-                    const post = blogPosts.find(p => p.id === parseInt(postId));
-                    if (post) {
-                        displayPostDetail(post);
-                    } else {
-                        displayPostList();
-                        postDetailView.innerHTML = '<p>해당 게시물을 찾을 수 없습니다.</p>';
-                    }
+                    fetchPostDetail(postId);
                 } else {
-                    displayPostList();
+                    fetchPostList();
+                }
+            };
+            
+            // API로부터 게시물 목록을 가져와 표시
+            const fetchPostList = async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/blog/posts`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const posts = await response.json();
+
+                    displayPostList(posts);
+                } catch (error) {
+                    console.error('Error fetching posts:', error);
+                    postListContainer.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
                 }
             };
 
             // 게시물 목록 표시
-            const displayPostList = () => {
+            const displayPostList = (posts) => {
                 postListView.style.display = 'block';
                 postDetailView.style.display = 'none';
                 backToListButton.style.display = 'none';
 
                 postListContainer.innerHTML = ''; // 기존 목록 초기화
-                blogPosts.forEach(post => {
+                posts.forEach(post => {
                     const postCard = document.createElement('div');
                     postCard.className = 'post-card';
-                    postCard.dataset.id = post.id;
+                    
+                    const postContent = post.content.length > 300 
+                        ? post.content.substring(0, 300) + '...'
+                        : post.content;
+
                     postCard.innerHTML = `
                         <h2 class="post-title">${post.title}</h2>
                         <p class="post-meta">${post.date} by ${post.author}</p>
-                        <div class="post-content">${post.content}</div>
+                        <div class="post-content">${postContent}</div>
                     `;
                     postCard.addEventListener('click', () => {
                         window.location.href = `?id=${post.id}`;
                     });
                     postListContainer.appendChild(postCard);
                 });
+            };
+
+            // API로부터 특정 게시물을 가져와 표시
+            const fetchPostDetail = async (id) => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
+                    if (!response.ok) throw new Error('Post not found');
+                    const post = await response.json();
+                    
+                    displayPostDetail(post);
+                } catch (error) {
+                    console.error('Error fetching post detail:', error);
+                    postDetailView.innerHTML = `<p>게시물을 불러오는 데 실패했습니다.</p>`;
+                }
             };
 
             // 게시물 상세 내용 표시
@@ -93,6 +125,7 @@
                     <h2 class="post-title">${post.title}</h2>
                     <p class="post-meta">${post.date} by ${post.author}</p>
                     <div class="post-content">${post.content}</div>
+                    <button class="cta-button" onclick="location.href='editor.html?id=${post.id}'" style="margin-top: 20px;">수정하기</button>
                 `;
             };
 

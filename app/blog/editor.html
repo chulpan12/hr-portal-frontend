@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Editor</title>
+    <!-- blog.css를 재사용하여 전체적인 테마 일관성 유지 -->
+    <link rel="stylesheet" href="../../assets/blog.css">
+    <!-- editor.css로 에디터 폼에 대한 스타일 추가 -->
+    <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+<div class="container">
+    <h1 id="editor-title" class="page-title">새 글 작성하기</h1>
+
+    <form id="post-form" class="editor-form">
+        <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" id="title" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="content">내용 (HTML 입력 가능)</label>
+            <textarea id="content" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" class="form-control" required>
+        </div>
+        <div class="form-actions">
+            <button type="button" id="delete-button" class="cta-button delete-button" style="display: none;">삭제</button>
+            <button type="submit" id="submit-button" class="cta-button">저장</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('post-form');
+    const editorTitle = document.getElementById('editor-title');
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('content');
+    const passwordInput = document.getElementById('password');
+    const submitButton = document.getElementById('submit-button');
+    const deleteButton = document.getElementById('delete-button');
+
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('id');
+    const isEditing = postId !== null;
+
+    // 수정 모드인 경우, 기존 데이터를 불러와 폼에 채워넣음
+    if (isEditing) {
+        editorTitle.textContent = '글 수정하기';
+        deleteButton.style.display = 'block';
+
+        fetch(`${API_BASE_URL}/api/blog/posts/${postId}`)
+            .then(response => response.json())
+            .then(post => {
+                titleInput.value = post.title;
+                contentInput.value = post.content;
+            })
+            .catch(error => console.error('Error fetching post for editing:', error));
+    }
+
+    // 폼 제출 이벤트 처리
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        
+        const postData = {
+            title: titleInput.value,
+            content: contentInput.value,
+            password: passwordInput.value
+        };
+
+        const method = isEditing ? 'PUT' : 'POST';
+        const url = isEditing ? `${API_BASE_URL}/api/blog/posts/${postId}` : `${API_BASE_URL}/api/blog/posts`;
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+            });
+
+            if (response.ok) {
+                alert('성공적으로 저장되었습니다.');
+                window.location.href = 'blog.html';
+            } else {
+                const errorData = await response.json();
+                alert(`오류: ${errorData.error || '저장에 실패했습니다.'}`);
+            }
+        } catch (error) {
+            console.error('Error submitting post:', error);
+            alert('요청 처리 중 오류가 발생했습니다.');
+        }
+    });
+
+    // 삭제 버튼 이벤트 처리
+    deleteButton.addEventListener('click', async () => {
+        if (!confirm('정말로 이 게시물을 삭제하시겠습니까?')) return;
+
+        const password = passwordInput.value;
+        if (!password) {
+            alert('삭제하려면 비밀번호를 입력해야 합니다.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            });
+
+            if (response.ok) {
+                alert('게시물이 삭제되었습니다.');
+                window.location.href = 'blog.html';
+            } else {
+                const errorData = await response.json();
+                alert(`오류: ${errorData.error || '삭제에 실패했습니다.'}`);
+            }
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            alert('요청 처리 중 오류가 발생했습니다.');
+        }
+    });
+});
+</script>
+
+</body>
+</html> 
