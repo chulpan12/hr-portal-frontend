@@ -139,7 +139,7 @@ const OPENING_TEXT_LINES = [
     "새로운 지식과 통찰을 필요로 합니다.",
     "회사의 미래를 향한",
     "당신의 지식을 시험할 시간입니다.",
-    "COP 팀원 여러분,",
+    "포스코이앤씨 직원 여러분,",
     "",
     "준비되셨습니까?"
 ];
@@ -624,7 +624,7 @@ function drawStartScreen() { /* ... (same as before) ... */ 
     let rankingButtonWidth = 200, rankingButtonHeight = 50; let rankingButtonX = BASE_WIDTH / 2 - rankingButtonWidth / 2; let rankingButtonY = startButtonY + buttonHeight + 20;
     if (mx > rankingButtonX && mx < rankingButtonX + rankingButtonWidth && my > rankingButtonY && my < rankingButtonY + rankingButtonHeight) { fill(100, 180, 255, 250); stroke(255,255,255, 200); strokeWeight(3); } else { fill(152, 0, 0, 220); stroke(230,230,230, 180); strokeWeight(2); }
     rect(rankingButtonX, rankingButtonY, rankingButtonWidth, rankingButtonHeight, 10); noStroke(); fill(255); textSize(24); textStyle(BOLD); text("랭킹 보기", BASE_WIDTH / 2, rankingButtonY + rankingButtonHeight / 2);
-    fill(255, 255, 255, 200); textSize(25); textAlign(CENTER, BOTTOM); text("시사상식 퀴즈를 풀고 푸짐한 선물에 도전해보세요!\n장애물을 피하고 아이템을 모아 더 높은 점수에 도전하세요!", BASE_WIDTH / 2, BASE_HEIGHT - 28);
+    fill(255, 255, 255, 200); textSize(25); textAlign(CENTER, BOTTOM); text("시사상식 퀴즈를 풀고 지식을 뽐내보세요!\n장애물을 피하고 아이템을 모아 더 높은 점수에 도전하세요!", BASE_WIDTH / 2, BASE_HEIGHT - 28);
 }
 
 // New function for opening sequence (오프닝 시퀀스를 그리는 새로운 함수)
