@@ -63,6 +63,65 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error fetching post for editing:', error));
     }
 
+    // 내용(textarea)에 붙여넣기 이벤트 감지
+    contentInput.addEventListener('paste', async (event) => {
+        const items = (event.clipboardData || window.clipboardData).items;
+        let imageFile = null;
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                imageFile = item.getAsFile();
+                break;
+            }
+        }
+
+        if (!imageFile) {
+            return; // 붙여넣기한 것이 이미지가 아니면 아무것도 하지 않음
+        }
+
+        event.preventDefault(); // 기본 붙여넣기 동작 방지
+
+        const password = passwordInput.value;
+        if (!password) {
+            alert('이미지를 업로드하려면 먼저 비밀번호를 입력해야 합니다.');
+            return;
+        }
+
+        // FormData를 사용하여 이미지와 비밀번호 전송
+        const formData = new FormData();
+        formData.append('image', imageFile, imageFile.name);
+        formData.append('password', password);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/blog/images`, {
+                method: 'POST',
+                body: formData, // FormData 사용 시 Content-Type은 브라우저가 자동 설정
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || '이미지 업로드에 실패했습니다.');
+            }
+
+            const result = await response.json();
+            const imageUrl = `${API_BASE_URL}${result.url}`; // 전체 이미지 URL 생성
+            const imageHtml = `<img src="${imageUrl}" alt="Uploaded Image" style="max-width: 100%;">`;
+
+            // 현재 커서 위치에 이미지 태그 삽입
+            const start = contentInput.selectionStart;
+            const end = contentInput.selectionEnd;
+            contentInput.value = contentInput.value.substring(0, start) + imageHtml + contentInput.value.substring(end);
+            
+            // 커서 위치를 삽입된 이미지 태그 뒤로 이동
+            const newCursorPosition = start + imageHtml.length;
+            contentInput.selectionStart = newCursorPosition;
+            contentInput.selectionEnd = newCursorPosition;
+
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert(`이미지 업로드 중 오류 발생: ${error.message}`);
+        }
+    });
+
     // 폼 제출 이벤트 처리
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
