@@ -68,6 +68,16 @@ html, body {
     max-height: 150px; /* 미리보기 높이 제한 */
     overflow: hidden;
     text-overflow: ellipsis;
+    word-wrap: break-word;
+}
+
+/* 추가: 포스트 내용 안의 이미지들이 부모 요소를 넘어가지 않도록 스타일 지정 */
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em 0;
+    border-radius: 8px;
 }
 
 .post-content p {

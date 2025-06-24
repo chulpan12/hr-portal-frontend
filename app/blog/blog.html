@@ -78,6 +78,17 @@
                 }
             };
 
+            // HTML 문자열에서 텍스트만 추출하여 미리보기를 만드는 헬퍼 함수
+            const createTextPreview = (htmlString, maxLength) => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlString;
+                const text = tempDiv.textContent || tempDiv.innerText || "";
+                if (text.length > maxLength) {
+                    return text.substring(0, maxLength) + '...';
+                }
+                return text;
+            };
+
             // 게시물 목록 표시
             const displayPostList = (posts) => {
                 postListView.style.display = 'block';
@@ -90,14 +101,13 @@
                     const postCard = document.createElement('div');
                     postCard.className = 'post-card';
                     
-                    const postContent = post.content.length > 300 
-                        ? post.content.substring(0, 300) + '...'
-                        : post.content;
+                    // HTML 태그를 제외한 순수 텍스트로 미리보기를 생성합니다.
+                    const postContentPreview = createTextPreview(post.content, 150);
 
                     postCard.innerHTML = `
                         <h2 class="post-title">${post.title}</h2>
                         <p class="post-meta">${post.date} by ${post.author}</p>
-                        <div class="post-content">${postContent}</div>
+                        <div class="post-content">${postContentPreview}</div>
                     `;
                     postCard.addEventListener('click', () => {
                         window.location.href = `?id=${post.id}`;
