@@ -30,6 +30,9 @@
         <!-- 새 글 작성 버튼 (목록보기에만 표시됨) -->
         <a href="editor.html" id="new-post-button" class="back-button" style="margin-right: 10px;">새 글 작성</a>
 
+        <!-- 뒤로가기 버튼 (상세보기에만 표시됨) -->
+        <button id="history-back" class="back-button" style="display: none; margin-right: 10px;">뒤로가기</button>
+        
         <!-- 목록으로 돌아가기 버튼 (상세보기에만 표시됨) -->
         <button id="back-to-list" class="back-button" style="display: none;">목록으로</button>
 
@@ -43,6 +46,7 @@
             const postDetailView = document.getElementById('post-detail-view');
             const backToListButton = document.getElementById('back-to-list');
             const newPostButton = document.getElementById('new-post-button');
+            const historyBackButton = document.getElementById('history-back');
 
             // --- API 설정 ---
             // 실제 배포된 백엔드 API 주소를 사용해야 합니다.
@@ -74,7 +78,13 @@
                     displayPostList(posts);
                 } catch (error) {
                     console.error('Error fetching posts:', error);
-                    postListContainer.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
+                    const errorPost = {
+                        title: '게시물 불러오기 실패',
+                        date: new Date().toLocaleDateString(),
+                        author: '시스템',
+                        content: '게시물을 불러오는 데 실패했습니다.'
+                    };
+                    displayPostList([errorPost]); // 에러 메시지를 게시물 형태로 표시
                 }
             };
 
@@ -94,6 +104,7 @@
                 postListView.style.display = 'block';
                 postDetailView.style.display = 'none';
                 backToListButton.style.display = 'none';
+                historyBackButton.style.display = 'none';
                 newPostButton.style.display = 'inline-block';
 
                 postListContainer.innerHTML = ''; // 기존 목록 초기화
@@ -106,7 +117,10 @@
 
                     postCard.innerHTML = `
                         <h2 class="post-title">${post.title}</h2>
-                        <p class="post-meta">${post.date} by ${post.author}</p>
+                        <p class="post-meta">
+                            ${post.date} by ${post.author}
+                            <span style="float: right; opacity: 0.7;">👁️ ${post.views || 0}</span>
+                        </p>
                         <div class="post-content">${postContentPreview}</div>
                     `;
                     postCard.addEventListener('click', () => {
@@ -135,19 +149,101 @@
                 postListView.style.display = 'none';
                 postDetailView.style.display = 'block';
                 backToListButton.style.display = 'inline-block';
+                historyBackButton.style.display = 'inline-block';
                 newPostButton.style.display = 'none';
 
                 postDetailView.innerHTML = `
                     <h2 class="post-title">${post.title}</h2>
-                    <p class="post-meta">${post.date} by ${post.author}</p>
+                    <p class="post-meta">
+                        ${post.date} by ${post.author}
+                        <span style="float: right; opacity: 0.7;">👁️ ${post.views || 0}</span>
+                    </p>
                     <div class="post-content">${post.content}</div>
                     <button class="back-button" onclick="location.href='editor.html?id=${post.id}'" style="margin-top: 20px;">수정하기</button>
+                    
+                    <hr style="margin: 40px 0 30px; border-color: #333;">
+
+                    <div id="comments-section">
+                        <h3 style="margin-bottom: 20px;">댓글</h3>
+                        <div id="comments-list"></div>
+                        <form id="comment-form" style="margin-top: 20px;">
+                            <textarea id="comment-content" placeholder="댓글을 입력하세요..." required style="width: 100%; min-height: 80px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
+                            <button type="submit" class="back-button" style="margin-top: 10px;">댓글 작성</button>
+                        </form>
+                    </div>
                 `;
+
+                // 댓글 기능 초기화
+                displayComments(post.comments || []);
+                document.getElementById('comment-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    handleCommentSubmit(post.id);
+                });
             };
+
+            // --- Start: New Comment Functions ---
+            const displayComments = (comments) => {
+                const commentsListEl = document.getElementById('comments-list');
+                if (!commentsListEl) return;
+
+                commentsListEl.innerHTML = '';
+                if (comments.length === 0) {
+                    commentsListEl.innerHTML = '<p style="opacity: 0.7;">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>';
+                    return;
+                }
+
+                comments.forEach(comment => {
+                    const commentEl = document.createElement('div');
+                    commentEl.className = 'comment-item';
+                    commentEl.style.marginBottom = '20px';
+                    commentEl.innerHTML = `
+                        <p style="margin: 0 0 5px; font-weight: bold;">${comment.author} <span style="font-weight: normal; opacity: 0.7; font-size: 0.9em;">- ${new Date(comment.date).toLocaleString()}</span></p>
+                        <p style="margin: 0; padding-left: 5px; border-left: 2px solid #444;">${comment.content.replace(/\n/g, '<br>')}</p>
+                    `;
+                    commentsListEl.appendChild(commentEl);
+                });
+            };
+
+            const handleCommentSubmit = async (postId) => {
+                const contentTextarea = document.getElementById('comment-content');
+                const content = contentTextarea.value.trim();
+                if (!content) return;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}/comments`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            author: '익명', // 실제 서비스에서는 로그인 연동 필요
+                            content: content,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('댓글 작성에 실패했습니다.');
+                    }
+
+                    // 댓글 작성 성공 후, 전체 게시물 데이터를 다시 불러와 화면을 갱신합니다.
+                    // (실시간으로 댓글이 추가된 것을 반영하기 위함)
+                    fetchPostDetail(postId);
+
+                } catch (error) {
+                    console.error('Error submitting comment:', error);
+                    alert('댓글 작성 중 오류가 발생했습니다.');
+                }
+            };
+            // --- End: New Comment Functions ---
 
             // '목록으로' 버튼 이벤트 리스너
             backToListButton.addEventListener('click', () => {
                 window.location.href = 'blog.html';
+            });
+
+            // '뒤로가기' 버튼 이벤트 리스너
+            historyBackButton.addEventListener('click', () => {
+                history.back();
             });
 
             renderContent();
