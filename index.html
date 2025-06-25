@@ -137,25 +137,34 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const visitorCountElement = document.getElementById('visitor-count');
-            
-            // 로컬 스토리지에서 방문자 수 가져오기
-            let visitorCount = localStorage.getItem('totalVisitors');
-            
-            if (visitorCount === null) {
-                // 초기 방문자 수를 1000~2000 사이의 임의의 숫자로 설정
-                visitorCount = Math.floor(Math.random() * 1001) + 1000;
-            } else {
-                visitorCount = parseInt(visitorCount, 10);
-            }
-            
-            // 방문자 수 1 증가 (새로고침마다 증가)
-            visitorCount++;
-            
-            // 로컬 스토리지에 업데이트된 방문자 수 저장
-            localStorage.setItem('totalVisitors', visitorCount);
-            
-            // 화면에 방문자 수 표시 (숫자가 세 자리마다 콤마를 찍도록 포맷팅)
-            visitorCountElement.textContent = visitorCount.toLocaleString();
+            const API_BASE_URL = 'https://api.dreamofenc.com'; // 실제 배포된 API 주소
+
+            const fetchVisitorCount = async () => {
+                try {
+                    // 백엔드 API를 호출하여 방문자 수를 가져옵니다.
+                    // 이 API는 호출될 때마다 서버의 방문자 수를 1씩 증가시킵니다.
+                    const response = await fetch(`${API_BASE_URL}/api/blog/site-info`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch visitor count');
+                    }
+                    const data = await response.json();
+                    const visitorCount = data.total_visitors;
+
+                    // 화면에 받은 방문자 수를 표시합니다. (세 자리마다 콤마)
+                    if (visitorCountElement) {
+                        visitorCountElement.textContent = visitorCount.toLocaleString();
+                    }
+
+                } catch (error) {
+                    console.error('Error fetching visitor count:', error);
+                    if (visitorCountElement) {
+                        // 에러 발생 시 'N/A'로 표시
+                        visitorCountElement.textContent = 'N/A';
+                    }
+                }
+            };
+
+            fetchVisitorCount();
         });
     </script>
 
