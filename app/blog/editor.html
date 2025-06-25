@@ -23,10 +23,6 @@
             <label for="content">내용 (HTML 입력 가능)</label>
             <textarea id="content" class="form-control" required></textarea>
         </div>
-        <div class="form-group">
-            <label for="password">비밀번호</label>
-            <input type="password" id="password" class="form-control" required>
-        </div>
         <div class="form-actions">
             <button type="button" id="delete-button" class="cta-button delete-button" style="display: none;">삭제</button>
             <button type="submit" id="submit-button" class="cta-button">저장</button>
@@ -36,11 +32,25 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 인증 확인 ---
+    const adminPassword = sessionStorage.getItem('admin-password');
+    if (!adminPassword) {
+        alert('인증이 필요합니다. 먼저 인증 페이지로 이동합니다.');
+        // 수정 모드였다면 ID를 가지고 인증 페이지로 리디렉션
+        const urlParamsForAuth = new URLSearchParams(window.location.search);
+        const postIdForAuth = urlParamsForAuth.get('id');
+        if (postIdForAuth) {
+            window.location.href = `editor_login.html?id=${postIdForAuth}`;
+        } else {
+            window.location.href = 'editor_login.html';
+        }
+        return; // 리디렉션 후 스크립트 실행 중단
+    }
+
     const form = document.getElementById('post-form');
     const editorTitle = document.getElementById('editor-title');
     const titleInput = document.getElementById('title');
     const contentInput = document.getElementById('content');
-    const passwordInput = document.getElementById('password');
     const submitButton = document.getElementById('submit-button');
     const deleteButton = document.getElementById('delete-button');
 
@@ -80,16 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         event.preventDefault(); // 기본 붙여넣기 동작 방지
 
-        const password = passwordInput.value;
-        if (!password) {
-            alert('이미지를 업로드하려면 먼저 비밀번호를 입력해야 합니다.');
-            return;
-        }
-
-        // FormData를 사용하여 이미지와 비밀번호 전송
+        // sessionStorage에서 비밀번호를 가져와 사용
         const formData = new FormData();
         formData.append('image', imageFile, imageFile.name);
-        formData.append('password', password);
+        formData.append('password', adminPassword);
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/blog/images`, {
@@ -129,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const postData = {
             title: titleInput.value,
             content: contentInput.value,
-            password: passwordInput.value
+            password: adminPassword // sessionStorage에서 가져온 비밀번호 사용
         };
 
         const method = isEditing ? 'PUT' : 'POST';
@@ -159,17 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
     deleteButton.addEventListener('click', async () => {
         if (!confirm('정말로 이 게시물을 삭제하시겠습니까?')) return;
 
-        const password = passwordInput.value;
-        if (!password) {
-            alert('삭제하려면 비밀번호를 입력해야 합니다.');
-            return;
-        }
-
         try {
             const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: password })
+                body: JSON.stringify({ password: adminPassword }) // sessionStorage에서 가져온 비밀번호 사용
             });
 
             if (response.ok) {
