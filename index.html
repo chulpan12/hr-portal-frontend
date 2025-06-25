@@ -45,6 +45,10 @@
             background-clip: text;
             text-fill-color: transparent;
             text-shadow: 0 0 15px rgba(122, 84, 168, 0.3); /* 은은한 텍스트 그림자 */
+            margin-top: 1rem;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 2rem; /* 하단 여백 추가 */
         }
 
         /* 서브 텍스트 스타일 */
@@ -57,26 +61,19 @@
             line-height: 1.6;
         }
 
-        /* 방문자 수 카운터 스타일 */
-        .visitors-container {
-            margin-top: 1.5rem;
-            padding: 10px 20px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: inline-block;
-        }
-
+        /* 방문자 수 카운터 스타일 (리디자인) */
         .visitors-text {
-            color: #c0c0c0;
+            color: #ffd700; /* 금색 계열로 변경 */
             font-size: 1rem;
-            margin: 0;
             font-weight: 700;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); /* 은은한 그림자 효과 */
         }
 
         #visitor-count {
             color: #ffffff;
-            font-weight: 900;
+            font-weight: 700;
+            margin-left: 0.5em; /* '총 방문자 수:' 텍스트와 간격 띄우기 */
         }
 
         /* 행동 유도(CTA) 버튼 스타일 */
@@ -123,13 +120,11 @@
         <h1 class="main-title">Welcome to Dream of E&C</h1>
         <p class="sub-text">당신의 상상이 현실이 되는 공간, Dream of E&C에 오신 것을 환영합니다!</p>
         
-        <!-- 방문자 수 카운터 -->
-        <div class="visitors-container">
-            <p class="visitors-text">총 방문자 수: <span id="visitor-count">...</span></p>
-        </div>
+        <!-- 방문자 수 카운터 (리디자인) -->
+        <p class="visitors-text">총 방문자 수: <span id="visitor-count">...</span></p>
 
         <div>
-            <a href="./quiz_info.html" class="cta-button" style="margin-right: 15px;">게임 하러가기</a>
+            <a href="./app/game/index.html" class="cta-button" style="margin-right: 15px;">게임 하러가기</a>
             <a href="./app/blog/blog.html" class="cta-button">블로그 가기</a>
         </div>
     </div>

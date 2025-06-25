@@ -118,16 +118,58 @@ html, body {
     box-shadow: 0 6px 25px rgba(0, 123, 255, 0.5);
 }
 
+/* --- 버튼 색상 구분 --- */
+.back-button.home { /* 홈으로 */
+    background: linear-gradient(45deg, #28a745, #20c997);
+}
+.back-button.home:hover {
+    box-shadow: 0 6px 25px rgba(40, 167, 69, 0.5);
+}
+.back-button.history { /* 뒤로가기 */
+    background: linear-gradient(45deg, #6c757d, #5a6268);
+}
+.back-button.history:hover {
+    box-shadow: 0 6px 25px rgba(108, 117, 125, 0.5);
+}
+
 /* 포스트 상세 페이지 스타일 */
 #post-detail-view {
     padding: 25px;
     background-color: #1e1e1e;
     border-radius: 12px;
     border: 1px solid #333;
+    position: relative; /* 자식 요소의 position: absolute 기준점 */
 }
 
 #post-detail-view .post-content {
     max-height: none;
+}
+
+/* --- 이전/다음 글 네비게이션 --- */
+.post-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 20px;
+}
+
+.nav-button {
+    color: #a0a0a0;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.nav-button:hover {
+    color: #ffffff;
+}
+
+.nav-button.disabled {
+    color: #555;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* --- 댓글 섹션 스타일 --- */

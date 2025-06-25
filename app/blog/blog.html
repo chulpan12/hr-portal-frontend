@@ -25,13 +25,13 @@
         </div>
         
         <!-- 홈으로 돌아가기 버튼 -->
-        <a href="../../index.html" class="back-button" style="margin-right: 10px;">홈으로</a>
+        <a href="../../index.html" class="back-button home" style="margin-right: 10px;">홈으로</a>
         
         <!-- 새 글 작성 버튼 (목록보기에만 표시됨) -->
         <a href="editor_login.html" id="new-post-button" class="back-button" style="margin-right: 10px;">새 글 작성</a>
 
         <!-- 뒤로가기 버튼 (상세보기에만 표시됨) -->
-        <button id="history-back" class="back-button" style="display: none; margin-right: 10px;">뒤로가기</button>
+        <button id="history-back" class="back-button history" style="display: none; margin-right: 10px;">뒤로가기</button>
         
         <!-- 목록으로 돌아가기 버튼 (상세보기에만 표시됨) -->
         <button id="back-to-list" class="back-button" style="display: none;">목록으로</button>
@@ -48,58 +48,35 @@
             const newPostButton = document.getElementById('new-post-button');
             const historyBackButton = document.getElementById('history-back');
 
-            // --- API 설정 ---
-            // 실제 배포된 백엔드 API 주소를 사용해야 합니다.
-            // 예: https://api.dreamofenc.com
-            // 로컬 테스트 시: http://127.0.0.1:8000
             const API_BASE_URL = 'https://api.dreamofenc.com'; 
+            let postListCache = []; // 모든 포스트 목록을 캐시할 변수
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('id');
-
-            const renderContent = () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const postId = urlParams.get('id');
-
-                if (postId) {
-                    fetchPostDetail(postId);
-                } else {
-                    fetchPostList();
-                }
-            };
-            
-            // API로부터 게시물 목록을 가져와 표시
-            const fetchPostList = async () => {
+            // 페이지 로드 시 실행될 메인 함수
+            const renderContent = async () => {
+                // 1. 항상 전체 포스트 목록을 가져와 캐시에 저장합니다.
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/blog/posts`);
                     if (!response.ok) throw new Error('Network response was not ok');
-                    const posts = await response.json();
-
-                    displayPostList(posts);
+                    postListCache = await response.json();
                 } catch (error) {
                     console.error('Error fetching posts:', error);
-                    const errorPost = {
-                        title: '게시물 불러오기 실패',
-                        date: new Date().toLocaleDateString(),
-                        author: '시스템',
-                        content: '게시물을 불러오는 데 실패했습니다.'
-                    };
-                    displayPostList([errorPost]); // 에러 메시지를 게시물 형태로 표시
+                    postListContainer.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
+                    return; // 에러 발생 시 중단
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('id');
+
+                // 2. postId가 있으면 상세 보기, 없으면 목록 보기를 실행합니다.
+                if (postId) {
+                    // 상세보기를 위해 서버에서 최신 데이터를 다시 가져옵니다 (조회수 업데이트 등)
+                    fetchPostDetail(postId);
+                } else {
+                    displayPostList(postListCache);
                 }
             };
-
-            // HTML 문자열에서 텍스트만 추출하여 미리보기를 만드는 헬퍼 함수
-            const createTextPreview = (htmlString, maxLength) => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = htmlString;
-                const text = tempDiv.textContent || tempDiv.innerText || "";
-                if (text.length > maxLength) {
-                    return text.substring(0, maxLength) + '...';
-                }
-                return text;
-            };
-
-            // 게시물 목록 표시
+            
+            // 게시물 목록 표시 함수
             const displayPostList = (posts) => {
                 postListView.style.display = 'block';
                 postDetailView.style.display = 'none';
@@ -107,14 +84,11 @@
                 historyBackButton.style.display = 'none';
                 newPostButton.style.display = 'inline-block';
 
-                postListContainer.innerHTML = ''; // 기존 목록 초기화
+                postListContainer.innerHTML = '';
                 posts.forEach(post => {
                     const postCard = document.createElement('div');
                     postCard.className = 'post-card';
-                    
-                    // HTML 태그를 제외한 순수 텍스트로 미리보기를 생성합니다.
                     const postContentPreview = createTextPreview(post.content, 150);
-
                     postCard.innerHTML = `
                         <h2 class="post-title">${post.title}</h2>
                         <p class="post-meta">
@@ -124,7 +98,8 @@
                         <div class="post-content">${postContentPreview}</div>
                     `;
                     postCard.addEventListener('click', () => {
-                        window.location.href = `?id=${post.id}`;
+                        history.pushState({ id: post.id }, '', `?id=${post.id}`);
+                        fetchPostDetail(post.id);
                     });
                     postListContainer.appendChild(postCard);
                 });
@@ -136,12 +111,19 @@
                     const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
                     if (!response.ok) throw new Error('Post not found');
                     const post = await response.json();
-                    
                     displayPostDetail(post);
                 } catch (error) {
                     console.error('Error fetching post detail:', error);
                     postDetailView.innerHTML = `<p>게시물을 불러오는 데 실패했습니다.</p>`;
                 }
+            };
+            
+            // 헬퍼 함수 (HTML -> Text)
+            const createTextPreview = (htmlString, maxLength) => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlString;
+                const text = tempDiv.textContent || tempDiv.innerText || "";
+                return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
             };
 
             // 게시물 상세 내용 표시
@@ -152,7 +134,23 @@
                 historyBackButton.style.display = 'inline-block';
                 newPostButton.style.display = 'none';
 
+                // --- 이전/다음 글 찾기 ---
+                const currentIndex = postListCache.findIndex(p => p.id === post.id);
+                const prevPost = currentIndex > 0 ? postListCache[currentIndex - 1] : null;
+                const nextPost = currentIndex < postListCache.length - 1 ? postListCache[currentIndex + 1] : null;
+
+                const prevButton = prevPost 
+                    ? `<a href="?id=${prevPost.id}" class="nav-button prev-button" data-nav-id="${prevPost.id}">&lt; 이전 글</a>` 
+                    : `<span class="nav-button disabled">&lt; 이전 글</span>`;
+                const nextButton = nextPost 
+                    ? `<a href="?id=${nextPost.id}" class="nav-button next-button" data-nav-id="${nextPost.id}">다음 글 &gt;</a>` 
+                    : `<span class="nav-button disabled">다음 글 &gt;</span>`;
+
                 postDetailView.innerHTML = `
+                    <div class="post-navigation">
+                        ${prevButton}
+                        ${nextButton}
+                    </div>
                     <h2 class="post-title">${post.title}</h2>
                     <p class="post-meta">
                         ${post.date} by ${post.author}
@@ -167,7 +165,7 @@
                         <h3 style="margin-bottom: 20px;">댓글</h3>
                         <div id="comments-list"></div>
                         <form id="comment-form" style="margin-top: 20px;">
-                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div class="comment-input-group" style="display: flex; gap: 10px; margin-bottom: 10px;">
                                 <input type="text" id="comment-author" placeholder="작성자" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;">
                                 <input type="password" id="comment-password" placeholder="비밀번호" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;">
                             </div>
@@ -177,6 +175,16 @@
                     </div>
                 `;
 
+                // 네비게이션 버튼에 이벤트 리스너 추가 (페이지 새로고침 방지)
+                postDetailView.querySelectorAll('.nav-button[data-nav-id]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const navId = e.target.dataset.navId;
+                        history.pushState({ id: navId }, '', `?id=${navId}`);
+                        fetchPostDetail(navId);
+                    });
+                });
+                
                 // 댓글 기능 초기화
                 displayComments(post.id, post.comments || []);
                 document.getElementById('comment-form').addEventListener('submit', (e) => {
@@ -184,7 +192,7 @@
                     handleCommentSubmit(post.id);
                 });
             };
-
+            
             // --- Start: New Comment Functions ---
             const displayComments = (postId, comments) => {
                 const commentsListEl = document.getElementById('comments-list');
@@ -280,10 +288,10 @@
                 const editForm = document.createElement('div');
                 editForm.className = 'comment-edit-form';
                 editForm.innerHTML = `
-                    <textarea style="width: 100%; min-height: 80px; margin-bottom: 10px;">${originalContent}</textarea>
-                    <input type="password" placeholder="수정하려면 비밀번호를 입력하세요." required style="width: 100%; margin-bottom: 10px; padding: 8px;">
-                    <button class="save-btn">저장</button>
-                    <button class="cancel-btn">취소</button>
+                    <textarea style="width: 100%; min-height: 80px; margin-bottom: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; padding: 10px; box-sizing: border-box;">${originalContent}</textarea>
+                    <input type="password" placeholder="수정하려면 비밀번호를 입력하세요." required style="width: 100%; margin-bottom: 10px; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; box-sizing: border-box;">
+                    <button class="save-btn back-button" style="margin-right: 5px;">저장</button>
+                    <button class="cancel-btn back-button">취소</button>
                 `;
                 
                 commentEl.replaceChild(editForm, contentEl);
@@ -358,17 +366,39 @@
 
             // '목록으로' 버튼 이벤트 리스너
             backToListButton.addEventListener('click', () => {
-                window.location.href = 'blog.html';
+                history.pushState(null, '', 'blog.html');
+                displayPostList(postListCache);
             });
 
             // '뒤로가기' 버튼 이벤트 리스너
             historyBackButton.addEventListener('click', () => {
                 history.back();
             });
+            
+            // 브라우저 뒤로가기/앞으로가기 처리
+            window.addEventListener('popstate', (event) => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('id');
+                if (postId) {
+                    fetchPostDetail(postId);
+                } else {
+                    displayPostList(postListCache);
+                }
+            });
 
+            // 초기 렌더링 시작
             renderContent();
         });
     </script>
+
+    <style>
+        /* 화면 너비가 480px 이하일 때 적용될 스타일 */
+        @media (max-width: 480px) {
+            .comment-input-group {
+                flex-direction: column; /* 아이템들을 세로로 쌓음 */
+            }
+        }
+    </style>
 
 </body>
 </html> 
