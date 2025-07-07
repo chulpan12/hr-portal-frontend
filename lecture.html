@@ -174,7 +174,7 @@
             .step h3 { color: var(--r-link-color); font-size: 1.0em; margin: 0 0 10px 0; }
             .step p { margin: 0; font-size: 0.8em; color: #bdc3c7; }
             
-            /* Learning Curve Graph */
+            /* --- Learning Curve Graph (MODIFIED) --- */
             .graph-container {
                 position: relative;
                 width: 70%;
@@ -182,16 +182,39 @@
                 margin: 30px auto 20px;
                 border-left: 3px solid #777;
                 border-bottom: 3px solid #777;
-                overflow: hidden; /* This is the fix! */
+                overflow: hidden; /* This is the fix! Prevents lines from drawing outside the container. */
             }
-            .graph-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; transform-origin: 0 0; }
-            .line-ai { background-color: var(--r-link-color); transform: rotate(-35deg) scaleX(1.1); animation: draw-line-ai 2s ease-out forwards; }
-            .line-solo { background-color: #777; transform: rotate(-15deg) scaleX(1.2); animation: draw-line-solo 2s ease-out forwards; }
+            .graph-line {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0; /* Start with 0 width to be animated */
+                height: 3px;
+                transform-origin: 0 0;
+            }
+            .line-ai {
+                background-color: var(--r-link-color);
+                transform: rotate(-35deg) scaleX(1.1);
+            }
+            .line-solo {
+                background-color: #777;
+                transform: rotate(-15deg) scaleX(1.2);
+            }
+            /* Add 'animate' class to trigger animation */
+            .graph-container.animate .line-ai {
+                animation: draw-line-ai 2s ease-out forwards;
+            }
+            .graph-container.animate .line-solo {
+                animation: draw-line-solo 2s ease-out forwards;
+            }
             .graph-label { position: absolute; font-size: 0.7em; font-weight: 500; }
             .label-ai { color: var(--r-link-color); top: 30px; right: 10px; }
             .label-solo { color: #aaa; top: 180px; right: 10px; }
+            
+            /* Keyframes remain the same */
             @keyframes draw-line-ai { from { width: 0; } to { width: 100%; } }
             @keyframes draw-line-solo { from { width: 0; } to { width: 100%; } }
+            /* --- End of Graph Modification --- */
 
             /* Showcase List */
             .showcase-list { list-style: none; padding-left: 0; margin: 0 auto; width: 75%; text-align: left; }
@@ -384,8 +407,8 @@
                     </div>
                 </section>
 
-                <!-- Slide 8: 놀라운 학습 효과 -->
-                <section>
+                <!-- Slide 8: 놀라운 학습 효과 (MODIFIED) -->
+                <section id="learning-curve-slide">
                     <h2>가장 빠르게 성장하는 방법</h2>
                     <div class="graph-container">
                         <div class="graph-line line-ai"></div>
@@ -470,6 +493,43 @@
                 backgroundTransition: 'fade',
                 pdfMaxPagesPerSlide: 1,
             });
+
+            // --- Graph Animation Fix (ADDED) ---
+            
+            // This function handles adding/removing the animation class
+            const toggleGraphAnimation = (event) => {
+                // Find the graph container in the slide that was just left
+                if (event.previousSlide && event.previousSlide.id === 'learning-curve-slide') {
+                    const prevGraphContainer = event.previousSlide.querySelector('.graph-container');
+                    if (prevGraphContainer) {
+                        prevGraphContainer.classList.remove('animate');
+                    }
+                }
+
+                // Find the graph container in the new current slide
+                if (event.currentSlide && event.currentSlide.id === 'learning-curve-slide') {
+                    const currentGraphContainer = event.currentSlide.querySelector('.graph-container');
+                    if (currentGraphContainer) {
+                        currentGraphContainer.classList.add('animate');
+                    }
+                }
+            };
+
+            // Run the animation logic when the presentation is first ready
+            Reveal.on('ready', event => {
+                // This handles the case where the presentation loads directly on the graph slide
+                if (event.currentSlide.id === 'learning-curve-slide') {
+                    const graphContainer = event.currentSlide.querySelector('.graph-container');
+                    if (graphContainer) {
+                        graphContainer.classList.add('animate');
+                    }
+                }
+            });
+
+            // Run the animation logic every time a slide changes
+            Reveal.on('slidechanged', toggleGraphAnimation);
+
+            // --- End of Animation Fix ---
         </script>
     </body>
 </html>
