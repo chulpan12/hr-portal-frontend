@@ -142,51 +142,42 @@
         <div class="button-grid">
             <a href="quiz_info.html" class="cta-button">🎮 게임 하러가기</a>
             <a href="./app/blog/blog.html" class="cta-button">📝 블로그 가기</a>
-            <a href="https://wiki.dreamofenc.com" target="_blank" class="cta-button">📚 사내위키</a>
-            <a href="lecture.html" target="_blank" class="cta-button">🎤 AI 특강</a>
+            <a href="https://wiki.dreamofenc.com" target="_blank" class="cta-button">📚 사내 위키</a>
+            <a href="https://dreamofenc.com/lecture.html" target="_blank" class="cta-button">🎤 AI 특강</a>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const visitorCountElement = document.getElementById('visitor-count');
-            // NOTE: Using a placeholder API for demonstration as the actual API is not accessible here.
-            const API_BASE_URL = 'https://jsonplaceholder.typicode.com'; 
+            const API_BASE_URL = 'https://api.dreamofenc.com'; // 실제 배포된 API 주소
 
             const fetchVisitorCount = async () => {
                 try {
-                    // This is a mock request. Replace with your actual API endpoint.
-                    // const response = await fetch(`${API_BASE_URL}/api/blog/site-info`);
-                    // Using a mock response for demonstration.
-                    const mockVisitorCount = 12345;
-                    
+                    // 백엔드 API를 호출하여 방문자 수를 가져옵니다.
+                    // 이 API는 호출될 때마다 서버의 방문자 수를 1씩 증가시킵니다.
+                    const response = await fetch(`${API_BASE_URL}/api/blog/site-info`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch visitor count');
+                    }
+                    const data = await response.json();
+                    const visitorCount = data.total_visitors;
+
+                    // 화면에 받은 방문자 수를 표시합니다. (세 자리마다 콤마)
                     if (visitorCountElement) {
-                        // Displaying a formatted mock count.
-                        visitorCountElement.textContent = mockVisitorCount.toLocaleString();
+                        visitorCountElement.textContent = visitorCount.toLocaleString();
                     }
 
                 } catch (error) {
                     console.error('Error fetching visitor count:', error);
                     if (visitorCountElement) {
-                        // In case of an error, display 'N/A'.
+                        // 에러 발생 시 'N/A'로 표시
                         visitorCountElement.textContent = 'N/A';
                     }
                 }
             };
 
-            // A simple function to simulate visitor count increment for demonstration
-            let currentVisitors = 12345;
-            const animateVisitorCount = () => {
-                setInterval(() => {
-                    currentVisitors += Math.floor(Math.random() * 5) + 1;
-                    if(visitorCountElement) {
-                       visitorCountElement.textContent = currentVisitors.toLocaleString();
-                    }
-                }, 3000);
-            };
-
-            // fetchVisitorCount(); // You can use this when your API is ready
-            animateVisitorCount(); // Using animated count for now
+            fetchVisitorCount();
         });
     </script>
 
