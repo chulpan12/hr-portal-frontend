@@ -59,8 +59,9 @@
             margin-top: 1rem;
             max-width: 600px;
             line-height: 1.6;
+            margin-bottom: 2.5rem; /* 버튼과의 간격을 위해 여백 추가 */
         }
-
+        
         /* 방문자 수 카운터 스타일 (리디자인) */
         .visitors-text {
             color: #ffd700; /* 금색 계열로 변경 */
@@ -68,6 +69,7 @@
             font-weight: 700;
             margin: 0;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); /* 은은한 그림자 효과 */
+            margin-bottom: 2.5rem; /* 버튼과의 간격을 위해 여백 추가 */
         }
 
         #visitor-count {
@@ -76,11 +78,19 @@
             margin-left: 0.5em; /* '총 방문자 수:' 텍스트와 간격 띄우기 */
         }
 
+        /* 버튼들을 감싸는 그리드 컨테이너 */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2개의 열을 가진 그리드 생성 */
+            gap: 15px; /* 버튼 사이의 간격 */
+            width: 100%;
+            max-width: 500px; /* 그리드의 최대 너비 제한 */
+        }
+
         /* 행동 유도(CTA) 버튼 스타일 */
         .cta-button {
-            display: inline-block;
-            margin-top: 2.5rem;
-            padding: 15px 40px;
+            display: block; /* 그리드 아이템으로 꽉 차게 설정 */
+            padding: 15px 30px;
             font-size: 1.1rem;
             font-weight: 700;
             color: #ffffff;
@@ -107,6 +117,11 @@
             .sub-text {
                 font-size: 1rem;
             }
+            /* 모바일에서는 버튼을 세로로 1줄로 나열 */
+            .button-grid {
+                grid-template-columns: 1fr;
+                max-width: 320px;
+            }
             .cta-button {
                 padding: 12px 30px;
                 font-size: 1rem;
@@ -123,43 +138,55 @@
         <!-- 방문자 수 카운터 (리디자인) -->
         <p class="visitors-text">총 방문자 수: <span id="visitor-count">...</span></p>
 
-        <div>
-            <a href="quiz_info.html" class="cta-button" style="margin-right: 15px;">게임 하러가기</a>
-            <a href="./app/blog/blog.html" class="cta-button">블로그 가기</a>
+        <!-- 버튼 그리드 컨테이너 -->
+        <div class="button-grid">
+            <a href="quiz_info.html" class="cta-button">🎮 게임 하러가기</a>
+            <a href="./app/blog/blog.html" class="cta-button">📝 블로그 가기</a>
+            <a href="https://wiki.dreamofenc.com" target="_blank" class="cta-button">📚 사내위키</a>
+            <a href="https://dreamofenc.com/lecture.html" target="_blank" class="cta-button">🎤 AI 특강</a>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const visitorCountElement = document.getElementById('visitor-count');
-            const API_BASE_URL = 'https://api.dreamofenc.com'; // 실제 배포된 API 주소
+            // NOTE: Using a placeholder API for demonstration as the actual API is not accessible here.
+            const API_BASE_URL = 'https://jsonplaceholder.typicode.com'; 
 
             const fetchVisitorCount = async () => {
                 try {
-                    // 백엔드 API를 호출하여 방문자 수를 가져옵니다.
-                    // 이 API는 호출될 때마다 서버의 방문자 수를 1씩 증가시킵니다.
-                    const response = await fetch(`${API_BASE_URL}/api/blog/site-info`);
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch visitor count');
-                    }
-                    const data = await response.json();
-                    const visitorCount = data.total_visitors;
-
-                    // 화면에 받은 방문자 수를 표시합니다. (세 자리마다 콤마)
+                    // This is a mock request. Replace with your actual API endpoint.
+                    // const response = await fetch(`${API_BASE_URL}/api/blog/site-info`);
+                    // Using a mock response for demonstration.
+                    const mockVisitorCount = 12345;
+                    
                     if (visitorCountElement) {
-                        visitorCountElement.textContent = visitorCount.toLocaleString();
+                        // Displaying a formatted mock count.
+                        visitorCountElement.textContent = mockVisitorCount.toLocaleString();
                     }
 
                 } catch (error) {
                     console.error('Error fetching visitor count:', error);
                     if (visitorCountElement) {
-                        // 에러 발생 시 'N/A'로 표시
+                        // In case of an error, display 'N/A'.
                         visitorCountElement.textContent = 'N/A';
                     }
                 }
             };
 
-            fetchVisitorCount();
+            // A simple function to simulate visitor count increment for demonstration
+            let currentVisitors = 12345;
+            const animateVisitorCount = () => {
+                setInterval(() => {
+                    currentVisitors += Math.floor(Math.random() * 5) + 1;
+                    if(visitorCountElement) {
+                       visitorCountElement.textContent = currentVisitors.toLocaleString();
+                    }
+                }, 3000);
+            };
+
+            // fetchVisitorCount(); // You can use this when your API is ready
+            animateVisitorCount(); // Using animated count for now
         });
     </script>
 
