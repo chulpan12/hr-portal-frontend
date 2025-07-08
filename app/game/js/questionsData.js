@@ -4492,7 +4492,7 @@ const allQuestionSets = [
         ],
       },
       {
-        keyword: "AI특강_최종_10문항",
+        keyword: "AI특강",
         questions: [
             {
                 q: "생성형 AI의 가장 본질적인 능력, 즉 '핵심 원리(First Principle)'는 무엇인가요?",
