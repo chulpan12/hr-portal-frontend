@@ -310,44 +310,39 @@
                     </div>
                 </section>
 
-                <!-- Slide 2: AI를 잘 활용하지 못하는 이유? (강조 효과 추가) -->
+                <!-- Slide 2: AI를 바라보는 두 가지 관점 (재구성) -->
                 <section>
-                    <h2>여러분은 AI를 잘 활용하고 계신가요?</h2>
+                    <h2>생성형 AI, 어떻게 바라보고 계신가요?</h2>
                     
-                    <div style="display: flex; justify-content: space-around; align-items: stretch; margin-top: 40px; gap: 30px;">
+                    <div style="display: flex; justify-content: space-around; align-items: stretch; margin-top: 60px; gap: 30px;">
                         
-                        <!-- 잘 사용하는 경우 -->
-                        <div class="fragment" data-fragment-index="1" style="flex: 1; background: rgba(0,0,0,0.2); margin-top: 25px; padding: 25px; border-radius: 10px; border-left: 3px solid #4CAF50;">
-                            <h3 style="color: #ffffff;">🙆‍♂️ 잘 사용하고 있다</h3>
-                            <ul style="font-size: 0.8em; color: #bdc3c7; text-align: left; margin-top: 20px;">
-                                <li>궁금한 것을 질문하고 답변 받기</li>
-                                <li>데이터를 주고 요약/분석 시키기</li>
-                                <li>이메일 초안, 보고서 등 문서 작성하기</li>
-                                <li>자동화 업무를 위한 파이썬 코드 생성하기</li>
-                            </ul>
+                        <!-- 관점 1: 만능 도구 -->
+                        <div class="fragment" data-fragment-index="1" style="flex: 1; background: rgba(0,0,0,0.2); padding: 30px; border-radius: 10px; border-left: 3px solid #4CAF50;">
+                            <h3 style="color: #ffffff;">관점 1: 만능 도구 🛠️</h3>
+                            <p style="font-size: 0.85em; color: #bdc3c7; text-align: center; margin-top: 20px; margin-bottom: 0px; line-height: 1.7;">
+                                질문에 답하고, 코드를 짜주고, 이메일을 작성하고, 문서를 요약해주는 등 주어진 기능을 잘 수행하는,<br><strong style="color: var(--r-link-color);">업무 수행에 유용한 똑똑한 도구.</strong>
+                            </p>
                         </div>
                         
-                        <!-- 잘 사용하지 못하는 경우 (강조 효과 추가) -->
-                        <div class="fragment" data-fragment-index="2" style="position: relative; flex: 1; background: rgba(0,0,0,0.2); margin-top: 25px; padding: 25px; border-radius: 10px; border-left: 3px solid #F44336;">
-                            
-                            <!-- "오해" 스탬프 -->
-                            <span class="fragment" data-fragment-index="3" style="position: absolute; top: 20px; right: 10px; transform: rotate(12deg); font-size: 1.0em; color: #ff8a80; background: rgba(244, 67, 54, 0.2); padding: 5px 18px; border-radius: 8px; border: 2px solid #ff8a80; font-weight: 800; text-shadow: none;">
-                                오해
-                            </span>
+                        <!-- 관점 2: 까다로운 신입사원 -->
+                        <div class="fragment" data-fragment-index="2" style="flex: 1; background: rgba(0,0,0,0.2); padding: 30px; border-radius: 10px; border-left: 3px solid #F44336;">
+                            <h3 style="color: #ffffff;">관점 2: 까다로운 신입사원 😥</h3>
+                            <p style="font-size: 0.85em; color: #bdc3c7; text-align: center; margin-top: 20px; margin-bottom: 0px; line-height: 1.7;">
+                                자꾸 엉뚱한 소리를 하고, 뻔한 대답만 하고,<br> DRM자료는 수정도 못 하는,<br><strong style="color: var(--r-link-color);">업무에 어떻게 적용할지 막막한 골칫거리.</strong>
+                            </p>
+                        </div>
 
-                            <h3 style="color: #ffffff;">🙅‍♂️ 아직은 잘 모르겠다</h3>
-                            <ul style="font-size: 0.8em; color: #bdc3c7; text-align: left; margin-top: 20px;">
-                                <li>내 업무에 어떻게 쓸지 막막함</li>
-                                <li>결과물에 거짓(Hallucination)이 많음</li>
-                                <li>기대했던 것보다 성능이 별로임</li>
-                                <li style="color: #ff8a80;"><strong>회사 자료는 DRM 때문에 사용 불가!</strong></li>
-                            </ul>
-                        </div>
-                    
                     </div>
-                    <div class="key-message fragment" data-fragment-index="4" style="margin-top: 50px; background-color: transparent; border: none; font-size: 1.15em; text-align: center;">
-                        많은 경우, AI를 <strong style="color: #f3b712;">'기존 업무 방식의 틀 안에서'</strong>만 활용하려 하기 때문에<br>
-                        그 진정한 가치를 체감하기 어렵습니다.
+
+                    <!-- The "Twist" / Key Message -->
+                    <div class="insight fragment" data-fragment-index="3" style="margin-top: 40px; text-align: center;">
+                        혹시, 두 관점의 <strong style="color: var(--r-link-color);">공통점</strong>을 눈치채셨나요?<br>
+                        <span class="fragment" data-fragment-index="4">
+                            두 관점 모두 AI를 '우리 업무의 틀 안에서' '기능적으로만' 바라보고 있다는 점입니다.
+                        </span>
+                        <p class="fragment" data-fragment-index="5" style="margin-top: 25px; font-size: 1.1em;">
+                            <strong style="color: #ffffff;">이것이 바로, 우리가 <strong style="color: var(--r-link-color);">AI의 잠재력을 100% 활용</strong>하지 못하는 가장 큰 이유입니다.</strong>
+                        </p>
                     </div>
                 </section>
 
@@ -359,7 +354,7 @@
                         
                         <!-- Introductory phrase -->
                         <p style="font-size: 1.2em; color: #bdc3c7;">
-                            생성형 AI의 진짜 능력은 <strong>'이메일을 작성하고 코드를 짜는 것'</strong>이 아니라,
+                            생성형 AI의 진짜 능력은 <strong>'문서를 요약하고 이메일을 대신 작성하는 것'</strong>이 아니라,
                         </p>
                         
                         <!-- The main proposition, highlighted with clean typography -->
@@ -381,6 +376,8 @@
                         <div style="font-size: 0.9em;">보고서</div>
                         <div style="font-size: 1.5em; opacity: 0.5;">|</div>
                         <div style="font-size: 0.9em;">자동화 스크립트</div>
+                        <div style="font-size: 1.5em; opacity: 0.5;">|</div>
+                        <div style="font-size: 0.9em;">그 외 모든 것</div>
                     </div>
 
                     <!-- Final Insight -->
@@ -394,9 +391,12 @@
 
                 <section>
                     <h2>"이것을 이해하는 것이 왜 중요한가요?"</h2>
-
+                    <p class="fragment" data-fragment-index="1" style="margin:0; font-size: 1.2em;">
+                        여러분의 생각을 <strong style="color: #ffffff;">'논리적인 구조의 텍스트'</strong>로 표현하고 요구할 수만 있다면,
+                    </p>
                     <!-- Visual Flow -->
                     <div style="display: flex; justify-content: center; align-items: center; gap: 50px; margin-top: 30px;">
+                        
                         
                         <!-- From: Our Thoughts -->
                         <div class="fragment" data-fragment-index="1" style="text-align: center; flex-basis: 40%;">
@@ -406,12 +406,12 @@
                         </div>
 
                         <!-- Arrow -->
-                        <div class="fragment" data-fragment-index="2" style="font-size: 3em; color: var(--r-link-color);">
+                        <div class="fragment" data-fragment-index="1" style="font-size: 3em; color: var(--r-link-color);">
                             →
                         </div>
 
                         <!-- To: AI-Understandable Text -->
-                        <div class="fragment" data-fragment-index="2" style="text-align: center; flex-basis: 40%;">
+                        <div class="fragment" data-fragment-index="1" style="text-align: center; flex-basis: 40%;">
                             <p style="font-size: 3em; margin-bottom: 15px;">📋</p>
                             <h3 style="margin:0;">논리적인 구조의 텍스트</h3>
                             <p style="font-size: 0.8em; color: #bdc3c7;">(플로우차트, 코드, 마크다운 등)</p>
@@ -419,13 +419,10 @@
                     </div>
 
                     <!-- The "Shocking" Conclusion -->
-                    <div class="fragment" data-fragment-index="3" style="margin-top: 30px; text-align: center; border-top: 3px solid var(--r-link-color); padding-top: 40px;">
-                        <p style="margin:0; font-size: 1.2em;">
-                            이것이 의미하는 바는 명확합니다.<br>
-                            여러분의 생각을 <strong style="color: #ffffff;">'논리적인 텍스트'</strong>로 표현할 수만 있다면,
-                        </p>
-                        <p class="fragment" data-fragment-index="4" style="margin-top: 25px; font-size: 1.3em;">
-                            <strong style="color: var(--r-link-color);">분야에 상관없이 그 어떤 것이든 AI와 함께 만들어낼 수 있다는 뜻입니다.</strong>
+                    <div class="fragment" data-fragment-index="1" style="margin-top: 30px; text-align: center; border-top: 3px solid var(--r-link-color); padding-top: 40px;">
+                    
+                        <p class="fragment" data-fragment-index="2" style="margin-top: 25px; font-size: 1.3em;">
+                            <strong style="color: var(--r-link-color);">분야에 상관없이 그 어떤 것이든 AI와 협업이 가능하기 때문입니다.</strong>
                         </p>
                     </div>
                 </section>
@@ -435,7 +432,7 @@
                 <section>
                     <h2>GUI의 역설: 왜 텍스트인가?</h2>
                     <p class="key-phrase">
-                    <strong>GUI의 직관적인 편의성</strong>은 때로 <strong>AI 협업의 폭발적 생산성을 제한</strong>하는 역설을 만듭니다.
+                        PPT, Excel 등 <strong>GUI의 직관적인 편의성</strong>은 때로 <strong>AI와의 협업을 제한</strong>하는 역설을 만듭니다.
                     </p>
                     
                     <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 30px; text-align: center;">
@@ -443,20 +440,20 @@
                     <!-- GUI 기반 작업 -->
                     <div class="fragment" data-fragment-index="1" style="flex-basis: 40%;">
                         <h3 style="color: #e0e0e0;">GUI 기반 작업</h3>
-                        <div class="icon-transform" style="font-size: 1.2em;">
+                        <div class="icon-transform" style="font-size: 1.6em;">
                         <div class="icon">🖱️</div>
                         <div class="arrow" style="color: #777;">→</div>
                         <div class="icon">🐢</div>
                         </div>
                         <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 10px;">
-                        단순 반복 작업에 머무르며,<br>확장과 자동화에 한계가 명확함
+                        사람의 입력이 반드시 필요하며,<br>확장과 자동화에 한계가 명확함
                         </p>
                     </div>
                     
                     <!-- 텍스트 기반 협업 -->
                     <div class="fragment" data-fragment-index="2" style="flex-basis: 40%;">
                         <h3 style="color: var(--r-link-color);">텍스트 기반 협업</h3>
-                        <div class="icon-transform" style="font-size: 1.2em;">
+                        <div class="icon-transform" style="font-size: 1.6em;">
                         <div class="icon">⌨️</div>
                         <div class="arrow">→</div>
                         <div class="icon">🚀</div>
@@ -563,43 +560,47 @@
                     </div>
                 </section>
 
+                <!-- Slide 11 : 어? 아까 만든 복잡한 챗봇도 Level 2 아닌가요? -->
+                <section>
+                    <h2>어? 아까 만든 복잡한 챗봇도 <br>따지고 보면 <strong style="color: #f3b712;">Level 2</strong> 아닌가요?</h2>
+                </section>
 
-                <!-- Slide 11 : AI의 진정한 힘은 '코딩'할 때 발휘됩니다 -->
+                <!-- Slide 12 : AI의 진정한 힘은 '코딩'할 때 발휘됩니다 -->
                 <section>
                     <h2>AI의 진정한 힘은 '코딩'할 때 발휘됩니다</h2>
                     <p class="key-phrase">
                         AI에게 <strong>'코드를 만들어달라'</strong>고 요청하는 것은, 단순히 개발 업무를 시키는 것이 아니라<br>
                         <strong>가장 명확하고, 논리적이며, 실행 가능한 형태</strong>로 아이디어를 구체화하는 과정입니다.
                     </p>
-                    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 30px; text-align: center;">
+                    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 50px; text-align: center;">
                         
                         <div class="fragment" data-fragment-index="1" style="flex-basis: 40%;">
                             <h3 style="color: #e0e0e0;">일반적인 대화</h3>
-                            <div class="icon-transform" style="font-size: 1.2em;">
+                            <div class="icon-transform" style="font-size: 1.5em;">
                                 <div class="icon">🗣️</div>
                                 <div class="arrow" style="color: #777;">→</div>
                                 <div class="icon" style="opacity: 0.7;">🤔</div>
                             </div>
-                            <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 10px;">
+                            <p style="font-size: 0.9em; color: #bdc3c7; margin-top: 10px;">
                                 모호하고 해석의 여지가 많아<br>AI가 정확한 의도를 파악하기 어려움
                             </p>
                         </div>
                         
                         <div class="fragment" data-fragment-index="2" style="flex-basis: 40%;">
                             <h3 style="color: var(--r-link-color);">코드로 하는 대화</h3>
-                            <div class="icon-transform" style="font-size: 1.2em;">
+                            <div class="icon-transform" style="font-size: 1.5em;">
                                 <div class="icon">💻</div>
                                 <div class="arrow">→</div>
                                 <div class="icon">💡</div>
                             </div>
-                            <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 10px;">
+                            <p style="font-size: 0.9em; color: #bdc3c7; margin-top: 10px;">
                                 명확한 규칙과 구조를 가져<br>AI가 100% 이해하고 작성 가능함
                             </p>
                         </div>
                     </div>
                 </section>
 
-                <!-- Slide 12 : 우리의 역할 재정의: 코딩 vs 프로그래밍 -->
+                <!-- Slide 13 : 우리의 역할 재정의: 코딩 vs 프로그래밍 -->
                 <section>
                     <h2>우리의 역할 재정의: <span class="fragment" data-fragment-index="1">코딩 vs 프로그래밍</span></h2>
 
@@ -634,7 +635,7 @@
                 </section>
 
 
-                <!-- Slide 13 : Part 2 간지 슬라이드 -->
+                <!-- Slide 14 : Part 2 간지 슬라이드 -->
                 <section data-transition="fade-in" style="text-align: center;">
                     <h1 style="font-size: 4em; color: var(--r-link-color); margin-bottom: 10px;">Part 2</h1>
                     <p style="font-size: 1.2em; font-weight: 500;">AI와 함께하는 실전 프로젝트 - "게임 만들기"</p>
@@ -670,8 +671,8 @@
                         아이디어를 <strong style="color: #f3b712;">'설계'</strong>하고 <strong style="color: #f3b712;">'구현'</strong>하는 전 과정을 <strong style="color: #f3b712;">압축적으로 경험</strong>하는 것이 목표입니다.
                     </div>
                 </section>
-
-                <!-- Slide 15 : 코딩 지식 'Zero'에서 시작하기 -->
+                
+                <!-- Slide 16 : 코딩 지식 'Zero'에서 시작하기 -->
                 <section>
                     <h2>코딩 지식 'Zero'에서 시작하기</h2>
                     <div class="step-diagram">
@@ -695,7 +696,7 @@
                     </div>
                 </section>
 
-                <!-- Slide 16 : 게임 체인저: Cursor AI -->
+                <!-- Slide 17 : 게임 체인저: Cursor AI -->
                 <section>
                     <h2>게임 체인저: <span style="color: var(--r-link-color);">Cursor AI</span></h2>
                     
@@ -745,7 +746,7 @@
                     </div>
                 </section>
 
-                <!-- Slide 17 : Cursor AI 설치 및 계정 생성 -->
+                <!-- Slide 18 : Cursor AI 설치 및 계정 생성 -->
                 <section>
                     <h2>Cursor AI 설치 및 계정 생성 (5분 컷!)</h2>
                     <p class="subtitle" style="margin-bottom: 10px;">지금 바로, 여러분의 컴퓨터에 최고의 AI 파트너를 설치해봅시다.</p>
@@ -790,11 +791,11 @@
                 </section>
 
 
-                <!-- Slide 18 : 정말 실력 향상에 도움이 될까요? -->
+                <!-- Slide 19 : 정말 실력 향상에 도움이 될까요? -->
                 <section>
                     <h2>정말 실력 향상에 도움이 될까요?</h2>
                     
-                    <p class="key-phrase" style="border: none; background: none; font-size: 1.1em; margin-top: 10px; margin-bottom: 20px;">
+                    <p class="key-phrase" style="border: none; background: none; font-size: 1.1em; margin-top: -50px; margin-bottom: 20px;">
                         "AI가 시키는 대로만 하면, 제 실력은 늘지 않는 것 아닐까요?"
                     </p>
 
@@ -819,14 +820,58 @@
                             </p>
                         </div>
                     </div>
-                    <div class="key-message fragment" style="margin-top: 30px; background-color: transparent; border: none; font-size: 1.2em; text-align: center;">
+                    <div class="key-message fragment" style="margin-top: 30px; background-color: transparent; border: none; font-size: 1.4em; text-align: center;">
                         AI는 모든 것을 대신하는 '자율주행'이 아닙니다.<br>
                         우리의 사고를 돕는 최고의 <strong style="color: #f3b712;">'내비게이션'</strong>입니다.
                     </div>
                 </section>
 
+                <!-- Slide 19.5 : 정말 실력 향상에 도움이 될까요? -->
+                <section>
+                    <h2>AI와 함께, 실력을 폭발적으로 성장시키는 법</h2>
+                    <p class="subtitle" style="margin-bottom: 30px;">AI를 단순 답변자가 아닌, <strong style="color:var(--r-link-color);">진정한 학습 파트너</strong>로 만드는 4단계</p>
+                
+                    <div style="display: flex; justify-content: center; gap: 25px; align-items: stretch;">
+                
+                        <div class="fragment" style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 25px; text-align: center;">
+                            <p style="font-size: 2.5em; margin: 0 0 15px 0;">🧭</p>
+                            <h3 style="margin: 0; color: var(--r-link-color); font-size: 1.1em;">1. 방향 설정</h3>
+                            <p style="font-size: 0.7em; color: #bdc3c7; margin-top: 15px; line-height: 1.6;">
+                                AI와 함께 아이디어의<br>전체적인 설계도를 그리고,<br>구현 방법론을 요청합니다.
+                            </p>
+                        </div>
+                
+                        <div class="fragment" style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 25px; text-align: center;">
+                            <p style="font-size: 2.5em; margin: 0 0 15px 0;">🚀</p>
+                            <h3 style="margin: 0; color: var(--r-link-color); font-size: 1.1em;">2. 실행 & 질문</h3>
+                            <p style="font-size: 0.7em; color: #bdc3c7; margin-top: 15px; line-height: 1.6;">
+                                AI가 만든 결과물을 일단 실행해보고, 모르는 부분은 즉시 질문하여 해소합니다.
+                            </p>
+                        </div>
+                
+                        <div class="fragment" style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 25px; text-align: center;">
+                            <p style="font-size: 2.5em; margin: 0 0 15px 0;">🔧</p>
+                            <h3 style="margin: 0; color: var(--r-link-color); font-size: 1.1em;">3. 응용 & 확장</h3>
+                            <p style="font-size: 0.7em; color: #bdc3c7; margin-top: 15px; line-height: 1.6;">
+                                코드를 직접 수정하고 <br>다른 방식을 요구하며,<br>내 것으로 만듭니다.
+                            </p>
+                        </div>
+                
+                        <div class="fragment" style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 25px; text-align: center;">
+                            <p style="font-size: 2.5em; margin: 0 0 15px 0;">🧠</p>
+                            <h3 style="margin: 0; color: var(--r-link-color); font-size: 1.1em;">4. 복기 & 체계화</h3>
+                            <p style="font-size: 0.7em; color: #bdc3c7; margin-top: 15px; line-height: 1.6;">
+                                완성된 결과물을<br>AI에게 다시 설명케 하여,<br> 지식을 최종 정리합니다.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="key-message fragment" style="margin-top: 20px; background-color: transparent; border: none; font-size: 1.6em; text-align: center;">
+                        무엇보다, <strong style="color: #f3b712;">"어떻게 하면 좋을까?"</strong> 질문부터 해보세요.
+                    </div>
+                </section>
 
-                <!-- Slide 19: 놀라운 학습 효과 (MODIFIED) -->
+
+                <!-- Slide 20: 놀라운 학습 효과 (MODIFIED) -->
                 <section id="learning-curve-slide">
                     <h2>가장 빠르게 성장하는 방법</h2>
                     <div class="graph-container">
@@ -841,7 +886,7 @@
                     </div>
                 </section>
 
-                <!-- Slide 20: 실제 결과물 쇼케이스 (강조 효과 적용) -->
+                <!-- Slide 21: 실제 결과물 쇼케이스 (강조 효과 적용) -->
                 <section>
                     <h2>그래서, 강사는 무엇을 만들었는가?</h2>
                     <ul class="showcase-list">
@@ -862,7 +907,7 @@
                         <p class="fragment" data-fragment-index="3" style="margin-top: 15px; margin-left: 15px; font-size: 0.7em; color: #aaa; opacity: 0.7;">* 자세한 내용 확인 : https://dreamofenc.com</p>
                 </section>
 
-                <!-- Slide 21: 그래서, 강사는 무엇을 만들었는가? -->
+                <!-- Slide 22: 그래서, 강사는 무엇을 만들었는가? -->
                 <section>
                     <h2 style="margin-bottom: 10px;">한 걸음 더: 본질을 이해한다는 것</h2>
                     <p class="subtitle" style="margin-bottom: 40px;">"이것도 결국... 그냥 챗봇 활용법 아닌가요?"</p>
@@ -899,7 +944,7 @@
                     </div>
                 </section>
 
-                <!-- Slide 22: 이제 여러분의 차례입니다 -->
+                <!-- Slide 23: 이제 여러분의 차례입니다 -->
                 <section data-transition="zoom-in fade-out">
                     <h2>이제, 당신의 능력을 <span style="color: var(--r-link-color);">확장</span>할 시간입니다</h2>
                     <p class="subtitle" style="margin-bottom: 40px;">AI는 당신의 창의력, 분석력, 실행력을 증폭시키는 최고의 파트너입니다.</p>
@@ -926,7 +971,7 @@
                     </div>
                 </section>
 
-                <!-- Slide 23: 오늘의 핵심 요약 (Key Takeaways) -->
+                <!-- Slide 24: 오늘의 핵심 요약 (Key Takeaways) -->
                 <section>
                     <h2>오늘의 핵심 요약 (Key Takeaways)</h2>
                     
@@ -968,7 +1013,57 @@
                     </div>
                 </section>
 
-                <!-- Slide 24: 마지막 퀴즈 안내 슬라이드 (수정) -->
+                <!-- Slide 26 : 마지막 깨알팁: 어떤 도구를 선택해야 할까요? -->
+                <section>
+                    <h2>마지막 깨알팁: 어떤 도구를 선택해야 할까요?</h2>
+                    <p class="subtitle" style="margin-top: -20px; margin-bottom: 30px;">목적에 맞는 도구를 선택하면, 협업의 효율이 극대화됩니다.</p>
+                
+                    <div style="display: flex; justify-content: center; gap: 40px; align-items: stretch; margin-top: 30px;">
+                
+                        <div style="flex: 1; background: rgba(0,0,0,0.15); border-radius: 15px; padding: 30px 25px;">
+                            <h3 style="text-align: center; margin-bottom: 30px;">💬 대화와 기획 파트너</h3>
+                            
+                            <div class="fragment">
+                                <h4 style="font-size: 1.1em;">Gemini Advanced <span style="background: var(--r-link-color); color: #121212; font-size: 0.6em; padding: 4px 10px; border-radius: 8px; font-weight: bold; vertical-align: middle;">강력 추천</span></h4>
+                                <p style="font-size: 0.7em; color: #bdc3c7; line-height: 1.6; margin-top: 10px;">
+                                    <strong>특징:</strong> 압도적인 대화 맥락(200만 토큰)과<br>2TB 클라우드 저장소를 제공하는 최고의 가성비 옵션.<br>
+                                    <strong>이럴 때:</strong> <strong style="color: #ffffff;">긴 대화와 복잡한 기획, <br>장기 프로젝트의 메인 파트너</strong>로 활용할 때.
+                                </p>
+                            </div>
+                            
+                            <div class="fragment" style="margin-top: 35px;">
+                                <h4 style="font-size: 1.1em;">ChatGPT (GPT-4o)</h4>
+                                <p style="font-size: 0.7em; color: #bdc3c7; line-height: 1.6; margin-top: 10px;">
+                                    <strong>특징:</strong> 가장 빠르고 대중적인 범용 모델.<br>
+                                    <strong>이럴 때:</strong> 간단한 질문이나 아이디어 스케치가 필요할 때.
+                                </p>
+                            </div>
+                        </div>
+                
+                        <div style="flex: 1; background: rgba(0,0,0,0.15); border-radius: 15px; padding: 30px 25px;">
+                            <h3 style="text-align: center; margin-bottom: 30px;">💻 구현과 개발 파트너</h3>
+                            
+                            <div class="fragment">
+                                <h4 style="font-size: 1.1em;">Cursor <span style="background: greenyellow; color: #121212; font-size: 0.6em; padding: 4px 10px; border-radius: 8px; font-weight: bold; vertical-align: middle;">언젠간 필요할거야</span></h4>
+                                <p style="font-size: 0.7em; color: #bdc3c7; line-height: 1.6; margin-top: 10px;">
+                                    <strong>특징:</strong> 프로젝트 전체 맥락을 이해하는<br>진정한 '프로그래밍' 파트너.<br>
+                                    <strong>이럴 때:</strong> <strong style="color: #ffffff;">오늘 실습처럼, 처음부터 끝까지<br>하나의 완전한 프로젝트</strong>를 만들 때.
+                                </p>
+                            </div>
+                            
+                            <div class="fragment" style="margin-top: 35px;">
+                                <h4 style="font-size: 1.1em;">GitHub Copilot</h4>
+                                <p style="font-size: 0.7em; color: #bdc3c7; line-height: 1.6; margin-top: 10px;">
+                                    <strong>특징:</strong> 업계 표준, 코드 자동 완성의 최강자.<br>
+                                    <strong>이럴 때:</strong> 빠르고 정확한 코드 완성이 필요할 때.
+                                </p>
+                            </div>
+                        </div>
+                
+                    </div>
+                </section>
+
+                <!-- Slide 25: 마지막 퀴즈 안내 슬라이드 (수정) -->
                 <section>
                     <h2>마지막 5분: 실전 퀴즈 게임</h2>
                     <p class="subtitle" style="margin-bottom: 30px;">오늘 배운 모든 과정을 퀴즈 게임을 통해 되새겨봅시다!</p>
@@ -998,7 +1093,8 @@
                     </div>
                 </section>
 
-                <!-- Slide 25: 최종 감사 슬라이드 (저자 정보 추가) -->
+
+                <!-- Slide 26 : 최종 감사 슬라이드 (저자 정보 추가) -->
                 <section data-transition="zoom">
                     <h1 style="font-size: 4em;">감사합니다</h1>
                     <p class="subtitle" style="margin-top: 40px; font-size: 1.6em;">Q&A</p>
@@ -1085,6 +1181,9 @@
             Reveal.on('slidechanged', toggleGraphAnimation);
 
             // --- End of Animation Fix ---
+            Reveal.configure({
+                pdfSeparateFragments: false
+            });
         </script>
     </body>
 </html>
