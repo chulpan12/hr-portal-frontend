@@ -613,6 +613,47 @@
                     </div>
                 </section>
 
+                <!-- ====================================================== -->
+                <section>
+                    <h2>최고의 협업은 '언제'를 아는 것</h2>
+                    <p class="subtitle" style="margin-top: -30px; margin-bottom: 30px;">"코드가 더 좋다면, 자연어는 이제 필요 없나요?"</p>
+
+                    <!-- Analogy: Architect building a house -->
+                    <div style="display: flex; justify-content: center; align-items: stretch; gap: 30px;">
+                        
+                        <!-- Natural Language: The Concept Sketch -->
+                        <div class="fragment" data-fragment-index="1" style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; text-align: center;">
+                            <p style="font-size: 2.5em; margin: 0 0 15px 0;">💬</p>
+                            <h3 style="color: #ffffff;">자연어 소통 (Level 1)</h3>
+                            <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 15px; line-height: 1.6;">
+                                "따뜻하고, 개방감 있으며,<br> 가족들이 함께 시간을 보낼 수 있는 집을 원해요."
+                            </p>
+                            <div style="margin-top:20px; padding: 10px; background: rgba(66, 165, 245, 0.2); border-radius: 8px; font-weight: bold; font-size: 0.8em;">
+                                방향성 탐색 & 기획 ('왜?', '무엇을?')
+                            </div>
+                        </div>
+
+                        <!-- Code: The Blueprint -->
+                        <div class="fragment" data-fragment-index="2" style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; text-align: center;">
+                            <p style="font-size: 2.5em; margin: 0 0 15px 0;">📐</p>
+                            <h3 style="color: #ffffff;">코드 기반 설계 (Level 2)</h3>
+                            <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 15px; line-height: 1.6;">
+                                "거실의 폭은 4,500mm, 층고는 2,700mm로 하고,<br> 남쪽 창문은 통유리로 설계해줘."
+                            </p>
+                            <div style="margin-top:20px; padding: 10px; background: rgba(245, 197, 66, 0.15); border-radius: 8px; font-weight: bold; font-size: 0.8em;">
+                                정교한 구현 & 실행 ('어떻게?')
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Final Insight -->
+                    <div class="insight fragment" data-fragment-index="3" style="margin-top: 20px; text-align: center;">
+                        코드는 자연어를 대체하는것이 아니라 보완하는 것입니다.<br>
+                        <strong style="color: #ffffff;">'왜'와 '무엇을'</strong> 물을 때는 자연어를, <strong style="color: #ffffff;">'어떻게'</strong> 를 이야기할 때는 코드를 사용하세요.
+                    </div>
+                </section>
+
+
                 <!-- Slide 13 : 우리의 역할 재정의: 코딩 vs 프로그래밍 -->
                 <section>
                     <h2>우리의 역할 재정의: <span class="fragment" data-fragment-index="1">코딩 vs 프로그래밍</span></h2>
@@ -937,6 +978,63 @@
                         <p class="fragment" data-fragment-index="3" style="margin-top: 15px; margin-left: 15px; font-size: 0.7em; color: #aaa; opacity: 0.7;">* 자세한 내용 확인 : https://dreamofenc.com</p>
                 </section>
 
+                <!-- ====================================================== -->
+                <!-- '그래서, 강사는 무엇을 만들었는가?' 슬라이드 바로 다음에 삽입 -->
+                <!-- ====================================================== -->
+                <section>
+                    <h2>이제, 직접 만들어봅시다 (보너스 실습)</h2>
+                    <p class="subtitle" style="margin-top: -30px; margin-bottom: 30px;">방금 만든 게임을 바탕으로, AI에게 이렇게 요청해보세요.</p>
+
+                    <div style="display: flex; gap: 30px; align-items: stretch;">
+                        
+                        <!-- Left Column: Cursor AI -->
+                        <div style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 25px;">
+                            <h3 style="margin-top:0; color: #ffffff;">1. Cursor AI에게 요청</h3>
+                            
+                            <!-- Prompt 1 for Cursor -->
+                            <div class="fragment" data-fragment-index="1" style="margin-top: 25px;">
+                                <p style="font-size: 0.7em; color: #aaa; margin-bottom: 5px;"># 위키 문서 구조 생성</p>
+                                <div style="background: #111; padding: 15px; border-radius: 8px; font-family: 'D2Coding', monospace; font-size: 0.8em; line-height: 1.6; text-align: left;">
+                                    지금까지 만든 게임의 제작가이드를 도쿠위키로 구성하고자 해. Gameguide란 폴더를 만들고, 그 안에 3개의 txt파일로 된 가이드를 작성해줘(도쿠위키 문법 준수)
+                                </div>
+                            </div>
+                            
+                            <!-- Prompt 2 for Cursor -->
+                            <div class="fragment" data-fragment-index="2" style="margin-top: 25px;">
+                                <p style="font-size: 0.7em; color: #aaa; margin-bottom: 5px;"># 발표 내용 초안 생성</p>
+                                <div style="background: #111; padding: 15px; border-radius: 8px; font-family: 'D2Coding', monospace; font-size: 0.8em; line-height: 1.6; text-align: left;">
+                                    게임 내용을 발표하기 위한 슬라이드 내용을 3장 정도로 구성해줘. 제목과 주요 내용을 텍스트로 작성해줘
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Gemini -->
+                        <div style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 25px;">
+                            <h3 style="margin-top:0; color: #ffffff;">2. Gemini에게 요청</h3>
+                            
+                            <!-- Prompt for Gemini (Initial Creation) -->
+                            <div class="fragment" data-fragment-index="3" style="margin-top: 25px;">
+                                <p style="font-size: 0.7em; color: #aaa; margin-bottom: 5px;"># 프레젠테이션 코드 생성</p>
+                                <div style="background: #111; padding: 15px; border-radius: 8px; font-family: 'D2Coding', monospace; font-size: 0.8em; line-height: 1.6; text-align: left;">
+                                    아래 슬라이드 내용을 바탕으로 reveal.js 기반 프레젠테이션 문서를 작성해줘.(html파일 하나로) 심플하고 세련된 스타일로.
+                                </div>
+                            </div>
+
+                            <!-- NEW: Refinement Prompts -->
+                            <div class="fragment" data-fragment-index="4" style="margin-top: 25px;">
+                                <p style="font-size: 0.7em; color: #aaa; margin-bottom: 5px;"># 추가 수정 요청 예시</p>
+                            <div style="background: #111; padding: 15px; border-radius: 8px; font-family: 'D2Coding', monospace; font-size: 0.8em; line-height: 1.6; text-align: left;">
+                                - 좀 더 모던한 스타일로 바꿔줘.<br>
+                                - 좀 더 깔끔한 배색으로 수정해줘.<br>
+                                - 글자 크기를 전체적으로 10% 줄여줘.<br>
+                                - 어울리는 시각적 요소를 추가해줘.
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </section>
+
+
                 <!-- Slide 22: 그래서, 강사는 무엇을 만들었는가? -->
                 <section>
                     <h2 style="margin-bottom: 10px;">한 걸음 더: 본질을 이해한다는 것</h2>
@@ -973,6 +1071,7 @@
                         <strong style="color: var(--r-link-color);">논리적인 구조의 텍스트</strong>로 소통했다는 점입니다.
                     </div>
                 </section>
+                
 
                 <section>
                     <h2>이것도 AI에게 직접 물어봤습니다</h2>
@@ -1004,6 +1103,45 @@
                         <strong style="color:#ffffff;">'논리적인 구조의 텍스트'</strong>로 소통하는 것입니다.
                     </div>
                 </section>
+
+                <!-- ====================================================== -->
+                <!-- '한 걸음 더' 슬라이드와 '능력 확장' 슬라이드 사이에 삽입 -->
+                <!-- ====================================================== -->
+                <section>
+                    <h2>궁극의 AI 협업: 엔지니어링을 넘어</h2>
+
+                    <!-- Visual Metaphor: From Machine to Partner -->
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 50px;">
+                        
+                        <!-- From: Prompt Engineering -->
+                        <div class="fragment" data-fragment-index="1" style="text-align: center; flex-basis: 40%;">
+                            <p style="font-size: 3em; margin-bottom: 15px; opacity: 0.6;">⚙️</p>
+                            <h3 style="color: #aaa;">프롬프트 엔지니어링</h3>
+                            <p style="font-size: 0.8em; color: #bdc3c7;">AI를 '기계'로 보고<br>정답을 캐내는 기술</p>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="fragment" data-fragment-index="2" style="font-size: 3em; color: var(--r-link-color);">
+                            →
+                        </div>
+
+                        <!-- To: Prompt Conversation -->
+                        <div class="fragment" data-fragment-index="2" style="text-align: center; flex-basis: 40%;">
+                            <p style="font-size: 3em; margin-bottom: 15px;">🤝</p>
+                            <h3 style="color: var(--r-link-color);">대화와 소통</h3>
+                            <p style="font-size: 0.8em; color: #bdc3c7;">AI를 '파트너'로 여기고<br>함께 결과물을 만드는 과정</p>
+                        </div>
+                    </div>
+
+                    <div class="insight fragment" data-fragment-index="3" style="margin-top: 40px; text-align: center;">
+                        '엔지니어링'이라는 용어는 우리가 AI를 <strong style="color: #ffffff;">'정답을 내놓는 계산기'</strong>로 보게 만듭니다.<br>
+                        하지만 진정한 협업은 기술이 아닌 <strong style="color: var(--r-link-color);">관계</strong>에서 시작됩니다.<br>
+                        <span class="fragment" data-fragment-index="4" style="display: block; margin-top: 20px; font-size: 1.1em; font-weight: bold;">
+                            꾸준한 대화로 당신만의 AI 파트너를 만드세요.
+                        </span>
+                    </div>
+                </section>
+
                 <!-- Slide 23: 이제 여러분의 차례입니다 -->
                 <section data-transition="zoom-in fade-out">
                     <h2>이제, 당신의 능력을 <span style="color: var(--r-link-color);">확장</span>할 시간입니다</h2>
@@ -1086,7 +1224,7 @@
                             <div class="fragment">
                                 <h4 style="font-size: 1.1em;">Gemini Advanced <span style="background: var(--r-link-color); color: #121212; font-size: 0.6em; padding: 4px 10px; border-radius: 8px; font-weight: bold; vertical-align: middle;">강력 추천</span></h4>
                                 <p style="font-size: 0.7em; color: #bdc3c7; line-height: 1.6; margin-top: 10px;">
-                                    <strong>특징:</strong> 압도적인 대화 맥락(200만 토큰)과<br>2TB 클라우드 저장소를 제공하는 최고의 가성비 옵션.<br>
+                                    <strong>특징:</strong> 압도적인 대화 맥락(100만 토큰)과<br>2TB 클라우드 저장소를 제공하는 최고의 가성비 옵션.<br>
                                     <strong>이럴 때:</strong> <strong style="color: #ffffff;">긴 대화와 복잡한 기획, <br>장기 프로젝트의 메인 파트너</strong>로 활용할 때.
                                 </p>
                             </div>
