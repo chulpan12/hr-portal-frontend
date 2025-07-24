@@ -11,7 +11,7 @@ const BASE_HEIGHT = 576; // 기준 높이
 let scaleFactor = 1;      // 화면 크기에 따른 스케일 비율
 
 // NEW: Question Selection Settings
-const SELECTED_QUIZ_KEYWORD = "AI특강"; // 원하는 키워드를 여기에 설정
+const SELECTED_QUIZ_KEYWORD = null; // 원하는 키워드를 여기에 설정
 const NUMBER_OF_QUIZZES_TO_LOAD = 10; // 가져올 문제의 개수를 설정
 
 
