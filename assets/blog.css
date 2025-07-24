@@ -11,27 +11,34 @@ html, body {
 }
 
 .container {
-    max-width: 900px;
-    margin: 40px auto; /* 상하 여백을 다시 추가 */
-    padding: 0 20px;
-    width: 100%;
     box-sizing: border-box;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2vh 20px;
+    
+    /* ✨ 레이아웃 핵심: 최소 높이를 뷰포트로 지정하고 Flexbox 사용 */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 main.content-area {
-    width: 100%;
+    /* ✨ 남은 공간을 모두 채우도록 설정 */
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
 }
 
 #post-list-view {
-    /* 목록 보기에 구체적인 높이를 지정하여 내용이 보이도록 수정 */
-    height: 75vh;
-    min-height: 500px;
+    flex-grow: 1; /* 부모(main)의 공간을 채움 */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 #post-detail-view {
+    /* 상세 페이지는 내용 길이에 따라 높이가 결정됨 */
     padding: 25px;
     background-color: #1e1e1e;
     border-radius: 12px;
@@ -41,7 +48,7 @@ main.content-area {
 .page-title {
     font-size: 2.8rem;
     font-weight: 900;
-    margin: 20px 0 40px; /* 기존 여백으로 복원 */
+    margin: 0 0 20px;
     text-align: center;
     background: linear-gradient(45deg, #4f80c8, #7a54a8);
     -webkit-background-clip: text;
@@ -54,6 +61,7 @@ main.content-area {
     position: relative;
     width: 100%;
     height: 100%;
+    max-height: 700px; /* 너무 큰 화면에서 카드가 과하게 커지는 것을 방지 */
     perspective: 1500px;
     display: flex;
     align-items: center;
@@ -105,9 +113,6 @@ main.content-area {
     font-size: 1.5rem; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.3s ease;
 }
 .showcase-nav:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.2); transform: translateY(-50%) scale(1.1); }
-.showcase-nav:disabled { opacity: 0.3; cursor: not-allowed; }
-.showcase-nav.prev { left: 5%; }
-.showcase-nav.next { right: 5%; }
 
 /* --- 상세 페이지 스타일 --- */
 .post-title { font-size: 1.8rem; font-weight: 700; margin: 0 0 10px; color: #ffffff; }
@@ -154,7 +159,6 @@ main.content-area {
 #detail-actions {
     padding: 15px 0 0;
     text-align: right;
-    margin-top: 20px;
 }
 .action-button {
     display: inline-block;
@@ -183,6 +187,10 @@ main.content-area {
 
 /* --- 모바일 반응형 --- */
 @media (max-width: 768px) {
+    .container {
+        /* 모바일에서는 최소 높이 고정 해제 */
+        min-height: auto;
+    }
     .page-title { font-size: 2.2rem; }
     .showcase-card { width: 70%; }
     .showcase-nav.prev { left: 2%; }
@@ -202,7 +210,6 @@ main.content-area {
 }
 
 @media (max-width: 480px) {
-    .container { padding: 0 15px; margin: 20px auto; }
     .page-title { font-size: 1.8rem; }
     .showcase-card { width: 85%; }
     .card-title { font-size: 1.2rem; }
