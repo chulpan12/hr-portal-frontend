@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamofEnC - Blog</title>
-    <link rel="stylesheet" href="../../assets/blog.css?v=2.2">
+    <link rel="stylesheet" href="../../assets/blog.css?v=2.3">
 </head>
 <body>
     <div class="container">
@@ -81,7 +81,7 @@
                     <div class="card-content">
                         <h2 class="card-title">${post.title}</h2>
                         <p class="card-meta">${post.date} by ${post.author} | 👁️ ${post.views || 0}</p>
-                        <p class="card-preview">${createTextPreview(post.content, 100)}</p>
+                        <p class="card-preview">${createTextPreview(post.content, 350)}</p>
                     </div>
                 `;
                 
