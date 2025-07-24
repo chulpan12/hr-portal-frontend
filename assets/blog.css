@@ -5,11 +5,11 @@ html, body {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100%; /* 뷰포트 전체 높이 사용 */
+    height: 100%;
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #e0e0e0;
     background-color: #121212;
-    overflow: hidden; /* 스크롤바가 body 대신 main에 생기도록 함 */
+    overflow: hidden;
 }
 
 .container {
@@ -19,26 +19,26 @@ html, body {
     margin: 0 auto;
     padding: 2vh 20px;
     box-sizing: border-box;
-    display: flex; /* Flexbox 레이아웃 적용 */
+    display: flex;
     flex-direction: column;
 }
 
 main.content-area {
-    flex-grow: 1; /* 남은 공간을 모두 차지 */
-    min-height: 0; /* flex 자식 요소의 높이 계산 오류 방지 */
+    flex-grow: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
 }
 
 #post-list-view {
-    display: flex; /* Showcase 컨테이너를 정렬하기 위해 flex 사용 */
+    display: flex;
     flex-grow: 1;
     align-items: center;
     justify-content: center;
 }
 
 #post-detail-view {
-    overflow-y: auto; /* 내용이 길어지면 스크롤 생성 */
+    overflow-y: auto;
     padding: 25px; 
     background-color: #1e1e1e; 
     border-radius: 12px; 
@@ -48,21 +48,21 @@ main.content-area {
 .page-title {
     font-size: 2.8rem;
     font-weight: 900;
-    margin: 0 0 10px;
+    margin: 0 0 10px; /* 여백 수정 */
     text-align: center;
     background: linear-gradient(45deg, #4f80c8, #7a54a8);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    /* ▲ 위의 -webkit- 접두사가 붙은 속성이 올바른 표현입니다. */
-    flex-shrink: 0; /* 크기가 줄어들지 않도록 설정 */
+    flex-shrink: 0;
 }
 
-/* --- ✨ 쇼케이스 스타일 (높이 조정) --- */
+/* --- ✨ 쇼케이스 스타일 --- */
 .showcase-container {
     position: relative;
     width: 100%;
-    height: 100%; /* 부모 요소(content-area)의 높이를 100% 사용 */
+    height: 100%;
+    /* max-height 삭제 */
     perspective: 1500px;
     display: flex;
     align-items: center;
@@ -78,9 +78,10 @@ main.content-area {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     margin: auto;
-    width: 60%;
-    max-width: 550px;
+    width: 60%; /* 너비 수정 */
+    max-width: 550px; /* 최대 너비 수정 */
     height: 95%;
+    /* max-height 삭제 */
     background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 16px;
@@ -89,24 +90,28 @@ main.content-area {
     flex-direction: column;
     transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    /* 기본 커서는 auto */
+    cursor: auto;
 }
-.showcase-card.active { transform: translateX(0) scale(1); opacity: 1; z-index: 10; }
+/* 🔽 3. 활성화된 카드에만 포인터 커서 적용 */
+.showcase-card.active { 
+    transform: translateX(0) scale(1); 
+    opacity: 1; 
+    z-index: 10;
+    cursor: pointer; /* 클릭 가능함을 표시 */
+}
 .showcase-card.prev { transform: translateX(-45%) scale(0.8); opacity: 0.4; z-index: 5; filter: blur(2px); }
 .showcase-card.next { transform: translateX(45%) scale(0.8); opacity: 0.4; z-index: 5; filter: blur(2px); }
-.showcase-card.hidden { transform: scale(0.5); opacity: 0; pointer-events: none; z-index: 1; } /* 마지막에 세미콜론(;) 추가 */
+.showcase-card.hidden { transform: scale(0.5); opacity: 0; pointer-events: none; z-index: 1; }
 .card-image, .card-image-placeholder { width: 100%; height: 55%; object-fit: cover; }
 .card-image-placeholder { background: linear-gradient(45deg, #222, #333); }
 .card-content { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
 .card-title { font-size: 1.4rem; margin: 0 0 5px; color: #fff; }
 .card-meta { font-size: 0.8rem; color: #a0a0a0; margin-bottom: 15px; }
 .card-preview { font-size: 0.9rem; line-height: 1.6; flex-grow: 1; }
-.card-readmore-btn {
-    margin-top: auto; align-self: flex-end; padding: 8px 16px;
-    background: linear-gradient(45deg, #007BFF, #6f42c1); color: white;
-    text-decoration: none; border-radius: 20px; font-weight: 700; font-size: 0.9rem;
-    border: none; cursor: pointer; transition: all 0.3s ease;
-}
-.card-readmore-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(111, 66, 193, 0.4); }
+
+/* 🔽 '자세히 보기' 버튼 스타일 전체 삭제 */
+
 .showcase-nav {
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
     background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
@@ -118,7 +123,7 @@ main.content-area {
 .showcase-nav.prev { left: 5%; }
 .showcase-nav.next { right: 5%; }
 
-/* --- 상세 페이지 스타일 (기존과 유사) --- */
+/* --- 상세 페이지 스타일 --- */
 .post-title { font-size: 1.8rem; font-weight: 700; margin: 0 0 10px; color: #ffffff; }
 .post-meta { font-size: 0.9rem; color: #a0a0a0; margin-bottom: 20px; }
 .post-content { font-size: 1rem; line-height: 1.7; color: #c0c0c0; }
@@ -128,7 +133,7 @@ main.content-area {
 .nav-button:hover { color: #ffffff; }
 .nav-button.disabled { color: #555; cursor: not-allowed; }
 
-/* --- ✨ 새롭게 디자인된 플로팅 액션 버튼 (FAB) --- */
+/* --- 플로팅 액션 버튼 (FAB) --- */
 .fab-container {
     position: fixed;
     bottom: 30px;
@@ -155,12 +160,11 @@ main.content-area {
     transform: scale(1.1);
     box-shadow: 0 8px 25px rgba(122, 84, 168, 0.5);
 }
-/* JS에 의해 display: none이 적용될 때를 위한 처리 */
 .fab[style*="display: none"] {
     display: none !important;
 }
 
-/* --- ✨ 상세 보기용 액션 버튼 --- */
+/* --- 상세 보기용 액션 버튼 --- */
 #detail-actions {
     padding: 15px 0 0;
     text-align: right;
@@ -200,9 +204,8 @@ main.content-area {
     .showcase-card.prev { transform: translateX(-40%) scale(0.7); }
     .showcase-card.next { transform: translateX(40%) scale(0.7); }
     
-    /* FAB 모바일 위치 조정 */
     .fab-container {
-        flex-direction: row-reverse; /* 새 글쓰기 버튼이 오른쪽에 오도록 */
+        flex-direction: row-reverse;
         width: 100%;
         justify-content: center;
         bottom: 20px;

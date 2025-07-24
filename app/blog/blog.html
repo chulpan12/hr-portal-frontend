@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamofEnC - Blog</title>
-    <link rel="stylesheet" href="../../assets/blog.css?v=2.1">
+    <link rel="stylesheet" href="../../assets/blog.css?v=2.2">
 </head>
 <body>
     <div class="container">
@@ -35,26 +35,24 @@
         const postListView = document.getElementById('post-list-view');
         const postDetailView = document.getElementById('post-detail-view');
         
-        // buttonContainer 변수는 더 이상 필요 없으므로 삭제했습니다.
         const backToListButton = document.getElementById('back-to-list');
         const newPostButton = document.getElementById('new-post-button');
         const historyBackButton = document.getElementById('history-back');
-
+    
         const API_BASE_URL = 'https://api.dreamofenc.com'; 
         let postListCache = [];
-
+    
         // --- START: 쇼케이스 관련 로직 ---
         let currentIndex = 0;
-
+    
         const displayShowcaseList = (posts) => {
-            postListView.style.display = 'flex'; // block -> flex로 변경
+            postListView.style.display = 'flex';
             postDetailView.style.display = 'none';
             
-            // 버튼 표시 상태 제어
-            newPostButton.style.display = 'flex'; // inline-block -> flex로 변경
+            newPostButton.style.display = 'flex';
             historyBackButton.style.display = 'none';
             backToListButton.style.display = 'none';
-
+    
             postListView.innerHTML = `
                 <div id="showcase-container" class="showcase-container">
                     <div id="showcase-wrapper" class="showcase-wrapper"></div>
@@ -68,30 +66,34 @@
                 showcaseWrapper.innerHTML = '<p class="no-posts">아직 게시물이 없습니다.</p>';
                 return;
             }
-
+    
             posts.forEach((post, index) => {
                 const card = document.createElement('div');
                 card.className = 'showcase-card';
                 card.dataset.index = index;
-
+    
                 const imgMatch = post.content.match(/<img[^>]+src="([^">]+)"/);
                 const imageHtml = imgMatch ? `<img src="${imgMatch[1]}" alt="${post.title} 이미지" class="card-image">` : '<div class="card-image-placeholder"></div>';
-
+    
+                // 🔽 1. '자세히 보기' 버튼 HTML 삭제
                 card.innerHTML = `
                     ${imageHtml}
                     <div class="card-content">
                         <h2 class="card-title">${post.title}</h2>
                         <p class="card-meta">${post.date} by ${post.author} | 👁️ ${post.views || 0}</p>
                         <p class="card-preview">${createTextPreview(post.content, 100)}</p>
-                        <button class="card-readmore-btn">자세히 보기 &rarr;</button>
                     </div>
                 `;
                 
-                card.querySelector('.card-readmore-btn').addEventListener('click', () => {
+                // 🔽 2. 클릭 이벤트를 버튼이 아닌 카드(card)에 직접 연결
+                card.addEventListener('click', () => {
+                    // 활성화된 카드가 아닐 경우 클릭 무시 (애니메이션 중 오류 방지)
+                    if (!card.classList.contains('active')) return;
+                    
                     history.pushState({ id: post.id }, '', `?id=${post.id}`);
                     fetchPostDetail(post.id);
                 });
-
+    
                 showcaseWrapper.appendChild(card);
             });
             
@@ -101,15 +103,16 @@
                 
                 for (let i = 0; i < cards.length; i++) {
                     cards[i].classList.remove('active', 'prev', 'next', 'hidden');
-                    if (i === currentIndex) cards[i].classList.add('active');
-                    else if (i === (currentIndex - 1 + cards.length) % cards.length) cards[i].classList.add('prev');
-                    else if (i === (currentIndex + 1) % cards.length) cards[i].classList.add('next');
-                    else cards[i].classList.add('hidden');
+                    if (i === currentIndex) {
+                        cards[i].classList.add('active');
+                    } else if (i === (currentIndex - 1 + cards.length) % cards.length) {
+                        cards[i].classList.add('prev');
+                    } else if (i === (currentIndex + 1) % cards.length) {
+                        cards[i].classList.add('next');
+                    } else {
+                        cards[i].classList.add('hidden');
+                    }
                 }
-
-                // 무한 캐러셀을 위해 비활성화 로직을 간단하게 수정
-                // document.getElementById('nav-prev').disabled = currentIndex === 0;
-                // document.getElementById('nav-next').disabled = currentIndex === posts.length - 1;
             };
             
             document.getElementById('nav-prev').addEventListener('click', () => { 
@@ -124,10 +127,10 @@
             renderShowcase();
         };
         // --- END: 쇼케이스 관련 로직 ---
-
-        // --- START: 기존 상세/댓글 로직 (일부 수정) ---
+    
+        // --- START: 상세/댓글 로직 (수정 없음) ---
         const fetchPostDetail = async (id) => {
-             try {
+                try {
                 const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
                 if (!response.ok) throw new Error('Post not found');
                 const post = await response.json();
@@ -136,22 +139,21 @@
                 postDetailView.innerHTML = `<p>게시물을 불러오는 데 실패했습니다.</p>`;
             }
         };
-
+    
         const displayPostDetail = (post) => {
             postListView.style.display = 'none';
             postDetailView.style.display = 'block';
             backToListButton.style.display = 'inline-block';
             historyBackButton.style.display = 'inline-block';
             newPostButton.style.display = 'none';
-
-            const currentIndex = postListCache.findIndex(p => p.id === post.id);
-            const prevPost = currentIndex > 0 ? postListCache[currentIndex - 1] : null;
-            const nextPost = currentIndex < postListCache.length - 1 ? postListCache[currentIndex + 1] : null;
-
+    
+            const currentPostIndex = postListCache.findIndex(p => p.id === post.id);
+            const prevPost = currentPostIndex > 0 ? postListCache[currentPostIndex - 1] : null;
+            const nextPost = currentPostIndex < postListCache.length - 1 ? postListCache[currentPostIndex + 1] : null;
+    
             const prevButton = prevPost ? `<a href="?id=${prevPost.id}" class="nav-button prev-button" data-nav-id="${prevPost.id}">&lt; 이전 글</a>` : `<span class="nav-button disabled">&lt; 이전 글</span>`;
             const nextButton = nextPost ? `<a href="?id=${nextPost.id}" class="nav-button next-button" data-nav-id="${nextPost.id}">다음 글 &gt;</a>` : `<span class="nav-button disabled">다음 글 &gt;</span>`;
-
-            // '수정하기' 버튼에 새로운 `action-button` 클래스 적용
+    
             postDetailView.innerHTML = `
                 <div class="post-navigation">${prevButton}${nextButton}</div>
                 <h2 class="post-title">${post.title}</h2>
@@ -177,7 +179,7 @@
                     fetchPostDetail(navId);
                 });
             });
-            // (이하 댓글 관련 함수들은 기존과 동일하므로 생략)
+            // (이하 댓글 관련 함수들은 기존과 동일)
         };
         const createTextPreview = (htmlString, maxLength) => {
             const tempDiv = document.createElement('div');
@@ -185,7 +187,7 @@
             const text = tempDiv.textContent || tempDiv.innerText || "";
             return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
         };
-        // --- END: 기존 상세/댓글 로직 ---
+        // --- END: 상세/댓글 로직 ---
         
         // --- START: 메인 로직 ---
         const renderContent = async () => {
@@ -197,26 +199,25 @@
                 postListView.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
                 return;
             }
-
+    
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('id');
-
+    
             if (postId) {
                 fetchPostDetail(postId);
             } else {
                 displayShowcaseList(postListCache);
             }
         };
-
+    
         backToListButton.addEventListener('click', () => {
             history.pushState(null, '', 'blog.html');
             displayShowcaseList(postListCache);
         });
-
+    
         historyBackButton.addEventListener('click', () => history.back());
         
         window.addEventListener('popstate', (event) => {
-            // popstate 이벤트 발생 시 ID를 확인하여 적절한 함수 호출
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('id');
             if (postId) {
@@ -225,7 +226,7 @@
                 displayShowcaseList(postListCache);
             }
         });
-
+    
         renderContent();
     });
     </script>
