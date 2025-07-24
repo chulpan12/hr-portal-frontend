@@ -4,24 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamofEnC - Blog</title>
-    <link rel="stylesheet" href="../../assets/blog.css?v=2.0">
+    <link rel="stylesheet" href="../../assets/blog.css?v=2.1">
 </head>
 <body>
     <div class="container">
-        <h1 class="page-title">HR지원실 AI/자동화 활용실적</h1>
+        <h1 class="page-title">AI/자동화 활용실적</h1>
 
-        <div id="post-list-view">
-            </div>
-
-        <div id="post-detail-view" style="display: none;">
-            </div>
+        <main class="content-area">
+            <div id="post-list-view"></div>
+            <div id="post-detail-view" style="display: none;"></div>
+        </main>
         
-        <div id="button-container">
-            <a href="../../index.html" class="back-button home" style="margin-right: 10px;">홈으로</a>
-            <a href="editor_login.html" id="new-post-button" class="back-button" style="margin-right: 10px;">새 글 작성</a>
-            <button id="history-back" class="back-button history" style="display: none; margin-right: 10px;">뒤로가기</button>
-            <button id="back-to-list" class="back-button" style="display: none;">목록으로</button>
+        <div id="detail-actions">
+            <button id="history-back" class="action-button" style="display: none;">뒤로가기</button>
+            <button id="back-to-list" class="action-button" style="display: none;">목록으로</button>
         </div>
+    </div>
+
+    <div class="fab-container">
+        <a href="../../index.html" class="fab" title="홈으로">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>
+        </a>
+        <a href="editor_login.html" id="new-post-button" class="fab" title="새 글 작성">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </a>
     </div>
 
     <script>
@@ -29,7 +35,7 @@
         const postListView = document.getElementById('post-list-view');
         const postDetailView = document.getElementById('post-detail-view');
         
-        const buttonContainer = document.getElementById('button-container');
+        // buttonContainer 변수는 더 이상 필요 없으므로 삭제했습니다.
         const backToListButton = document.getElementById('back-to-list');
         const newPostButton = document.getElementById('new-post-button');
         const historyBackButton = document.getElementById('history-back');
@@ -41,11 +47,11 @@
         let currentIndex = 0;
 
         const displayShowcaseList = (posts) => {
-            postListView.style.display = 'block';
+            postListView.style.display = 'flex'; // block -> flex로 변경
             postDetailView.style.display = 'none';
             
             // 버튼 표시 상태 제어
-            newPostButton.style.display = 'inline-block';
+            newPostButton.style.display = 'flex'; // inline-block -> flex로 변경
             historyBackButton.style.display = 'none';
             backToListButton.style.display = 'none';
 
@@ -96,22 +102,30 @@
                 for (let i = 0; i < cards.length; i++) {
                     cards[i].classList.remove('active', 'prev', 'next', 'hidden');
                     if (i === currentIndex) cards[i].classList.add('active');
-                    else if (i === currentIndex - 1) cards[i].classList.add('prev');
-                    else if (i === currentIndex + 1) cards[i].classList.add('next');
+                    else if (i === (currentIndex - 1 + cards.length) % cards.length) cards[i].classList.add('prev');
+                    else if (i === (currentIndex + 1) % cards.length) cards[i].classList.add('next');
                     else cards[i].classList.add('hidden');
                 }
-                document.getElementById('nav-prev').disabled = currentIndex === 0;
-                document.getElementById('nav-next').disabled = currentIndex === posts.length - 1;
+
+                // 무한 캐러셀을 위해 비활성화 로직을 간단하게 수정
+                // document.getElementById('nav-prev').disabled = currentIndex === 0;
+                // document.getElementById('nav-next').disabled = currentIndex === posts.length - 1;
             };
             
-            document.getElementById('nav-prev').addEventListener('click', () => { if(currentIndex > 0) { currentIndex--; renderShowcase(); } });
-            document.getElementById('nav-next').addEventListener('click', () => { if(currentIndex < posts.length - 1) { currentIndex++; renderShowcase(); } });
+            document.getElementById('nav-prev').addEventListener('click', () => { 
+                currentIndex = (currentIndex - 1 + posts.length) % posts.length; 
+                renderShowcase(); 
+            });
+            document.getElementById('nav-next').addEventListener('click', () => { 
+                currentIndex = (currentIndex + 1) % posts.length;
+                renderShowcase(); 
+            });
             
             renderShowcase();
         };
         // --- END: 쇼케이스 관련 로직 ---
 
-        // --- START: 기존 상세/댓글 로직 (수정 없음) ---
+        // --- START: 기존 상세/댓글 로직 (일부 수정) ---
         const fetchPostDetail = async (id) => {
              try {
                 const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
@@ -137,12 +151,13 @@
             const prevButton = prevPost ? `<a href="?id=${prevPost.id}" class="nav-button prev-button" data-nav-id="${prevPost.id}">&lt; 이전 글</a>` : `<span class="nav-button disabled">&lt; 이전 글</span>`;
             const nextButton = nextPost ? `<a href="?id=${nextPost.id}" class="nav-button next-button" data-nav-id="${nextPost.id}">다음 글 &gt;</a>` : `<span class="nav-button disabled">다음 글 &gt;</span>`;
 
+            // '수정하기' 버튼에 새로운 `action-button` 클래스 적용
             postDetailView.innerHTML = `
                 <div class="post-navigation">${prevButton}${nextButton}</div>
                 <h2 class="post-title">${post.title}</h2>
                 <p class="post-meta">${post.date} by ${post.author}<span style="float: right; opacity: 0.7;">👁️ ${post.views || 0}</span></p>
                 <div class="post-content">${post.content}</div>
-                <button class="back-button" onclick="location.href='editor_login.html?id=${post.id}'" style="margin-top: 20px;">수정하기</button>
+                <button class="action-button edit-button" onclick="location.href='editor_login.html?id=${post.id}'">수정하기</button>
                 <hr style="margin: 40px 0 30px; border-color: #333;">
                 <div id="comments-section">
                     <h3 style="margin-bottom: 20px;">댓글</h3>
@@ -150,7 +165,7 @@
                     <form id="comment-form" style="margin-top: 20px;">
                         <div class="comment-input-group" style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="text" id="comment-author" placeholder="작성자" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;"><input type="password" id="comment-password" placeholder="비밀번호" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;"></div>
                         <textarea id="comment-content" placeholder="댓글을 입력하세요..." required style="width: 100%; min-height: 80px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
-                        <button type="submit" class="back-button" style="margin-top: 10px;">댓글 작성</button>
+                        <button type="submit" class="action-button" style="margin-top: 10px;">댓글 작성</button>
                     </form>
                 </div>`;
             
@@ -162,7 +177,7 @@
                     fetchPostDetail(navId);
                 });
             });
-            // (이하 댓글 관련 함수들은 기존과 동일하므로 생략... 실제 코드에서는 필요)
+            // (이하 댓글 관련 함수들은 기존과 동일하므로 생략)
         };
         const createTextPreview = (htmlString, maxLength) => {
             const tempDiv = document.createElement('div');
@@ -200,7 +215,16 @@
 
         historyBackButton.addEventListener('click', () => history.back());
         
-        window.addEventListener('popstate', () => renderContent());
+        window.addEventListener('popstate', (event) => {
+            // popstate 이벤트 발생 시 ID를 확인하여 적절한 함수 호출
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+            if (postId) {
+                fetchPostDetail(postId);
+            } else {
+                displayShowcaseList(postListCache);
+            }
+        });
 
         renderContent();
     });
