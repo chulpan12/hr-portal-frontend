@@ -4,174 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamofEnC - Welcome</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Inter & Noto Sans KR) 로드 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* 폰트 및 기본 스타일 초기화 */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: #e0e0e0; /* 기본 텍스트 색상을 밝은 회색으로 */
-            background-color: #121212; /* 배경을 어두운 색으로 */
-            overflow: hidden; /* 스크롤바 숨김 */
+        /* 기본 폰트 및 배경 설정 */
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background-color: #0a0a0a;
+            /* 은은한 방사형 그라데이션 배경 */
+            background-image: radial-gradient(circle at top center, #111827 0%, #0a0a0a 40%);
+            color: #e5e7eb; /* Light Gray */
+            overflow-x: hidden;
         }
 
-        /* 메인 컨테이너 스타일 */
-        .hero-container {
-            display: flex; /* Flexbox 레이아웃 사용 */
-            flex-direction: column; /* 아이템을 세로로 정렬 */
-            justify-content: center; /* 수직 중앙 정렬 */
-            align-items: center; /* 수평 중앙 정렬 */
-            width: 100%;
-            height: 100dvh; /* 뷰포트 전체 높이 사용 */
-            text-align: center;
-            padding: 0 20px;
-            box-sizing: border-box;
-            background: radial-gradient(circle, rgba(30, 38, 51, 1) 0%, #121212 70%); /* 은은한 방사형 그라데이션 배경 */
-        }
-
-        /* 메인 타이틀 스타일 */
-        .main-title {
-            font-size: 3.5rem; /* 폰트 크기 증가 */
-            font-weight: 900; /* 가장 굵은 폰트 두께 */
-            margin: 0;
-            /* 텍스트에 화려한 그라데이션 효과 적용 */
-            background: linear-gradient(45deg, #4f80c8, #7a54a8);
+        /* 커스텀 그라데이션 텍스트 */
+        .gradient-text {
+            display: inline-block;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
-            text-shadow: 0 0 15px rgba(122, 84, 168, 0.3); /* 은은한 텍스트 그림자 */
-            margin-top: 1rem;
-            max-width: 900px;
-            line-height: 1.6;
-            margin-bottom: 2rem; /* 하단 여백 추가 */
         }
 
-        /* 서브 텍스트 스타일 */
-        .sub-text {
-            font-size: 1.2rem;
-            font-weight: 400;
-            color: #a0a0a0; /* 메인 텍스트보다 약간 어두운 색 */
-            margin-top: 1rem;
-            max-width: 600px;
-            line-height: 1.6;
-            margin-bottom: 2.5rem; /* 버튼과의 간격을 위해 여백 추가 */
+        /* 타일 카드 기본 스타일 */
+        .card {
+            background-color: #1f2937; /* Gray 800 */
+            border: 1px solid #374151; /* Gray 700 */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-style: preserve-3d;
+            position: relative; /* 자식 요소의 absolute 포지셔닝 기준 */
+            overflow: hidden; /* 내부 요소가 카드를 벗어나지 않도록 설정 */
+        }
+
+        /* 마우스 오버 시 3D 효과 및 테두리 그라데이션 */
+        .card:hover {
+            transform: translateY(-10px) rotateX(4deg) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border-color: transparent;
+            background-image: linear-gradient(#1f2937, #1f2937), linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
         }
         
-        /* 방문자 수 카운터 스타일 (리디자인) */
-        .visitors-text {
-            color: #ffd700; /* 금색 계열로 변경 */
-            font-size: 1rem;
-            font-weight: 700;
-            margin: 0;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); /* 은은한 그림자 효과 */
-            margin-bottom: 2.5rem; /* 버튼과의 간격을 위해 여백 추가 */
-        }
-
-        #visitor-count {
-            color: #ffffff;
-            font-weight: 700;
-            margin-left: 0.5em; /* '총 방문자 수:' 텍스트와 간격 띄우기 */
-        }
-
-        /* 버튼들을 감싸는 그리드 컨테이너 */
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2개의 열을 가진 그리드 생성 */
-            gap: 15px; /* 버튼 사이의 간격 */
+        /* 이미지를 담을 컨테이너, 사선으로 잘라내는 역할 */
+        .image-clipper {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 500px; /* 그리드의 최대 너비 제한 */
+            height: 100%;
+            /* clip-path로 사선 모양 만들기: polygon(좌상단, 우상단, 좌하단) */
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+            transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 행동 유도(CTA) 버튼 스타일 */
-        .cta-button {
-            display: block; /* 그리드 아이템으로 꽉 차게 설정 */
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #ffffff;
-            background: linear-gradient(45deg, #007BFF, #6f42c1);
-            border: none;
-            border-radius: 50px; /* 둥근 모서리 */
-            text-decoration: none; /* 밑줄 제거 */
-            cursor: pointer;
-            transition: all 0.3s ease; /* 부드러운 전환 효과 */
-            box-shadow: 0 4px 20px rgba(111, 66, 193, 0.4); /* 입체감을 주는 그림자 */
+        /* 카드 호버 시 이미지 클리핑 영역을 미세하게 조정해 동적인 느낌 부여 */
+        .card:hover .image-clipper {
+            clip-path: polygon(0 0, 100% 0, 0 85%);
         }
 
-        /* 버튼에 마우스를 올렸을 때의 효과 */
-        .cta-button:hover {
-            transform: translateY(-5px); /* 살짝 위로 이동 */
-            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.5); /* 그림자 효과 강화 */
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* 카드 호버 시 이미지 확대 효과 */
+        .card:hover .card-image {
+            transform: scale(1.1);
         }
 
-        /* 모바일 화면을 위한 미디어 쿼리 */
-        @media (max-width: 768px) {
-            .main-title {
-                font-size: 2.5rem;
-            }
-            .sub-text {
-                font-size: 1rem;
-            }
-            /* 모바일에서는 버튼을 세로로 1줄로 나열 */
-            .button-grid {
-                grid-template-columns: 1fr;
-                max-width: 320px;
-            }
-            .cta-button {
-                padding: 12px 30px;
-                font-size: 1rem;
+        /* 텍스트 콘텐츠 컨테이너 */
+        .card-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            /* 콘텐츠를 우측 하단에 정렬 */
+            justify-content: flex-end;
+            align-items: flex-end;
+            /* 텍스트를 우측 정렬 */
+            text-align: right;
+            padding: 2rem; /* 32px */
+            /* 텍스트가 이미지 위에 올라오도록 z-index 설정 */
+            z-index: 10;
+            /* 텍스트 가독성을 위한 어두운 그라데이션 추가 */
+            background: linear-gradient(to top left, rgba(10, 10, 10, 0.85) 10%, rgba(10, 10, 10, 0) 60%);
+        }
+
+        /* 로딩 시 타일이 순서대로 나타나는 애니메이션 */
+        .card-reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: reveal 0.6s forwards;
+        }
+
+        @keyframes reveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
 
-    <div class="hero-container">
-        <h1 class="main-title">Welcome to Dream of E&C</h1>
-        <p class="sub-text">당신의 상상이 현실이 되는 공간, Dream of E&C에 오신 것을 환영합니다!</p>
-        
-        <!-- 방문자 수 카운터 (리디자인) -->
-        <p class="visitors-text">총 방문자 수: <span id="visitor-count">...</span></p>
+    <div class="w-full max-w-7xl mx-auto">
+        <!-- 헤더 섹션 -->
+        <header class="text-center mb-16">
+            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white">
+                Dream of <span class="gradient-text">E&C</span>
+            </h1>
+            <p class="mt-4 text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto">
+                AI를 통해 상상이 현실이 되는 공간, Dream of E&C에 오신 것을 환영합니다!
+            </p>
+             <p class="mt-6 text-base text-yellow-400 font-semibold">
+                총 방문자 수: <span id="visitor-count" class="text-white font-bold">...</span>
+            </p>
+        </header>
 
-        <!-- 버튼 그리드 컨테이너 -->
-        <div class="button-grid">
-            <a href="quiz_info.html" class="cta-button">🎮 게임 하러가기</a>
-            <a href="./app/blog/blog.html" class="cta-button">📝 블로그 가기</a>
-            <a href="https://wiki.dreamofenc.com" target="_blank" class="cta-button">📚 사내 위키</a>
-            <a href="lecture.html" target="_blank" class="cta-button">🎤 AI 특강</a>
-        </div>
+        <!-- ✨ [수정] 그리드 레이아웃 변경 -->
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- Tile 1: 바둑 메타버스 (세로로 길게) -->
+            <!-- ✨ [수정] lg:row-span-2 추가, aspect ratio 제거, 콘텐츠 크기 복원 -->
+            <a href="https://baduk.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group lg:row-span-2" style="animation-delay: 100ms;">
+                <div class="image-clipper">
+                    <img src="./assets/baduk.png" alt="바둑 메타버스 이미지" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h2 class="text-3xl font-bold text-white">바둑 메타버스</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">가상 공간에서 즐기는 온라인 바둑과 오목. 지금 바로 입장하여 새로운 대국을 경험하세요.</p>
+                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                </div>
+            </a>
+
+            <!-- Tile 2: 횡스크롤 퀴즈게임 -->
+            <a href="quiz_info.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 200ms;">
+                <div class="image-clipper">
+                    <img src="./assets/game.png" alt="횡스크롤 퀴즈게임 이미지" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h2 class="text-2xl font-bold text-white">횡스크롤 퀴즈게임</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">캐릭터를 조종하며 즐기는 신개념 퀴즈 게임.</p>
+                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                </div>
+            </a>
+
+            <!-- Tile 3: 기술 블로그 -->
+            <a href="./app/blog/blog.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 300ms;">
+                <div class="image-clipper">
+                    <img src="./assets/blog.png" alt="기술 블로그 이미지" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h2 class="text-2xl font-bold text-white">기술 블로그</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">AI활용한 컨텐츠 개발, 업무자동화에 대한<br> 기술적 인사이트를 공유합니다.</p>
+                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                </div>
+            </a>
+
+            <!-- Tile 4: 사내 위키 -->
+            <a href="https://wiki.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 400ms;">
+                <div class="image-clipper">
+                    <img src="./assets/wiki.png" alt="사내 위키 이미지" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h2 class="text-2xl font-bold text-white">사내 위키</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">AI, IT기술, 통계지식을 비롯한<br> HR지원실의 지식과 정보를<br> 축적하고 공유하는 협업 시스템.</p>
+                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                </div>
+            </a>
+
+            <!-- Tile 5: AI 특강 -->
+            <a href="lecture.html" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 500ms;">
+                <div class="image-clipper">
+                    <img src="./assets/pt.png" alt="AI 특강 이미지" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h2 class="text-2xl font-bold text-white">AI 특강</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">비전문가의 AI 기술 활용을 위한<br> 특별 강의 자료.</p>
+                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                </div>
+            </a>
+
+        </main>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const visitorCountElement = document.getElementById('visitor-count');
-            const API_BASE_URL = 'https://api.dreamofenc.com'; // 실제 배포된 API 주소
+            // API 엔드포인트는 실제 환경에 맞게 설정해야 합니다.
+            // 예시: const API_ENDPOINT = 'https://api.dreamofenc.com/site-info';
+            // 로컬 테스트나 프록시를 사용하는 경우 '/api/blog/site-info' 사용
+            const API_ENDPOINT = '/api/blog/site-info';
 
             const fetchVisitorCount = async () => {
                 try {
-                    // 백엔드 API를 호출하여 방문자 수를 가져옵니다.
-                    // 이 API는 호출될 때마다 서버의 방문자 수를 1씩 증가시킵니다.
-                    const response = await fetch(`${API_BASE_URL}/api/blog/site-info`);
+                    const response = await fetch(API_ENDPOINT);
                     if (!response.ok) {
-                        throw new Error('Failed to fetch visitor count');
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
                     const visitorCount = data.total_visitors;
 
-                    // 화면에 받은 방문자 수를 표시합니다. (세 자리마다 콤마)
                     if (visitorCountElement) {
                         visitorCountElement.textContent = visitorCount.toLocaleString();
                     }
-
                 } catch (error) {
                     console.error('Error fetching visitor count:', error);
                     if (visitorCountElement) {
-                        // 에러 발생 시 'N/A'로 표시
                         visitorCountElement.textContent = 'N/A';
                     }
                 }
