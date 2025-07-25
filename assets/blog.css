@@ -32,9 +32,6 @@ main.content-area {
 
 #post-list-view {
     flex-grow: 1; /* 부모(main)의 공간을 채움 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 #post-detail-view {
