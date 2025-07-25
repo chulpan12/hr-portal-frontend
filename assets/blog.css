@@ -1,56 +1,66 @@
+/* blog.css */
+
 /* 폰트 및 기본 스타일 초기화 */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
 html, body {
+    height: 100%; /* 추가: 높이 기준을 100%로 설정 */
     margin: 0;
     padding: 0;
     width: 100%;
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #e0e0e0;
     background-color: #121212;
+    display: flex; /* 추가: .container를 수직 중앙 정렬하기 위해 사용 */
+    align-items: center;
+    justify-content: center;
 }
 
 .container {
-    box-sizing: border-box;
+    max-width: 900px;
+    margin: 0 auto; /* 수정: 상하 마진 제거 */
+    padding: 0 20px;
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2vh 20px;
-    
-    /* ✨ 레이아웃 핵심: 최소 높이를 뷰포트로 지정하고 Flexbox 사용 */
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    box-sizing: border-box;
+    height: 95vh; /* 변경: 뷰포트 높이의 95%를 차지하도록 설정 */
+    display: flex; /* 추가: 자식 요소를 정렬하기 위해 flex 사용 */
+    flex-direction: column; /* 추가: 자식 요소를 세로로 쌓음 (제목 -> 메인 컨텐츠) */
 }
 
 main.content-area {
-    /* ✨ 남은 공간을 모두 채우도록 설정 */
-    flex-grow: 1; 
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    flex-grow: 1; /* 추가: 제목을 제외한 나머지 공간을 모두 차지하도록 설정 */
+    min-height: 0; /* 추가: flex 아이템 크기가 비정상적으로 커지는 것을 방지 */
 }
 
 #post-list-view {
-    flex-grow: 1; /* 부모(main)의 공간을 채움 */
+    height: 100%; /* 수정: 부모(main.content-area) 높이를 100% 채우도록 변경 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #post-detail-view {
-    /* 상세 페이지는 내용 길이에 따라 높이가 결정됨 */
     padding: 25px;
     background-color: #1e1e1e;
     border-radius: 12px;
     border: 1px solid #333;
+    /* 상세 보기 시 스크롤이 필요할 수 있으므로 높이 추가 */
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .page-title {
     font-size: 2.8rem;
     font-weight: 900;
-    margin: 0 0 20px;
+    margin: 20px 0 40px;
     text-align: center;
     background: linear-gradient(45deg, #4f80c8, #7a54a8);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    flex-shrink: 0; /* 추가: 제목이 컨텐츠 영역에 의해 줄어들지 않도록 설정 */
 }
 
 /* --- ✨ 쇼케이스 스타일 --- */
@@ -58,7 +68,6 @@ main.content-area {
     position: relative;
     width: 100%;
     height: 100%;
-    max-height: 700px; /* 너무 큰 화면에서 카드가 과하게 커지는 것을 방지 */
     perspective: 1500px;
     display: flex;
     align-items: center;
@@ -76,7 +85,7 @@ main.content-area {
     margin: auto;
     width: 60%;
     max-width: 550px;
-    height: 95%;
+    height: 95%; /* 이 값은 부모 높이(#post-list-view)의 95%가 되므로 의도대로 작동합니다. */
     background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 16px;
@@ -110,6 +119,9 @@ main.content-area {
     font-size: 1.5rem; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.3s ease;
 }
 .showcase-nav:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.2); transform: translateY(-50%) scale(1.1); }
+.showcase-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+.showcase-nav.prev { left: 5%; }
+.showcase-nav.next { right: 5%; }
 
 /* --- 상세 페이지 스타일 --- */
 .post-title { font-size: 1.8rem; font-weight: 700; margin: 0 0 10px; color: #ffffff; }
@@ -156,6 +168,7 @@ main.content-area {
 #detail-actions {
     padding: 15px 0 0;
     text-align: right;
+    margin-top: 20px;
 }
 .action-button {
     display: inline-block;
@@ -203,6 +216,7 @@ main.content-area {
 }
 
 @media (max-width: 480px) {
+    .container { padding: 0 15px; margin: 20px auto; height: auto; } /* 모바일에서는 높이 자동 조절 */
     .page-title { font-size: 1.8rem; }
     .showcase-card { width: 85%; }
     .card-title { font-size: 1.2rem; }
