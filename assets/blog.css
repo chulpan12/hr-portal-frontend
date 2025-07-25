@@ -110,7 +110,7 @@ main.content-area {
 .card-content { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
 .card-title { font-size: 1.4rem; margin: 0 0 5px; color: #fff; }
 .card-meta { font-size: 0.8rem; color: #a0a0a0; margin-bottom: 15px; }
-.card-preview { font-size: 0.9rem; line-height: 1.6; flex-grow: 1; overflow-y: auto; }
+.card-preview { font-size: 1.0rem; line-height: 1.6; flex-grow: 1; overflow-y: auto; }
 
 .showcase-nav {
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
