@@ -230,7 +230,7 @@ main.content-area {
 
     /* 카드의 높이를 75vh로 줄여 하단 버튼과의 충돌을 방지합니다. */
     #post-list-view {
-        height: 75vh;
+        height: 65vh;
     }
 
     /* 페이지 제목의 하단 여백을 늘려 카드와의 간격을 확보합니다. */
@@ -241,8 +241,8 @@ main.content-area {
     
     /* --- 아래는 기존과 동일한 코드입니다 --- */
     .showcase-card { width: 85%; }
-    .card-title { font-size: 0.9rem; }
-    .card-preview { font-size: 0.6rem; }
+    .card-title { font-size: 0.9rem !important;} 
+    .card-preview { font-size: 0.7rem !important;} 
     .comment-input-group { flex-direction: column; }
     #post-detail-view { padding: 15px; }
 }
