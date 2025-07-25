@@ -187,10 +187,6 @@ main.content-area {
 
 /* --- 모바일 반응형 --- */
 @media (max-width: 768px) {
-    .container {
-        /* 모바일에서는 최소 높이 고정 해제 */
-        min-height: auto;
-    }
     .page-title { font-size: 2.2rem; }
     .showcase-card { width: 70%; }
     .showcase-nav.prev { left: 2%; }
