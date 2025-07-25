@@ -216,22 +216,26 @@ main.content-area {
 }
 
 @media (max-width: 480px) {
-    /* 모바일에서 메인 컨테이너 높이를 자동으로 변경 */
+    /* 컨테이너의 상하 여백을 늘려 전체적으로 숨 쉴 공간을 확보합니다. */
     .container {
         height: auto;
-        padding: 15px; /* 상하좌우 여백을 줌 */
+        padding-top: 25px;
+        padding-bottom: 25px;
         box-sizing: border-box;
     }
 
-    /* 모바일에서 카드 목록 영역의 높이를 80%로 직접 지정 */
+    /* 카드의 높이를 75vh로 줄여 하단 버튼과의 충돌을 방지합니다. */
     #post-list-view {
-        height: 80vh;
+        height: 75vh;
     }
 
-    .page-title {
+    /* 페이지 제목의 하단 여백을 늘려 카드와의 간격을 확보합니다. */
+    .page-title {
         font-size: 1.8rem;
-        margin: 0 0 20px 0; /* 상단 여백을 제거하고 하단 여백을 조정 */
+        margin: 0 0 30px 0;
     }
+    
+    /* --- 아래는 기존과 동일한 코드입니다 --- */
     .showcase-card { width: 85%; }
     .card-title { font-size: 1.2rem; }
     .card-preview { font-size: 0.85rem; }
