@@ -54,7 +54,7 @@ main.content-area {
 .page-title {
     font-size: 2.8rem;
     font-weight: 900;
-    margin: 10px 0 40px;
+    margin: 10px 0 20px;
     text-align: center;
     background: linear-gradient(45deg, #4f80c8, #7a54a8);
     -webkit-background-clip: text;
@@ -85,7 +85,7 @@ main.content-area {
     margin: auto;
     width: 70%;
     max-width: 650px;
-    height: 100%; /* 이 값은 부모 높이(#post-list-view)의 95%가 되므로 의도대로 작동합니다. */
+    height: 95%; /* 이 값은 부모 높이(#post-list-view)의 95%가 되므로 의도대로 작동합니다. */
     background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 16px;
@@ -216,10 +216,25 @@ main.content-area {
 }
 
 @media (max-width: 480px) {
-    .page-title { font-size: 1.8rem; }
-    .showcase-card { width: 85%; }
-    .card-title { font-size: 1.2rem; }
-    .card-preview { font-size: 0.85rem; }
-    .comment-input-group { flex-direction: column; }
-    #post-detail-view { padding: 15px; }
+    /* 모바일에서 메인 컨테이너 높이를 자동으로 변경 */
+    .container {
+        height: auto;
+        padding: 15px; /* 상하좌우 여백을 줌 */
+        box-sizing: border-box;
+    }
+
+    /* 모바일에서 카드 목록 영역의 높이를 80%로 직접 지정 */
+    #post-list-view {
+        height: 80vh;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        margin: 0 0 20px 0; /* 상단 여백을 제거하고 하단 여백을 조정 */
+    }
+    .showcase-card { width: 85%; }
+    .card-title { font-size: 1.2rem; }
+    .card-preview { font-size: 0.85rem; }
+    .comment-input-group { flex-direction: column; }
+    #post-detail-view { padding: 15px; }
 }

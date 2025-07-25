@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamofEnC - Blog</title>
-    <link rel="stylesheet" href="../../assets/blog.css?v=2.37">
+    <link rel="stylesheet" href="../../assets/blog.css?v=2.38">
 </head>
 <body>
     <div class="container">
@@ -15,120 +15,203 @@
             <div id="post-detail-view" style="display: none;"></div>
         </main>
         
-        <div id="detail-actions">
-            <button id="history-back" class="action-button" style="display: none;">뒤로가기</button>
-            <button id="back-to-list" class="action-button" style="display: none;">목록으로</button>
+        <div id="fab-list-container" class="fab-container">
+            <a href="../../index.html" class="fab" title="홈으로">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>
+            </a>
+            <a href="editor_login.html" class="fab" title="새 글 작성">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </a>
         </div>
-    </div>
 
-    <div class="fab-container">
-        <a href="../../index.html" class="fab" title="홈으로">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>
-        </a>
-        <a href="editor_login.html" id="new-post-button" class="fab" title="새 글 작성">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        </a>
-    </div>
+        <div id="fab-detail-container" class="fab-container" style="display: none;">
+            <a href="#" id="fab-history-back" class="fab fab-action" title="뒤로가기">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </a>
+            <a href="#" id="fab-back-to-list" class="fab fab-action" title="목록으로">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7zm-4 6h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+            </a>
+            <a href="#" id="fab-edit-post" class="fab fab-edit" title="수정하기">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14.06 9.02l.92.92L5.92 19H5v-.92l9.06-9.06M17.66 3c-.25 0-.51.1-.7.29l-1.83 1.83 3.75 3.75 1.83-1.83c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.2-.2-.45-.29-.71-.29zm-3.6 3.19L3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/></svg>
+            </a>
+        </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const postListView = document.getElementById('post-list-view');
-        const postDetailView = document.getElementById('post-detail-view');
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM 요소 가져오기
+    const postListView = document.getElementById('post-list-view');
+    const postDetailView = document.getElementById('post-detail-view');
+    
+    // FAB 컨테이너 및 버튼 요소 가져오기 (수정)
+    const fabListContainer = document.getElementById('fab-list-container');
+    const fabDetailContainer = document.getElementById('fab-detail-container');
+    const fabHistoryBack = document.getElementById('fab-history-back');
+    const fabBackToList = document.getElementById('fab-back-to-list');
+    const fabEditPost = document.getElementById('fab-edit-post');
+    
+    // API 및 캐시 변수
+    const API_BASE_URL = 'https://api.dreamofenc.com'; 
+    let postListCache = [];
+
+    // --- START: 쇼케이스(목록) 관련 로직 ---
+    let currentIndex = 0;
+
+    const displayShowcaseList = (posts) => {
+        postListView.style.display = 'flex';
+        postDetailView.style.display = 'none';
         
-        const backToListButton = document.getElementById('back-to-list');
-        const newPostButton = document.getElementById('new-post-button');
-        const historyBackButton = document.getElementById('history-back');
-    
-        const API_BASE_URL = 'https://api.dreamofenc.com'; 
-        let postListCache = [];
-    
-        // --- START: 쇼케이스 관련 로직 ---
-        let currentIndex = 0;
-    
-        const displayShowcaseList = (posts) => {
-            postListView.style.display = 'flex';
-            postDetailView.style.display = 'none';
-            
-            newPostButton.style.display = 'flex';
-            historyBackButton.style.display = 'none';
-            backToListButton.style.display = 'none';
-    
-            postListView.innerHTML = `
-                <div id="showcase-container" class="showcase-container">
-                    <div id="showcase-wrapper" class="showcase-wrapper"></div>
-                    <button id="nav-prev" class="showcase-nav prev">&lt;</button>
-                    <button id="nav-next" class="showcase-nav next">&gt;</button>
+        // FAB 컨테이너 가시성 제어 (수정)
+        fabListContainer.style.display = 'flex';
+        fabDetailContainer.style.display = 'none';
+
+        postListView.innerHTML = `
+            <div id="showcase-container" class="showcase-container">
+                <div id="showcase-wrapper" class="showcase-wrapper"></div>
+                <button id="nav-prev" class="showcase-nav prev">&lt;</button>
+                <button id="nav-next" class="showcase-nav next">&gt;</button>
+            </div>
+        `;
+        
+        const showcaseWrapper = document.getElementById('showcase-wrapper');
+        if (!posts || posts.length === 0) {
+            showcaseWrapper.innerHTML = '<p class="no-posts">아직 게시물이 없습니다.</p>';
+            return;
+        }
+
+        posts.forEach((post, index) => {
+            const card = document.createElement('div');
+            card.className = 'showcase-card';
+            card.dataset.index = index;
+
+            const imgMatch = post.content.match(/<img[^>]+src="([^">]+)"/);
+            const imageHtml = imgMatch ? `<img src="${imgMatch[1]}" alt="${post.title} 이미지" class="card-image">` : '<div class="card-image-placeholder"></div>';
+
+            card.innerHTML = `
+                ${imageHtml}
+                <div class="card-content">
+                    <h2 class="card-title">${post.title}</h2>
+                    <p class="card-meta">${post.date} by ${post.author} | 👁️ ${post.views || 0}</p>
+                    <p class="card-preview">${createTextPreview(post.content, 350)}</p>
                 </div>
             `;
             
-            const showcaseWrapper = document.getElementById('showcase-wrapper');
-            if (!posts || posts.length === 0) {
-                showcaseWrapper.innerHTML = '<p class="no-posts">아직 게시물이 없습니다.</p>';
-                return;
-            }
-    
-            posts.forEach((post, index) => {
-                const card = document.createElement('div');
-                card.className = 'showcase-card';
-                card.dataset.index = index;
-    
-                const imgMatch = post.content.match(/<img[^>]+src="([^">]+)"/);
-                const imageHtml = imgMatch ? `<img src="${imgMatch[1]}" alt="${post.title} 이미지" class="card-image">` : '<div class="card-image-placeholder"></div>';
-    
-                card.innerHTML = `
-                    ${imageHtml}
-                    <div class="card-content">
-                        <h2 class="card-title">${post.title}</h2>
-                        <p class="card-meta">${post.date} by ${post.author} | 👁️ ${post.views || 0}</p>
-                        <p class="card-preview">${createTextPreview(post.content, 350)}</p>
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => {
-                    if (!card.classList.contains('active')) return;
-                    
-                    history.pushState({ id: post.id }, '', `?id=${post.id}`);
-                    fetchPostDetail(post.id);
-                });
-    
-                showcaseWrapper.appendChild(card);
+            card.addEventListener('click', () => {
+                if (!card.classList.contains('active')) return;
+                history.pushState({ id: post.id }, '', `?id=${post.id}`);
+                fetchPostDetail(post.id);
             });
-            
-            const renderShowcase = () => {
-                const cards = showcaseWrapper.children;
-                if (!cards.length) return;
-                
-                for (let i = 0; i < cards.length; i++) {
-                    cards[i].classList.remove('active', 'prev', 'next', 'hidden');
-                    if (i === currentIndex) {
-                        cards[i].classList.add('active');
-                    } else if (i === (currentIndex - 1 + cards.length) % cards.length) {
-                        cards[i].classList.add('prev');
-                    } else if (i === (currentIndex + 1) % cards.length) {
-                        cards[i].classList.add('next');
-                    } else {
-                        cards[i].classList.add('hidden');
-                    }
+
+            showcaseWrapper.appendChild(card);
+        });
+        
+        const renderShowcase = () => {
+            const cards = showcaseWrapper.children;
+            if (!cards.length) return;
+            for (let i = 0; i < cards.length; i++) {
+                cards[i].classList.remove('active', 'prev', 'next', 'hidden');
+                if (i === currentIndex) {
+                    cards[i].classList.add('active');
+                } else if (i === (currentIndex - 1 + cards.length) % cards.length) {
+                    cards[i].classList.add('prev');
+                } else if (i === (currentIndex + 1) % cards.length) {
+                    cards[i].classList.add('next');
+                } else {
+                    cards[i].classList.add('hidden');
                 }
-            };
-            
-            document.getElementById('nav-prev').addEventListener('click', () => { 
-                currentIndex = (currentIndex - 1 + posts.length) % posts.length; 
-                renderShowcase(); 
-            });
-            document.getElementById('nav-next').addEventListener('click', () => { 
-                currentIndex = (currentIndex + 1) % posts.length;
-                renderShowcase(); 
-            });
-            
-            renderShowcase();
+            }
         };
-        // --- END: 쇼케이스 관련 로직 ---
+        
+        document.getElementById('nav-prev').addEventListener('click', () => { 
+            currentIndex = (currentIndex - 1 + posts.length) % posts.length; 
+            renderShowcase(); 
+        });
+        document.getElementById('nav-next').addEventListener('click', () => { 
+            currentIndex = (currentIndex + 1) % posts.length;
+            renderShowcase(); 
+        });
+        
+        renderShowcase();
+    };
+    // --- END: 쇼케이스(목록) 관련 로직 ---
+
+    // --- START: 상세/댓글 로직 ---
+    const fetchPostDetail = async (id) => {
+        if (id === 'local-test-post') {
+            const testPost = {
+                id: 'local-test-post',
+                title: '🚀 로컬 테스트용 게시물',
+                author: 'Live Server',
+                date: new Date().toISOString().split('T')[0],
+                views: 777,
+                content: `<img src="https://via.placeholder.com/800x400.png/333/eee?text=Test+Image" alt="테스트 이미지" style="width:100%; border-radius: 8px;"><p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서 접속했을 때만 나타나는 테스트용 데이터입니다.</p><ul><li>반응형 레이아웃 확인</li><li>카드 애니메이션 테스트</li><li>상세 페이지 라우팅 점검</li></ul>`
+            };
+            displayPostDetail(testPost);
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
+            if (!response.ok) throw new Error('Post not found');
+            const post = await response.json();
+            displayPostDetail(post);
+        } catch (error) {
+            postDetailView.innerHTML = `<p>게시물을 불러오는 데 실패했습니다.</p>`;
+        }
+    };
+
+    const displayPostDetail = (post) => {
+        postListView.style.display = 'none';
+        postDetailView.style.display = 'block';
+        
+        // FAB 컨테이너 가시성 제어 (수정)
+        fabListContainer.style.display = 'none';
+        fabDetailContainer.style.display = 'flex';
+        fabEditPost.href = `editor_login.html?id=${post.id}`; // 수정 버튼 링크 동적 할당
+
+        const currentPostIndex = postListCache.findIndex(p => p.id === post.id);
+        const prevPost = currentPostIndex > 0 ? postListCache[currentPostIndex - 1] : null;
+        const nextPost = currentPostIndex < postListCache.length - 1 ? postListCache[currentPostIndex + 1] : null;
+
+        const prevButton = prevPost ? `<a href="?id=${prevPost.id}" class="nav-button prev-button" data-nav-id="${prevPost.id}">&lt; 이전 글</a>` : `<span class="nav-button disabled">&lt; 이전 글</span>`;
+        const nextButton = nextPost ? `<a href="?id=${nextPost.id}" class="nav-button next-button" data-nav-id="${nextPost.id}">다음 글 &gt;</a>` : `<span class="nav-button disabled">다음 글 &gt;</span>`;
+
+        // 상세 보기 HTML에서 수정 버튼 삭제 (수정)
+        postDetailView.innerHTML = `
+            <div class="post-navigation">${prevButton}${nextButton}</div>
+            <h2 class="post-title">${post.title}</h2>
+            <p class="post-meta">${post.date} by ${post.author}<span style="float: right; opacity: 0.7;">👁️ ${post.views || 0}</span></p>
+            <div class="post-content">${post.content}</div>
+            <hr style="margin: 40px 0 30px; border-color: #333;">
+            <div id="comments-section">
+                </div>`;
+        
+        postDetailView.querySelectorAll('.nav-button[data-nav-id]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const navId = e.target.dataset.navId;
+                history.pushState({ id: navId }, '', `?id=${navId}`);
+                fetchPostDetail(navId);
+            });
+        });
+    };
+    const createTextPreview = (htmlString, maxLength) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlString;
+        const text = tempDiv.textContent || tempDiv.innerText || "";
+        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    };
+    // --- END: 상세/댓글 로직 ---
     
-        // --- START: 상세/댓글 로직 (수정 없음) ---
-        const fetchPostDetail = async (id) => {
-            // ▼▼▼ 로컬 테스트 게시물일 경우, 가짜 데이터로 상세 페이지를 보여줌 ▼▼▼
-            if (id === 'local-test-post') {
+    // --- START: 메인 로직 ---
+    const renderContent = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/blog/posts`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            postListCache = await response.json();
+            
+            // ▼▼▼ 로컬 환경일 때 테스트 게시물을 추가하는 로직 ▼▼▼
+            const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+            if (isLocal) {
                 const testPost = {
                     id: 'local-test-post',
                     title: '🚀 로컬 테스트용 게시물',
@@ -136,156 +219,71 @@
                     date: new Date().toISOString().split('T')[0],
                     views: 777,
                     content: `
-                        <img src="https://via.placeholder.com/800x400.png/333/eee?text=Test+Image" alt="테스트 이미지" style="width:100%; border-radius: 8px;">
-                        <p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서 접속했을 때만 나타나는 테스트용 데이터입니다.</p>
-                        <p>서버에 배포된 실제 환경에서는 보이지 않습니다. CSS 스타일링, 카드 넘김, 상세 페이지 진입 등의 기능을 테스트하는 데 사용하세요.</p>
-                        <ul>
-                            <li>반응형 레이아웃 확인</li>
-                            <li>카드 애니메이션 테스트</li>
-                            <li>상세 페이지 라우팅 점검</li>
-                        </ul>
+                        <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
+                        <p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서만 보입니다.</p>
                     `
                 };
-                displayPostDetail(testPost);
-                return;
+                postListCache.unshift(testPost); // 배열의 가장 앞에 테스트 게시물 추가
             }
-            // ▲▲▲ 로컬 테스트 게시물 로직 ▲▲▲
+            // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
+
+        } catch (error) {
+            console.error("게시물 로딩 실패:", error);
+            postListView.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
             
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
-                if (!response.ok) throw new Error('Post not found');
-                const post = await response.json();
-                displayPostDetail(post);
-            } catch (error) {
-                postDetailView.innerHTML = `<p>게시물을 불러오는 데 실패했습니다.</p>`;
-            }
-        };
-    
-        const displayPostDetail = (post) => {
-            postListView.style.display = 'none';
-            postDetailView.style.display = 'block';
-            backToListButton.style.display = 'inline-block';
-            historyBackButton.style.display = 'inline-block';
-            newPostButton.style.display = 'none';
-    
-            const currentPostIndex = postListCache.findIndex(p => p.id === post.id);
-            const prevPost = currentPostIndex > 0 ? postListCache[currentPostIndex - 1] : null;
-            const nextPost = currentPostIndex < postListCache.length - 1 ? postListCache[currentPostIndex + 1] : null;
-    
-            const prevButton = prevPost ? `<a href="?id=${prevPost.id}" class="nav-button prev-button" data-nav-id="${prevPost.id}">&lt; 이전 글</a>` : `<span class="nav-button disabled">&lt; 이전 글</span>`;
-            const nextButton = nextPost ? `<a href="?id=${nextPost.id}" class="nav-button next-button" data-nav-id="${nextPost.id}">다음 글 &gt;</a>` : `<span class="nav-button disabled">다음 글 &gt;</span>`;
-    
-            postDetailView.innerHTML = `
-                <div class="post-navigation">${prevButton}${nextButton}</div>
-                <h2 class="post-title">${post.title}</h2>
-                <p class="post-meta">${post.date} by ${post.author}<span style="float: right; opacity: 0.7;">👁️ ${post.views || 0}</span></p>
-                <div class="post-content">${post.content}</div>
-                <button class="action-button edit-button" onclick="location.href='editor_login.html?id=${post.id}'">수정하기</button>
-                <hr style="margin: 40px 0 30px; border-color: #333;">
-                <div id="comments-section">
-                    <h3 style="margin-bottom: 20px;">댓글</h3>
-                    <div id="comments-list"></div>
-                    <form id="comment-form" style="margin-top: 20px;">
-                        <div class="comment-input-group" style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="text" id="comment-author" placeholder="작성자" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;"><input type="password" id="comment-password" placeholder="비밀번호" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;"></div>
-                        <textarea id="comment-content" placeholder="댓글을 입력하세요..." required style="width: 100%; min-height: 80px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
-                        <button type="submit" class="action-button" style="margin-top: 10px;">댓글 작성</button>
-                    </form>
-                </div>`;
-            
-            postDetailView.querySelectorAll('.nav-button[data-nav-id]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const navId = e.target.dataset.navId;
-                    history.pushState({ id: navId }, '', `?id=${navId}`);
-                    fetchPostDetail(navId);
-                });
-            });
-        };
-        const createTextPreview = (htmlString, maxLength) => {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlString;
-            const text = tempDiv.textContent || tempDiv.innerText || "";
-            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-        };
-        // --- END: 상세/댓글 로직 ---
-        
-        // --- START: 메인 로직 ---
-        const renderContent = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/blog/posts`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                postListCache = await response.json();
-                
-                // ▼▼▼ 로컬 환경일 때 테스트 게시물을 추가하는 로직 ▼▼▼
-                const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-                if (isLocal) {
+            // ▼▼▼ API 로딩 실패 시에도 로컬 테스트 게시물은 보이도록 처리 ▼▼▼
+            const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+            if (isLocal && postListCache.length === 0) {
                     const testPost = {
-                        id: 'local-test-post',
-                        title: '🚀 로컬 테스트용 게시물',
-                        author: 'Live Server',
-                        date: new Date().toISOString().split('T')[0],
-                        views: 777,
-                        content: `
-                            <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
-                            <p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서만 보입니다.</p>
-                        `
-                    };
-                    postListCache.unshift(testPost); // 배열의 가장 앞에 테스트 게시물 추가
-                }
-                // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
-    
-            } catch (error) {
-                console.error("게시물 로딩 실패:", error);
-                postListView.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
-                
-                // ▼▼▼ API 로딩 실패 시에도 로컬 테스트 게시물은 보이도록 처리 ▼▼▼
-                const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-                if (isLocal && postListCache.length === 0) {
-                        const testPost = {
-                        id: 'local-test-post',
-                        title: '🚀 로컬 테스트용 게시물 (API 실패)',
-                        author: 'Live Server',
-                        date: new Date().toISOString().split('T')[0],
-                        views: 777,
-                        content: `
-                            <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
-                            <p>API 서버 연결에 실패했지만, 로컬 환경이므로 테스트용 게시물을 보여줍니다.</p>
-                        `
-                    };
-                    postListCache.unshift(testPost);
-                }
-                // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
+                    id: 'local-test-post',
+                    title: '🚀 로컬 테스트용 게시물 (API 실패)',
+                    author: 'Live Server',
+                    date: new Date().toISOString().split('T')[0],
+                    views: 777,
+                    content: `
+                        <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
+                        <p>API 서버 연결에 실패했지만, 로컬 환경이므로 테스트용 게시물을 보여줍니다.</p>
+                    `
+                };
+                postListCache.unshift(testPost);
             }
-    
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('id');
-    
-            if (postId) {
-                fetchPostDetail(postId);
-            } else {
-                displayShowcaseList(postListCache);
-            }
-        };
-    
-        backToListButton.addEventListener('click', () => {
-            history.pushState(null, '', 'blog.html');
+            // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('id');
+
+        if (postId) {
+            fetchPostDetail(postId);
+        } else {
             displayShowcaseList(postListCache);
-        });
-    
-        historyBackButton.addEventListener('click', () => history.back());
-        
-        window.addEventListener('popstate', (event) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('id');
-            if (postId) {
-                fetchPostDetail(postId);
-            } else {
-                displayShowcaseList(postListCache);
-            }
-        });
-    
-        renderContent();
+        }
+    };
+
+    // 상세 보기용 FAB 버튼 이벤트 리스너 추가 (수정)
+    fabBackToList.addEventListener('click', (e) => {
+        e.preventDefault();
+        history.pushState(null, '', 'blog.html');
+        displayShowcaseList(postListCache);
     });
-    </script>
+
+    fabHistoryBack.addEventListener('click', (e) => {
+        e.preventDefault();
+        history.back();
+    });
+    
+    window.addEventListener('popstate', (event) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('id');
+        if (postId) {
+            fetchPostDetail(postId);
+        } else {
+            displayShowcaseList(postListCache);
+        }
+    });
+
+    renderContent();
+});
+</script>
 </body>
 </html>
