@@ -220,7 +220,7 @@ main.content-area {
     .container {
         height: auto;
         padding-top: 25px;
-        padding-bottom: 25px;
+        padding-bottom: 15px;
         box-sizing: border-box;
     }
 
@@ -232,13 +232,13 @@ main.content-area {
     /* 페이지 제목의 하단 여백을 늘려 카드와의 간격을 확보합니다. */
     .page-title {
         font-size: 1.8rem;
-        margin: 0 0 30px 0;
+        margin: 0 0 10px 0;
     }
     
     /* --- 아래는 기존과 동일한 코드입니다 --- */
     .showcase-card { width: 85%; }
-    .card-title { font-size: 1.2rem; }
-    .card-preview { font-size: 0.85rem; }
+    .card-title { font-size: 1.1rem; }
+    .card-preview { font-size: 0.8rem; }
     .comment-input-group { flex-direction: column; }
     #post-detail-view { padding: 15px; }
 }
