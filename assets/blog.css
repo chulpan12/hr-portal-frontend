@@ -241,8 +241,8 @@ main.content-area {
     
     /* --- 아래는 기존과 동일한 코드입니다 --- */
     .showcase-card { width: 85%; }
-    .card-title { font-size: 0.9rem !important;} 
-    .card-preview { font-size: 0.7rem !important;} 
+    .card-title { font-size: 0.6rem !important;} 
+    .card-preview { font-size: 0.4rem !important;} 
     .comment-input-group { flex-direction: column; }
     #post-detail-view { padding: 15px; }
 }
