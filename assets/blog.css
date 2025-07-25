@@ -54,7 +54,7 @@ main.content-area {
 .page-title {
     font-size: 2.8rem;
     font-weight: 900;
-    margin: 20px 0 40px;
+    margin: 10px 0 40px;
     text-align: center;
     background: linear-gradient(45deg, #4f80c8, #7a54a8);
     -webkit-background-clip: text;
@@ -83,9 +83,9 @@ main.content-area {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     margin: auto;
-    width: 60%;
-    max-width: 550px;
-    height: 95%; /* 이 값은 부모 높이(#post-list-view)의 95%가 되므로 의도대로 작동합니다. */
+    width: 70%;
+    max-width: 650px;
+    height: 100%; /* 이 값은 부모 높이(#post-list-view)의 95%가 되므로 의도대로 작동합니다. */
     background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 16px;
@@ -216,7 +216,6 @@ main.content-area {
 }
 
 @media (max-width: 480px) {
-    .container { padding: 0 15px; margin: 20px auto; height: auto; } /* 모바일에서는 높이 자동 조절 */
     .page-title { font-size: 1.8rem; }
     .showcase-card { width: 85%; }
     .card-title { font-size: 1.2rem; }

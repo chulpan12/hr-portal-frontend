@@ -75,7 +75,6 @@
                 const imgMatch = post.content.match(/<img[^>]+src="([^">]+)"/);
                 const imageHtml = imgMatch ? `<img src="${imgMatch[1]}" alt="${post.title} 이미지" class="card-image">` : '<div class="card-image-placeholder"></div>';
     
-                // 🔽 1. '자세히 보기' 버튼 HTML 삭제
                 card.innerHTML = `
                     ${imageHtml}
                     <div class="card-content">
@@ -85,9 +84,7 @@
                     </div>
                 `;
                 
-                // 🔽 2. 클릭 이벤트를 버튼이 아닌 카드(card)에 직접 연결
                 card.addEventListener('click', () => {
-                    // 활성화된 카드가 아닐 경우 클릭 무시 (애니메이션 중 오류 방지)
                     if (!card.classList.contains('active')) return;
                     
                     history.pushState({ id: post.id }, '', `?id=${post.id}`);
@@ -130,7 +127,31 @@
     
         // --- START: 상세/댓글 로직 (수정 없음) ---
         const fetchPostDetail = async (id) => {
-                try {
+            // ▼▼▼ 로컬 테스트 게시물일 경우, 가짜 데이터로 상세 페이지를 보여줌 ▼▼▼
+            if (id === 'local-test-post') {
+                const testPost = {
+                    id: 'local-test-post',
+                    title: '🚀 로컬 테스트용 게시물',
+                    author: 'Live Server',
+                    date: new Date().toISOString().split('T')[0],
+                    views: 777,
+                    content: `
+                        <img src="https://via.placeholder.com/800x400.png/333/eee?text=Test+Image" alt="테스트 이미지" style="width:100%; border-radius: 8px;">
+                        <p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서 접속했을 때만 나타나는 테스트용 데이터입니다.</p>
+                        <p>서버에 배포된 실제 환경에서는 보이지 않습니다. CSS 스타일링, 카드 넘김, 상세 페이지 진입 등의 기능을 테스트하는 데 사용하세요.</p>
+                        <ul>
+                            <li>반응형 레이아웃 확인</li>
+                            <li>카드 애니메이션 테스트</li>
+                            <li>상세 페이지 라우팅 점검</li>
+                        </ul>
+                    `
+                };
+                displayPostDetail(testPost);
+                return;
+            }
+            // ▲▲▲ 로컬 테스트 게시물 로직 ▲▲▲
+            
+            try {
                 const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
                 if (!response.ok) throw new Error('Post not found');
                 const post = await response.json();
@@ -179,7 +200,6 @@
                     fetchPostDetail(navId);
                 });
             });
-            // (이하 댓글 관련 함수들은 기존과 동일)
         };
         const createTextPreview = (htmlString, maxLength) => {
             const tempDiv = document.createElement('div');
@@ -195,9 +215,46 @@
                 const response = await fetch(`${API_BASE_URL}/api/blog/posts`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 postListCache = await response.json();
+                
+                // ▼▼▼ 로컬 환경일 때 테스트 게시물을 추가하는 로직 ▼▼▼
+                const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+                if (isLocal) {
+                    const testPost = {
+                        id: 'local-test-post',
+                        title: '🚀 로컬 테스트용 게시물',
+                        author: 'Live Server',
+                        date: new Date().toISOString().split('T')[0],
+                        views: 777,
+                        content: `
+                            <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
+                            <p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서만 보입니다.</p>
+                        `
+                    };
+                    postListCache.unshift(testPost); // 배열의 가장 앞에 테스트 게시물 추가
+                }
+                // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
+    
             } catch (error) {
+                console.error("게시물 로딩 실패:", error);
                 postListView.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
-                return;
+                
+                // ▼▼▼ API 로딩 실패 시에도 로컬 테스트 게시물은 보이도록 처리 ▼▼▼
+                const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+                if (isLocal && postListCache.length === 0) {
+                        const testPost = {
+                        id: 'local-test-post',
+                        title: '🚀 로컬 테스트용 게시물 (API 실패)',
+                        author: 'Live Server',
+                        date: new Date().toISOString().split('T')[0],
+                        views: 777,
+                        content: `
+                            <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
+                            <p>API 서버 연결에 실패했지만, 로컬 환경이므로 테스트용 게시물을 보여줍니다.</p>
+                        `
+                    };
+                    postListCache.unshift(testPost);
+                }
+                // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
             }
     
             const urlParams = new URLSearchParams(window.location.search);
