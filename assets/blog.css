@@ -216,17 +216,21 @@ main.content-area {
 }
 
 @media (max-width: 480px) {
+    /** 추가: 내용을 수직 중앙이 아닌 상단에 정렬하도록 변경 **/
+    body {
+        align-items: flex-start;
+    }
     /* 컨테이너의 상하 여백을 늘려 전체적으로 숨 쉴 공간을 확보합니다. */
     .container {
         height: auto;
-        padding-top: 25px;
+        padding-top: 15px;
         padding-bottom: 15px;
         box-sizing: border-box;
     }
 
     /* 카드의 높이를 75vh로 줄여 하단 버튼과의 충돌을 방지합니다. */
     #post-list-view {
-        height: 65vh;
+        height: 75vh;
     }
 
     /* 페이지 제목의 하단 여백을 늘려 카드와의 간격을 확보합니다. */
@@ -238,7 +242,7 @@ main.content-area {
     /* --- 아래는 기존과 동일한 코드입니다 --- */
     .showcase-card { width: 85%; }
     .card-title { font-size: 0.9rem; }
-    .card-preview { font-size: 0.7rem; }
+    .card-preview { font-size: 0.6rem; }
     .comment-input-group { flex-direction: column; }
     #post-detail-view { padding: 15px; }
 }
