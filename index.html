@@ -194,57 +194,58 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- 방문자 수 로드 로직 (수정 없음, CORS 에러는 로컬에서 정상) ---
+            // --- 방문자 수 로드 로직 (CORS 에러 처리 강화) ---
             const visitorCountElement = document.getElementById('visitor-count');
             const API_ENDPOINT = 'https://api.dreamofenc.com/api/blog/site-info';
 
             const fetchVisitorCount = async () => {
                 try {
                     const response = await fetch(API_ENDPOINT);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const data = await response.json();
-                    if (visitorCountElement) visitorCountElement.textContent = data.total_visitors.toLocaleString();
+                    if (visitorCountElement) {
+                        visitorCountElement.textContent = data.total_visitors.toLocaleString();
+                    }
                 } catch (error) {
+                    // CORS 에러 등 fetch 실패 시 사용자에게 'N/A'를 보여줌
                     console.error('방문자 수 로드 실패 (CORS 문제일 수 있습니다):', error);
-                    if (visitorCountElement) visitorCountElement.textContent = 'N/A';
+                    if (visitorCountElement) {
+                        visitorCountElement.textContent = 'N/A';
+                    }
                 }
             };
             fetchVisitorCount();
 
-            // --- ✨ [수정] 애니메이션 로직 (target="_blank" 처리 추가) ---
+            // --- 카드 클릭 애니메이션 로직 ---
             const header = document.querySelector('header');
             const cards = document.querySelectorAll('.card');
 
             cards.forEach(card => {
                 card.addEventListener('click', (e) => {
-                    e.preventDefault(); // 기본 링크 이동 기능 중지
+                    // 링크의 기본 동작(즉시 이동)을 막습니다.
+                    e.preventDefault();
 
                     const destinationUrl = card.href;
-                    // 클릭된 링크가 새 탭에서 열리는 링크인지 확인
-                    const isTargetBlank = card.target === '_blank';
 
-                    // 다른 요소들에 애니메이션 클래스 추가
+                    // 헤더와 다른 카드들에 애니메이션 클래스를 추가합니다.
                     if (header) {
-                        header.classList.add('fade-out');
+                      header.classList.add('fade-out');
                     }
+                    
                     cards.forEach(otherCard => {
                         if (otherCard !== card) {
                             otherCard.classList.add('fade-out');
                         }
                     });
 
-                    // 클릭된 카드에 확장 애니메이션 클래스 추가
+                    // 클릭된 카드에 확장 애니메이션 클래스를 추가합니다.
                     card.classList.add('explode');
                     
-                    // 애니메이션 시간(600ms) 후 페이지 이동
+                    // 애니메이션이 끝날 시간(600ms)을 기다린 후, 페이지를 이동시킵니다.
                     setTimeout(() => {
-                        if (isTargetBlank) {
-                            // 새 탭 링크인 경우, 새 탭으로 열기
-                            window.open(destinationUrl, '_blank');
-                        } else {
-                            // 일반 링크인 경우, 현재 탭에서 이동
-                            window.location.href = destinationUrl;
-                        }
+                        window.location.href = destinationUrl;
                     }, 600);
                 });
             });
