@@ -45,9 +45,7 @@ main.content-area {
     background-color: #1e1e1e;
     border-radius: 12px;
     border: 1px solid #333;
-    /* 상세 보기 시 스크롤이 필요할 수 있으므로 높이 추가 */
-    height: 100%;
-    overflow-y: auto;
+    /* 내부 스크롤 제거하고 전체 페이지 스크롤 사용 */
     box-sizing: border-box;
 }
 
