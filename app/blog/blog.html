@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamofEnC - Blog</title>
-    <link rel="stylesheet" href="../../assets/blog.css?v=2.4">
+    <link rel="stylesheet" href="../../assets/blog.css?v=2.41">
 </head>
 <body>
     <div class="container">
@@ -73,6 +73,62 @@ window.editComment = async (commentId, currentContent) => {
         console.error('댓글 수정 오류:', error);
         alert('댓글 수정 중 오류가 발생했습니다.');
     }
+};
+
+// 댓글 목록 로드 함수 (전역)
+window.loadComments = async (postId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}/comments`);
+        if (response.ok) {
+            const comments = await response.json();
+            displayComments(comments);
+        } else {
+            console.error('댓글 로드 실패:', response.status);
+            displayComments([]);
+        }
+    } catch (error) {
+        console.error('댓글 로드 오류:', error);
+        displayComments([]);
+    }
+};
+
+// 댓글 목록 표시 함수 (전역)
+window.displayComments = (comments) => {
+    const commentsList = document.getElementById('comments-list');
+    if (!commentsList) return;
+    
+    if (!comments || comments.length === 0) {
+        commentsList.innerHTML = '<p style="color: #666; text-align: center;">아직 댓글이 없습니다.</p>';
+        return;
+    }
+    
+    commentsList.innerHTML = comments.map(comment => {
+        // ISO 형식의 날짜를 한국 시간으로 변환
+        const date = new Date(comment.date);
+        const formattedDate = date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+                        return `
+                    <div class="comment-item" data-comment-id="${comment.id}">
+                        <div class="comment-header">
+                            <span class="comment-author">${comment.author}</span>
+                            <div class="comment-meta">
+                                <span class="comment-date">${formattedDate}</span>
+                                <span class="comment-actions">
+                                    <a href="#" onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}'); return false;">수정</a> | 
+                                    <a href="#" onclick="deleteComment(${comment.id}); return false;">삭제</a>
+                                </span>
+                            </div>
+                        </div>
+                        <p class="comment-content">${comment.content}</p>
+                    </div>
+                `;
+    }).join('');
 };
 
 // 댓글 삭제 함수 (전역)
@@ -333,59 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // 댓글 목록 로드
-    const loadComments = async (postId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}/comments`);
-            if (response.ok) {
-                const comments = await response.json();
-                displayComments(comments);
-            } else {
-                console.error('댓글 로드 실패:', response.status);
-                displayComments([]);
-            }
-        } catch (error) {
-            console.error('댓글 로드 오류:', error);
-            displayComments([]);
-        }
-    };
-    
-    // 댓글 목록 표시
-    const displayComments = (comments) => {
-        const commentsList = document.getElementById('comments-list');
-        if (!commentsList) return;
-        
-        if (!comments || comments.length === 0) {
-            commentsList.innerHTML = '<p style="color: #666; text-align: center;">아직 댓글이 없습니다.</p>';
-            return;
-        }
-        
-        commentsList.innerHTML = comments.map(comment => {
-            // ISO 형식의 날짜를 한국 시간으로 변환
-            const date = new Date(comment.date);
-            const formattedDate = date.toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            return `
-                <div class="comment-item" data-comment-id="${comment.id}">
-                    <div class="comment-header">
-                        <span class="comment-author">${comment.author}</span>
-                        <span class="comment-date">${formattedDate}</span>
-                    </div>
-                    <p class="comment-content">${comment.content}</p>
-                    <div class="comment-actions">
-                        <button class="comment-edit-btn" onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">수정</button>
-                        <button class="comment-delete-btn" onclick="deleteComment(${comment.id})">삭제</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    };
+
     
 
     

@@ -308,7 +308,7 @@ main.content-area {
 .comment-item .comment-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 10px;
 }
 
@@ -318,50 +318,37 @@ main.content-area {
     font-size: 0.95rem;
 }
 
+.comment-item .comment-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
 .comment-item .comment-date {
     color: #666;
     font-size: 0.8rem;
 }
 
+.comment-item .comment-actions {
+    font-size: 0.75rem;
+}
+
+.comment-item .comment-actions a {
+    color: #999;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.comment-item .comment-actions a:hover {
+    color: #ccc;
+}
+
 .comment-item .comment-content {
     color: #c0c0c0;
     line-height: 1.6;
-    margin: 0 0 15px 0;
+    margin: 0;
     font-size: 0.9rem;
-}
-
-.comment-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.comment-edit-btn,
-.comment-delete-btn {
-    padding: 5px 12px;
-    font-size: 0.8rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.comment-edit-btn {
-    background-color: #4f80c8;
-    color: white;
-}
-
-.comment-edit-btn:hover {
-    background-color: #3a6bb8;
-}
-
-.comment-delete-btn {
-    background-color: #dc3545;
-    color: white;
-}
-
-.comment-delete-btn:hover {
-    background-color: #c82333;
 }
 
 /* --- 모바일 반응형 --- */
