@@ -199,6 +199,39 @@ main.content-area {
     margin-top: 20px;
 }
 
+/* --- 댓글 스타일 --- */
+.back-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 10px;
+}
+
+.back-button:hover {
+    background-color: #333;
+    border-color: #666;
+}
+
+.back-button.home {
+    background: linear-gradient(45deg, #4f80c8, #7a54a8);
+    border: none;
+    color: white;
+}
+
+.back-button.history {
+    background: linear-gradient(45deg, #6c757d, #495057);
+    border: none;
+    color: white;
+}
+
 /* --- 모바일 반응형 --- */
 @media (max-width: 768px) {
     .page-title { font-size: 2.2rem; }

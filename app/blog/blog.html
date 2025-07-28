@@ -173,6 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 컨테이너 클래스 제어 (상세 보기 모드)
         document.querySelector('.container').classList.add('detail-view');
+        
+        // 현재 게시물 ID 설정
+        currentPostId = post.id;
 
         const currentPostIndex = postListCache.findIndex(p => p.id === post.id);
         const prevPost = currentPostIndex > 0 ? postListCache[currentPostIndex - 1] : null;
@@ -189,7 +192,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="post-content">${post.content}</div>
             <hr style="margin: 40px 0 30px; border-color: #333;">
             <div id="comments-section">
-                </div>`;
+                <h3 style="margin-bottom: 20px;">댓글</h3>
+                <div id="comments-list"></div>
+                <form id="comment-form" style="margin-top: 20px;">
+                    <div class="comment-input-group" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="comment-author" placeholder="작성자" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;">
+                        <input type="password" id="comment-password" placeholder="비밀번호" required style="flex: 1; padding: 10px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px;">
+                    </div>
+                    <textarea id="comment-content" placeholder="댓글을 입력하세요..." required style="width: 100%; min-height: 80px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
+                    <button type="submit" class="back-button" style="margin-top: 10px;">댓글 작성</button>
+                </form>
+            </div>`;
         
         postDetailView.querySelectorAll('.nav-button[data-nav-id]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -199,7 +212,97 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchPostDetail(navId);
             });
         });
+        
+        // 댓글 폼 이벤트 리스너 추가
+        const commentForm = postDetailView.querySelector('#comment-form');
+        if (commentForm) {
+            commentForm.addEventListener('submit', handleCommentSubmit);
+        }
+        
+        // 댓글 목록 로드
+        loadComments(post.id);
     };
+    
+    // 댓글 제출 처리
+    const handleCommentSubmit = async (e) => {
+        e.preventDefault();
+        
+        const author = document.getElementById('comment-author').value;
+        const password = document.getElementById('comment-password').value;
+        const content = document.getElementById('comment-content').value;
+        
+        if (!author || !password || !content) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/blog/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    postId: currentPostId,
+                    author: author,
+                    password: password,
+                    content: content
+                })
+            });
+            
+            if (response.ok) {
+                // 폼 초기화
+                document.getElementById('comment-author').value = '';
+                document.getElementById('comment-password').value = '';
+                document.getElementById('comment-content').value = '';
+                
+                // 댓글 목록 새로고침
+                loadComments(currentPostId);
+                alert('댓글이 작성되었습니다.');
+            } else {
+                alert('댓글 작성에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('댓글 작성 오류:', error);
+            alert('댓글 작성 중 오류가 발생했습니다.');
+        }
+    };
+    
+    // 댓글 목록 로드
+    const loadComments = async (postId) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}/comments`);
+            if (response.ok) {
+                const comments = await response.json();
+                displayComments(comments);
+            }
+        } catch (error) {
+            console.error('댓글 로드 오류:', error);
+        }
+    };
+    
+    // 댓글 목록 표시
+    const displayComments = (comments) => {
+        const commentsList = document.getElementById('comments-list');
+        if (!commentsList) return;
+        
+        if (!comments || comments.length === 0) {
+            commentsList.innerHTML = '<p style="color: #666; text-align: center;">아직 댓글이 없습니다.</p>';
+            return;
+        }
+        
+        commentsList.innerHTML = comments.map(comment => `
+            <div class="comment-item" style="border-bottom: 1px solid #333; padding: 15px 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <strong style="color: #fff;">${comment.author}</strong>
+                    <span style="color: #666; font-size: 0.8rem;">${comment.date}</span>
+                </div>
+                <p style="color: #c0c0c0; line-height: 1.5; margin: 0;">${comment.content}</p>
+            </div>
+        `).join('');
+    };
+    
+    let currentPostId = null;
     const createTextPreview = (htmlString, maxLength) => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlString;
