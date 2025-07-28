@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // FAB 컨테이너 가시성 제어 (수정)
         fabListContainer.style.display = 'flex';
         fabDetailContainer.style.display = 'none';
+        
+        // 컨테이너 클래스 제어 (쇼케이스 모드)
+        document.querySelector('.container').classList.remove('detail-view');
 
         postListView.innerHTML = `
             <div id="showcase-container" class="showcase-container">
@@ -167,6 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fabListContainer.style.display = 'none';
         fabDetailContainer.style.display = 'flex';
         fabEditPost.href = `editor_login.html?id=${post.id}`; // 수정 버튼 링크 동적 할당
+        
+        // 컨테이너 클래스 제어 (상세 보기 모드)
+        document.querySelector('.container').classList.add('detail-view');
 
         const currentPostIndex = postListCache.findIndex(p => p.id === post.id);
         const prevPost = currentPostIndex > 0 ? postListCache[currentPostIndex - 1] : null;

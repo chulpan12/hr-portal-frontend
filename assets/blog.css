@@ -12,7 +12,7 @@ html, body {
     color: #e0e0e0;
     background-color: #121212;
     display: flex; /* 추가: .container를 수직 중앙 정렬하기 위해 사용 */
-    align-items: center;
+    align-items: flex-start; /* 수정: 상단 정렬로 변경하여 전체 스크롤 허용 */
     justify-content: center;
 }
 
@@ -22,7 +22,7 @@ html, body {
     padding: 0 20px;
     width: 100%;
     box-sizing: border-box;
-    height: 95vh; /* 변경: 뷰포트 높이의 95%를 차지하도록 설정 */
+    height: 95vh; /* 복원: 쇼케이스 카드가 보이도록 높이 복원 */
     display: flex; /* 추가: 자식 요소를 정렬하기 위해 flex 사용 */
     flex-direction: column; /* 추가: 자식 요소를 세로로 쌓음 (제목 -> 메인 컨텐츠) */
 }
@@ -30,7 +30,7 @@ html, body {
 main.content-area {
     width: 100%;
     flex-grow: 1; /* 추가: 제목을 제외한 나머지 공간을 모두 차지하도록 설정 */
-    min-height: 0; /* 추가: flex 아이템 크기가 비정상적으로 커지는 것을 방지 */
+    min-height: 0; /* 복원: flex 아이템 크기가 비정상적으로 커지는 것을 방지 */
 }
 
 #post-list-view {
@@ -45,8 +45,14 @@ main.content-area {
     background-color: #1e1e1e;
     border-radius: 12px;
     border: 1px solid #333;
-    /* 내부 스크롤 제거하고 전체 페이지 스크롤 사용 */
+    /* 플로팅 버튼이 있으므로 내부 스크롤 제거하고 전체 페이지 스크롤 사용 */
     box-sizing: border-box;
+}
+
+/* 상세 페이지일 때 컨테이너 높이 제한 해제 */
+.container.detail-view {
+    height: auto !important;
+    min-height: 95vh;
 }
 
 .page-title {
