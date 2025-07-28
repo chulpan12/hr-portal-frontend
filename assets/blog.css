@@ -279,11 +279,20 @@ main.content-area {
     line-height: 1.5;
     resize: vertical;
     transition: border-color 0.2s ease;
+    margin-bottom: 15px;
 }
 
 #comment-content:focus {
     outline: none;
     border-color: #4f80c8;
+}
+
+#comment-form {
+    margin-top: 20px;
+}
+
+#comment-form .back-button {
+    margin-top: 10px;
 }
 
 .comment-item {
@@ -317,8 +326,42 @@ main.content-area {
 .comment-item .comment-content {
     color: #c0c0c0;
     line-height: 1.6;
-    margin: 0;
+    margin: 0 0 15px 0;
     font-size: 0.9rem;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.comment-edit-btn,
+.comment-delete-btn {
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.comment-edit-btn {
+    background-color: #4f80c8;
+    color: white;
+}
+
+.comment-edit-btn:hover {
+    background-color: #3a6bb8;
+}
+
+.comment-delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.comment-delete-btn:hover {
+    background-color: #c82333;
 }
 
 /* --- 모바일 반응형 --- */
