@@ -247,10 +247,12 @@ main.content-area {
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
 .comment-input-group input {
     flex: 1;
+    min-width: 0;
     padding: 12px;
     background-color: #1e1e1e;
     color: #e0e0e0;
@@ -258,6 +260,7 @@ main.content-area {
     border-radius: 8px;
     font-size: 0.9rem;
     transition: border-color 0.2s ease;
+    box-sizing: border-box;
 }
 
 .comment-input-group input:focus {
@@ -399,6 +402,29 @@ main.content-area {
     .showcase-card { width: 85%; }
     .card-title { font-size: 0.6rem !important;} 
     .card-preview { font-size: 0.4rem !important;} 
-    .comment-input-group { flex-direction: column; }
+    .comment-input-group { 
+        flex-direction: column; 
+        gap: 8px;
+    }
+    .comment-input-group input {
+        flex: none;
+        width: 100%;
+        min-width: 100%;
+    }
     #post-detail-view { padding: 15px; }
+}
+
+/* 매우 작은 화면에서의 추가 처리 */
+@media (max-width: 360px) {
+    .comment-input-group {
+        gap: 6px;
+    }
+    .comment-input-group input {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+    #comment-content {
+        min-height: 80px;
+        font-size: 0.85rem;
+    }
 }
