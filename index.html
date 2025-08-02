@@ -111,6 +111,87 @@
                 transform: translateY(0);
             }
         }
+
+        /* ✨ [추가] 도넛 메뉴 스타일 */
+        .doughnut-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .doughnut-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .doughnut-container {
+            position: relative;
+            width: 500px; /* 도넛 메뉴의 전체 크기 */
+            height: 500px;
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .doughnut-overlay.visible .doughnut-container {
+            transform: scale(1);
+        }
+
+        .tool-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120px; /* 도넛 조각 크기 */
+            height: 120px;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #d1d5db;
+            font-weight: 600;
+            text-decoration: none;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s, border-color 0.3s;
+        }
+        
+        .tool-item:hover {
+            background-color: #374151;
+            border-color: #4f46e5;
+            color: white;
+        }
+        
+        .tool-item-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 8px;
+        }
+        
+        #close-doughnut {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 40px;
+            height: 40px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: transform 0.3s, color 0.3s;
+        }
+        #close-doughnut:hover {
+            transform: rotate(90deg);
+            color: white;
+        }
+
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
@@ -129,102 +210,185 @@
             </p>
         </header>
 
-        <!-- ✨ [수정] 그리드 레이아웃 변경 -->
+        <!-- 3열 2행 그리드 레이아웃 -->
         <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <!-- Tile 1: 바둑 메타버스 (세로로 길게) -->
-            <!-- ✨ [수정] lg:row-span-2 추가, aspect ratio 제거, 콘텐츠 크기 복원 -->
-            <a href="https://baduk.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group lg:row-span-2 aspect-[4/5]" style="animation-delay: 100ms;">
+            <!-- Tile 1: 바둑 메타버스 -->
+            <a href="https://baduk.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 100ms;">
                 <div class="image-clipper">
-                    <img src="./assets/baduk.png" alt="바둑 메타버스 이미지" class="card-image">
+                    <img src="./assets/baduk.png" alt="바둑 메타버스 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Baduk';">
                 </div>
                 <div class="card-content">
                     <h2 class="text-3xl font-bold text-white">바둑 메타버스</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">가상 공간에서 직원들과 함께 즐기는<br> 온라인 바둑과 오목, AI와의 대국.<br>소통을 경험하고 전략적 사고를 강화해보세요.</p>
+                    <p class="mt-2 text-gray-300 max-w-xs">가상 공간에서 즐기는 온라인 바둑과 오목.<br>AI와의 대국을 통해 전략적 사고를 강화해보세요.</p>
                     <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
                 </div>
             </a>
 
-            <!-- Tile 2: 횡스크롤 퀴즈게임 -->
-            <a href="quiz_info.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 200ms;">
+            <!-- Tile 2: 도구 모음 (✨ [수정] 메뉴 트리거로 변경) -->
+            <div id="tools-trigger" class="card-reveal card rounded-2xl group aspect-[4/5] cursor-pointer" style="animation-delay: 200ms;">
                 <div class="image-clipper">
-                    <img src="./assets/game.png" alt="횡스크롤 퀴즈게임 이미지" class="card-image">
+                    <img src="./assets/tools.png" alt="도구 모음 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Tools';">
                 </div>
                 <div class="card-content">
-                    <h2 class="text-2xl font-bold text-white">횡스크롤 퀴즈게임</h2>
+                    <h2 class="text-3xl font-bold text-white">도구 모음</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">업무 효율을 높여주는 다양한 AI 기반 도구들.<br>반복적인 작업을 자동화하고 시간을 절약하세요.</p>
+                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 메뉴 열기</span>
+                </div>
+            </div>
+
+            <!-- Tile 3: 횡스크롤 퀴즈게임 -->
+            <a href="quiz_info.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 300ms;">
+                <div class="image-clipper">
+                    <img src="./assets/game.png" alt="횡스크롤 퀴즈게임 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Game';">
+                </div>
+                <div class="card-content">
+                    <h2 class="text-3xl font-bold text-white">퀴즈 어드벤처</h2>
                     <p class="mt-2 text-gray-300 max-w-xs">캐릭터를 조종하며 즐기는 신개념 퀴즈 게임.<br>영어 및 다양한 시사상식을 테스트해보세요.</p>
-                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
                 </div>
             </a>
 
-            <!-- Tile 3: 기술 블로그 -->
-            <a href="./app/blog/blog.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 300ms;">
+            <!-- Tile 4: 기술 블로그 -->
+            <a href="./app/blog/blog.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 400ms;">
                 <div class="image-clipper">
-                    <img src="./assets/blog.png" alt="기술 블로그 이미지" class="card-image">
+                    <img src="./assets/blog.png" alt="기술 블로그 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Blog';">
                 </div>
                 <div class="card-content">
-                    <h2 class="text-2xl font-bold text-white">기술 블로그</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">AI활용한 컨텐츠 개발, 업무자동화에 대한<br> 제작자의 기술적 인사이트를 공유합니다.</p>
-                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                    <h2 class="text-3xl font-bold text-white">기술 블로그</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">AI활용 컨텐츠 개발, 업무자동화에 대한<br> 제작자의 기술적 인사이트를 공유합니다.</p>
+                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
                 </div>
             </a>
 
-            <!-- Tile 4: 사내 위키 -->
-            <a href="https://wiki.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 400ms;">
+            <!-- Tile 5: 사내 위키 -->
+            <a href="https://wiki.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 500ms;">
                 <div class="image-clipper">
-                    <img src="./assets/wiki.png" alt="사내 위키 이미지" class="card-image">
+                    <img src="./assets/wiki.png" alt="사내 위키 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Wiki';">
                 </div>
                 <div class="card-content">
-                    <h2 class="text-2xl font-bold text-white">사내 위키</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">AI, IT기술, 통계지식을 비롯한<br> HR지원실의 지식과 정보를<br> 축적하고 공유하는 협업 시스템.</p>
-                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                    <h2 class="text-3xl font-bold text-white">사내 위키</h2>
+                    <p class="mt-2 text-gray-300 max-w-xs">AI, IT기술, 통계지식을 비롯한 지식과 정보를<br> 축적하고 공유하는 협업 시스템입니다.</p>
+                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
                 </div>
             </a>
 
-            <!-- Tile 5: AI 특강 -->
-            <a href="lecture.html" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 500ms;">
+            <!-- Tile 6: AI 특강 -->
+            <a href="lecture.html" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 600ms;">
                 <div class="image-clipper">
-                    <img src="./assets/pt.png" alt="AI 특강 이미지" class="card-image">
+                    <img src="./assets/pt.png" alt="AI 특강 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Lecture';">
                 </div>
                 <div class="card-content">
-                    <h2 class="text-2xl font-bold text-white">AI 특강</h2>
+                    <h2 class="text-3xl font-bold text-white">AI 특강</h2>
                     <p class="mt-2 text-gray-300 max-w-xs">비전문가의 AI 기술 활용을 위한<br> 제작자의 영혼이 담긴 특별 강의 자료.</p>
-                    <span class="mt-4 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
                 </div>
             </a>
 
         </main>
     </div>
 
+    <!-- ✨ [추가] 도넛 메뉴 HTML -->
+    <div id="doughnut-menu" class="doughnut-overlay">
+        <!-- 닫기 버튼 -->
+        <svg id="close-doughnut" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+
+        <div class="doughnut-container">
+            <!-- 
+                새로운 도구를 추가하려면 아래와 같이 a 태그를 복사하여 붙여넣고
+                href, 아이콘, 텍스트만 수정하면 됩니다.
+                스크립트가 자동으로 위치와 애니메이션을 계산합니다.
+            -->
+            <a href="chart_maker.html" class="tool-item">
+                <!-- 아이콘 변경: 직관적인 막대그래프 아이콘으로 교체 -->
+                <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                </svg>
+                <span>차트생성기</span>
+            </a>
+            <!-- <a href="tool2.html" class="tool-item">
+                <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                <span>데이터 분석</span>
+            </a>
+            <a href="tool3.html" class="tool-item">
+                <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
+                <span>코드 생성</span>
+            </a>
+            <a href="tool4.html" class="tool-item">
+                 <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" /></svg>
+                <span>보고서 작성</span>
+            </a>
+             <a href="tool5.html" class="tool-item">
+                <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                <span>AI 챗봇</span>
+            </a> -->
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // 기존 방문자 수 로직
             const visitorCountElement = document.getElementById('visitor-count');
-            // API 엔드포인트는 실제 환경에 맞게 설정해야 합니다.
-            // 예시: const API_ENDPOINT = 'https://api.dreamofenc.com/site-info';
-            // 로컬 테스트나 프록시를 사용하는 경우 '/api/blog/site-info' 사용
             const API_ENDPOINT = 'https://api.dreamofenc.com/api/blog/site-info';
 
             const fetchVisitorCount = async () => {
                 try {
                     const response = await fetch(API_ENDPOINT);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const data = await response.json();
-                    const visitorCount = data.total_visitors;
-
                     if (visitorCountElement) {
-                        visitorCountElement.textContent = visitorCount.toLocaleString();
+                        visitorCountElement.textContent = data.total_visitors.toLocaleString();
                     }
                 } catch (error) {
                     console.error('Error fetching visitor count:', error);
-                    if (visitorCountElement) {
-                        visitorCountElement.textContent = 'N/A';
-                    }
+                    if (visitorCountElement) visitorCountElement.textContent = 'N/A';
                 }
             };
-
             fetchVisitorCount();
+
+            // ✨ [추가] 도넛 메뉴 스크립트
+            const toolsTrigger = document.getElementById('tools-trigger');
+            const doughnutMenu = document.getElementById('doughnut-menu');
+            const closeButton = document.getElementById('close-doughnut');
+            const toolItems = doughnutMenu.querySelectorAll('.tool-item');
+            const radius = 200; // 도넛 반지름 (px)
+
+            const openMenu = () => {
+                doughnutMenu.classList.add('visible');
+                const angleStep = 360 / toolItems.length;
+
+                toolItems.forEach((item, index) => {
+                    const angle = angleStep * index - 90; // -90도 부터 시작 (상단)
+                    const x = radius * Math.cos(angle * Math.PI / 180);
+                    const y = radius * Math.sin(angle * Math.PI / 180);
+                    
+                    // 순차적 애니메이션을 위한 딜레이
+                    item.style.transitionDelay = `${index * 50}ms`;
+                    
+                    // 최종 위치로 이동
+                    item.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1)`;
+                });
+            };
+
+            const closeMenu = () => {
+                doughnutMenu.classList.remove('visible');
+                toolItems.forEach((item) => {
+                    // 딜레이 초기화 및 중앙으로 복귀
+                    item.style.transitionDelay = '0ms';
+                    item.style.transform = 'translate(-50%, -50%) scale(0)';
+                });
+            };
+
+            toolsTrigger.addEventListener('click', openMenu);
+            closeButton.addEventListener('click', closeMenu);
+            // 배경 클릭 시 닫기
+            doughnutMenu.addEventListener('click', (e) => {
+                if (e.target === doughnutMenu) {
+                    closeMenu();
+                }
+            });
         });
     </script>
 
