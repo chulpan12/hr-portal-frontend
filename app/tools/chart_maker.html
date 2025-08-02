@@ -164,7 +164,7 @@
                 <!-- 액션 버튼 -->
                 <div class="mt-8 grid grid-cols-2 gap-4">
                     <button id="generateChartBtn" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0L8 5.45A3.5 3.5 0 005.45 8L3.17 8.51c-1.56.38-1.56 2.6 0 2.98L5.45 12A3.5 3.5 0 008 14.55l.51 2.28c.38 1.56 2.6 1.56 2.98 0l.51-2.28A3.5 3.5 0 0014.55 12l2.28-.51c1.56-.38 1.56-2.6 0-2.98l-2.28-.51A3.5 3.5 0 0012 5.45l-.51-2.28zm-2.56 9.34a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
                         <span>생성</span>
                     </button>
                     <button id="downloadChartBtn" class="w-full flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
@@ -200,9 +200,24 @@
                 }
             }
         };
+        
+        // --- Custom Plugin for Background Color on Download ---
+        const backgroundPlugin = {
+            id: 'customCanvasBackgroundColor',
+            beforeDraw: (chart, args, options) => {
+                if (options.color) {
+                    const {ctx} = chart;
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = options.color;
+                    ctx.fillRect(0, 0, chart.width, chart.height);
+                    ctx.restore();
+                }
+            }
+        };
 
         // --- Setup ---
-        Chart.register(ChartDataLabels, elementShadowPlugin);
+        Chart.register(ChartDataLabels, elementShadowPlugin, backgroundPlugin);
         const dom = {
             chartType: document.getElementById('chartType'),
             chartData: document.getElementById('chartData'),
@@ -248,7 +263,7 @@
         });
 
         // --- Core Functions ---
-        function generateChart(isDownloading = false) {
+        function generateChart(isDownloading = false, downloadBackgroundColor = null) {
             if (myChartInstance) { myChartInstance.destroy(); }
 
             const state = {
@@ -263,7 +278,8 @@
                 showLabels: dom.dataLabels.checked,
                 hideGrid: dom.hideGrid.checked,
                 isLight: document.documentElement.classList.contains('light'),
-                isDownloading: isDownloading
+                isDownloading: isDownloading,
+                downloadBackgroundColor: downloadBackgroundColor
             };
             
             const { labels, datasets } = parseData(dom.chartData.value, state);
@@ -380,6 +396,9 @@
                         blur: 15,
                         offsetX: 5,
                         offsetY: 5
+                    },
+                    customCanvasBackgroundColor: {
+                        color: state.downloadBackgroundColor,
                     }
                 },
                 scales: {
@@ -390,7 +409,10 @@
         }
 
         function downloadChart() {
-            generateChart(true);
+            const isLight = document.documentElement.classList.contains('light');
+            const bgColor = isLight ? '#f9fafb' : '#111827';
+            generateChart(true, bgColor);
+            
             setTimeout(() => {
                 if (myChartInstance) {
                     const link = document.createElement('a');
@@ -400,7 +422,7 @@
                 } else {
                     alert('먼저 차트를 생성해주세요.');
                 }
-                generateChart(false);
+                generateChart(false, null);
             }, 100);
         }
 
