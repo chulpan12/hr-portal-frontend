@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설문조사 분석기 Pro</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Korean -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --input-bg: #374151;
+            --input-border: #4b5563;
+        }
+        html.light {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --input-bg: #f3f4f6;
+            --input-border: #d1d5db;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .control-panel label { font-weight: 600; }
+        .control-panel input, .control-panel textarea {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-primary);
+        }
+        .control-panel input:focus, .control-panel textarea:focus {
+            --tw-ring-color: #f59e0b;
+        }
+        .placeholder-custom::placeholder { color: var(--text-secondary); }
+        .result-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--input-border);
+        }
+        .loader {
+            border-top-color: #f59e0b;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-10 relative">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
+                설문조사 분석기 Pro
+            </h1>
+            <p class="text-lg mt-3" style="color: var(--text-secondary);">수많은 주관식 답변 속에서 핵심 주제와 여론을 발견하세요.</p>
+            
+            <!-- Theme Toggle -->
+            <div class="absolute top-0 right-0">
+                <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
+                    <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- 왼쪽: 컨트롤 패널 -->
+            <div class="lg:col-span-1 backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel flex flex-col" style="background-color: var(--bg-panel); border-color: var(--border-color);">
+                <div class="flex-grow flex flex-col">
+                    <div class="flex justify-between items-end mb-2">
+                        <label for="textInput" class="text-sm" style="color: var(--text-secondary);">주관식 답변들을 붙여넣으세요</label>
+                        <!-- ✨ [추가] 응답 구분자 입력 필드 -->
+                        <div class="flex items-center gap-2">
+                            <label for="delimiterInput" class="text-xs" style="color: var(--text-secondary);">응답 구분자:</label>
+                            <input type="text" id="delimiterInput" value="---" class="w-20 p-1 text-xs text-center rounded-md focus:ring-2 focus:border-transparent">
+                        </div>
+                    </div>
+                    <textarea id="textInput" class="w-full flex-grow p-4 rounded-lg placeholder-custom focus:ring-2 focus:border-transparent text-sm leading-relaxed"></textarea>
+                </div>
+                <button id="analyzeBtn" class="w-full mt-6 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" /><path d="M15 7v2a2 2 0 012 2v5a2 2 0 01-2 2h-1v-2a5 5 0 00-5-5H9v-2a2 2 0 012-2h4z" /></svg>
+                    <span>주제별 분석</span>
+                </button>
+            </div>
+
+            <!-- 오른쪽: 분석 결과 -->
+            <div id="resultWrapper" class="lg:col-span-1 space-y-6 lg:min-h-[700px]">
+                <!-- 로딩 스피너 -->
+                <div id="loader" class="hidden h-full w-full flex justify-center items-center">
+                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+                </div>
+                
+                <!-- 결과 카드들 -->
+                <div id="resultContainer" class="hidden space-y-6">
+                    <!-- 전체 요약 -->
+                    <div id="overallSummary" class="result-card p-5 rounded-xl"></div>
+                    <!-- 주제별 분석 결과가 여기에 동적으로 추가됩니다 -->
+                    <div id="topicResults" class="space-y-6"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Setup ---
+        const dom = {
+            textInput: document.getElementById('textInput'),
+            delimiterInput: document.getElementById('delimiterInput'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            loader: document.getElementById('loader'),
+            resultContainer: document.getElementById('resultContainer'),
+            overallSummary: document.getElementById('overallSummary'),
+            topicResults: document.getElementById('topicResults'),
+            themeToggle: document.getElementById('themeToggle'),
+            themeIcon: document.getElementById('themeIcon'),
+        };
+
+        // --- Event Listeners ---
+        dom.analyzeBtn.addEventListener('click', analyzeText);
+        dom.themeToggle.addEventListener('click', toggleTheme);
+
+        // --- Core Functions ---
+        async function analyzeText() {
+            const rawText = dom.textInput.value;
+            const delimiter = dom.delimiterInput.value;
+
+            if (rawText.trim() === '') {
+                alert('분석할 텍스트를 입력해주세요.');
+                return;
+            }
+            if (delimiter.trim() === '') {
+                alert('응답 구분자를 입력해주세요.');
+                return;
+            }
+
+            dom.loader.classList.remove('hidden');
+            dom.resultContainer.classList.add('hidden');
+
+            try {
+                const result = await callBackendAPI(rawText, delimiter);
+                renderResults(result);
+            } catch (error) {
+                console.error("API 호출 오류:", error);
+                alert(`분석 중 오류가 발생했습니다: ${error.message}`);
+            } finally {
+                dom.loader.classList.add('hidden');
+                dom.resultContainer.classList.remove('hidden');
+            }
+        }
+
+        async function callBackendAPI(text, delimiter) {
+            // 🚨 주의: 이 주소는 실제 운영 중인 Flask 서버 주소로 변경해야 합니다.
+            // 로컬 테스트 시: 'http://127.0.0.1:8000/api/survey/analyze'
+            const apiUrl = 'https://api.dreamofenc.com/api/survey/analyze';
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text, delimiter: delimiter }) // 텍스트와 구분자를 JSON 형식으로 전송
+            });
+
+            if (!response.ok) {
+                try {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `서버 응답 오류: ${response.status}`);
+                } catch (e) {
+                    throw new Error(`서버 응답 오류: ${response.status}`);
+                }
+            }
+
+            return await response.json();
+        }
+
+        function renderResults(data) {
+            // 1. 전체 요약 렌더링
+            dom.overallSummary.innerHTML = `
+                <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    종합 분석 (총 ${data.overall.totalResponses}개 응답)
+                </h3>
+                <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">${data.overall.summary}</p>
+                <div class="flex gap-4">
+                    <div class="flex-1 text-center bg-green-500/20 p-2 rounded-lg">
+                        <div class="font-bold text-xl text-green-400">${data.overall.positivePercentage}%</div>
+                        <div class="text-xs text-green-400/80">긍정</div>
+                    </div>
+                    <div class="flex-1 text-center bg-red-500/20 p-2 rounded-lg">
+                        <div class="font-bold text-xl text-red-400">${data.overall.negativePercentage}%</div>
+                        <div class="text-xs text-red-400/80">부정</div>
+                    </div>
+                </div>
+            `;
+
+            // 2. 주제별 분석 결과 렌더링
+            dom.topicResults.innerHTML = '';
+            data.topics.forEach(topic => {
+                const topicCard = document.createElement('div');
+                topicCard.className = 'result-card p-5 rounded-xl';
+                topicCard.innerHTML = `
+                    <h3 class="font-bold text-lg mb-3 flex justify-between items-center">
+                        <span class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15v1a1 1 0 001 1h12a1 1 0 001-1v-1a1 1 0 00-.293-.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
+                            ${topic.topicName}
+                        </span>
+                        <span class="text-sm font-medium bg-gray-700/50 px-2 py-1 rounded-md">${topic.count}개</span>
+                    </h3>
+                    <p class="text-sm leading-relaxed mb-3" style="color: var(--text-secondary);">${topic.summary}</p>
+                    <div class="text-xs border-l-2 border-amber-500 pl-3 italic" style="color: var(--text-secondary);">
+                        <strong>대표 의견:</strong> "${topic.representativeQuote}"
+                    </div>
+                `;
+                dom.topicResults.appendChild(topicCard);
+            });
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('light');
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const isLight = document.documentElement.classList.contains('light');
+            dom.themeIcon.innerHTML = isLight 
+                ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`
+                : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
+        }
+
+        // --- Initial Load ---
+        dom.textInput.value = `새로운 ERP 시스템의 UI가 매우 직관적이라서 마음에 듭니다.
+---
+결재 라인 지정하는 기능이 너무 복잡하고 여러 단계를 거쳐야 해서 불편합니다.
+특히 모바일에서는 화면이 작아 버튼을 누르기 어렵습니다.
+---
+전반적으로 만족하지만, 모바일 앱에서도 모든 기능을 동일하게 지원해주면 좋겠습니다.
+---
+디자인이 깔끔하고 보기 좋아서 업무 효율이 오르는 기분입니다.
+---
+자주 사용하는 메뉴를 즐겨찾기 할 수 있는 기능이 추가되면 완벽할 것 같습니다.
+---
+결재 올릴 때마다 특정 단계에서 오류가 발생해서 처음부터 다시 해야 하는 경우가 잦습니다.
+이 부분은 시급히 개선이 필요합니다.
+---
+로딩 속도가 이전 시스템보다 빨라져서 좋습니다.
+---
+모바일 앱의 글씨 크기가 너무 작아서 보기 힘듭니다. 가독성을 개선해주세요.`;
+        updateThemeIcon();
+    </script>
+</body>
+</html>
