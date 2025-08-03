@@ -198,7 +198,8 @@
             `;
             
             try {
-                const result = await callGeminiAPI(prompt);
+                // ✨ [수정] Gemini API 직접 호출 대신, 우리 백엔드 서버를 호출합니다.
+                const result = await callBackendAPI(textToAnalyze);
                 renderResults(result);
             } catch (error) {
                 console.error("API 호출 오류:", error);
@@ -209,64 +210,26 @@
             }
         }
 
-        async function callGeminiAPI(prompt) {
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            summary: { type: "STRING" },
-                            keywords: {
-                                type: "ARRAY",
-                                items: {
-                                    type: "OBJECT",
-                                    properties: {
-                                        keyword: { type: "STRING" },
-                                        frequency: { type: "NUMBER" }
-                                    },
-                                    required: ["keyword", "frequency"]
-                                }
-                            },
-                            sentiment: {
-                                type: "OBJECT",
-                                properties: {
-                                    score: { type: "NUMBER" },
-                                    reason: { type: "STRING" }
-                                },
-                                required: ["score", "reason"]
-                            },
-                            stats: {
-                                type: "OBJECT",
-                                properties: {
-                                    charCount: { type: "NUMBER" },
-                                    wordCount: { type: "NUMBER" },
-                                    readability: { type: "STRING" }
-                                },
-                                required: ["charCount", "wordCount", "readability"]
-                            }
-                        },
-                        required: ["summary", "keywords", "sentiment", "stats"]
-                    }
-                }
-            };
-            
-            const apiKey = ""; // API 키가 필요하면 여기에 입력
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        // ✨ [수정] 백엔드 API 호출 함수
+        async function callBackendAPI(text) {
+            // 🚨 주의: 이 주소는 실제 운영 중인 Flask 서버 주소로 변경해야 합니다.
+            // 로컬 테스트 시: 'http://127.0.0.1:8000/api/analyzer/analyze'
+            const apiUrl = 'https://dreamofenc.com/api/analyzer/analyze';
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text }) // 텍스트를 JSON 형식으로 전송
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-            return JSON.parse(data.candidates[0].content.parts[0].text);
+            return await response.json();
         }
 
         function renderResults(data) {
