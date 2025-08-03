@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>순서도 생성기 Pro</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Korean -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #111827;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --input-bg: #374151;
+            --input-border: #4b5563;
+        }
+        html.light {
+            --bg-primary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --input-bg: #f3f4f6;
+            --input-border: #d1d5db;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .control-panel label { font-weight: 600; }
+        .control-panel input, .control-panel select, .control-panel textarea {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-primary);
+        }
+        .control-panel input:focus, .control-panel select:focus, .control-panel textarea:focus {
+            --tw-ring-color: #6366f1;
+        }
+        .placeholder-custom::placeholder { color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-10 relative">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500">
+                Flowchart Generator
+            </h1>
+            <p class="text-lg mt-3" style="color: var(--text-secondary);">텍스트로 아이디어를 연결하여 순서도를 완성하세요.</p>
+            
+            <!-- Theme Toggle -->
+            <div class="absolute top-0 right-0">
+                <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
+                    <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 왼쪽: 컨트롤 패널 -->
+            <div class="lg:col-span-1 backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel" style="background-color: #1f293780; border-color: #37415180;">
+                
+                <div class="space-y-6">
+                    <!-- 1. 순서도 방향 선택 -->
+                    <div>
+                        <label for="flowchartDirection" class="text-sm" style="color: var(--text-secondary);">순서도 방향</label>
+                        <select id="flowchartDirection" class="w-full mt-1 p-3 rounded-lg focus:ring-2 focus:border-transparent">
+                            <option value="TD">위에서 아래로 (Top-Down)</option>
+                            <option value="LR">왼쪽에서 오른쪽으로 (Left-Right)</option>
+                            <option value="BT">아래에서 위로 (Bottom-Up)</option>
+                            <option value="RL">오른쪽에서 왼쪽으로 (Right-Left)</option>
+                        </select>
+                    </div>
+
+                    <!-- 2. 데이터 입력 -->
+                    <div>
+                        <label for="flowchartData" class="text-sm" style="color: var(--text-secondary);">순서도 내용 입력</label>
+                        <textarea id="flowchartData" rows="12" class="w-full mt-1 p-3 rounded-lg placeholder-custom focus:ring-2 focus:border-transparent font-mono text-sm"></textarea>
+                        <p class="text-xs mt-2" style="color: var(--text-secondary);">
+                            기본: `A --> B` <br>
+                            모양: `id[텍스트]`(네모), `id(텍스트)`(둥근네모), `id{텍스트}`(마름모)
+                        </p>
+                    </div>
+
+                    <!-- 3. 스타일 설정 -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="flowchartTitle" class="text-sm" style="color: var(--text-secondary);">제목</label>
+                            <input type="text" id="flowchartTitle" class="w-full mt-1 p-3 rounded-lg placeholder-custom focus:ring-2 focus:border-transparent" placeholder="업무 프로세스">
+                        </div>
+                        <div>
+                            <label for="stylePreset" class="text-sm" style="color: var(--text-secondary);">스타일 프리셋</label>
+                            <select id="stylePreset" class="w-full mt-1 p-3 rounded-lg focus:ring-2 focus:border-transparent">
+                                <option value="modern">모던</option>
+                                <option value="blueprint">블루프린트</option>
+                                <option value="minimal">미니멀</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 액션 버튼 -->
+                <div class="mt-8 grid grid-cols-2 gap-4">
+                    <button id="generateFlowchartBtn" class="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                        <span>생성</span>
+                    </button>
+                    <button id="downloadFlowchartBtn" class="w-full flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        <span>SVG로 저장</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 순서도 표시 영역 -->
+            <div id="flowchartWrapper" class="lg:col-span-2 backdrop-blur-sm border p-6 rounded-2xl shadow-lg flex flex-col justify-center items-center min-h-[500px]" style="background-color: #1f293780; border-color: #37415180;">
+                <h2 id="flowchartTitleDisplay" class="text-2xl font-bold mb-4"></h2>
+                <div id="flowchartOutput" class="w-full flex-grow flex justify-center items-center"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mermaid.js Script -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+        // DOM Elements
+        const dom = {
+            direction: document.getElementById('flowchartDirection'),
+            data: document.getElementById('flowchartData'),
+            title: document.getElementById('flowchartTitle'),
+            stylePreset: document.getElementById('stylePreset'),
+            generateBtn: document.getElementById('generateFlowchartBtn'),
+            downloadBtn: document.getElementById('downloadFlowchartBtn'),
+            output: document.getElementById('flowchartOutput'),
+            titleDisplay: document.getElementById('flowchartTitleDisplay'),
+            themeToggle: document.getElementById('themeToggle'),
+            themeIcon: document.getElementById('themeIcon'),
+        };
+
+        // Initialize and Render Flowchart
+        async function updateFlowchart() {
+            const isLight = document.documentElement.classList.contains('light');
+            
+            const presets = {
+                modern: `%%{init: { 
+                    "theme": "${isLight ? 'default' : 'dark'}",
+                    "flowchart": { "curve": "basis" },
+                    "themeVariables": {
+                        "primaryColor": "${isLight ? '#eff6ff' : '#1e293b'}",
+                        "primaryTextColor": "${isLight ? '#1e3a8a' : '#dbeafe'}",
+                        "primaryBorderColor": "${isLight ? '#93c5fd' : '#3b82f6'}",
+                        "lineColor": "${isLight ? '#9ca3af' : '#6b7280'}",
+                        "secondaryColor": "${isLight ? '#dbeafe' : '#374151'}",
+                        "tertiaryColor": "${isLight ? '#bfdbfe' : '#4b5563'}"
+                    }
+                }}%%`,
+                blueprint: `%%{init: { 
+                    "theme": "base",
+                    "themeVariables": {
+                        "background": "${isLight ? '#f0f9ff' : '#0c4a6e'}",
+                        "primaryColor": "${isLight ? '#f0f9ff' : '#0ea5e9'}",
+                        "primaryTextColor": "${isLight ? '#0ea5e9' : '#f0f9ff'}",
+                        "primaryBorderColor": "#0ea5e9",
+                        "lineColor": "#38bdf8",
+                        "fontSize": "14px"
+                    }
+                }}%%`,
+                minimal: `%%{init: { 
+                    "theme": "base",
+                    "flowchart": { "curve": "linear" },
+                    "themeVariables": {
+                        "background": "${isLight ? '#ffffff' : '#000000'}",
+                        "primaryColor": "${isLight ? '#ffffff' : '#000000'}",
+                        "primaryTextColor": "${isLight ? '#000000' : '#ffffff'}",
+                        "primaryBorderColor": "${isLight ? '#000000' : '#ffffff'}",
+                        "lineColor": "${isLight ? '#000000' : '#ffffff'}",
+                        "nodeBorder": "1px"
+                    }
+                }}%%`
+            };
+            
+            const styleDefinition = presets[dom.stylePreset.value] || '';
+            
+            mermaid.initialize({ 
+                startOnLoad: false,
+                fontFamily: `'Noto Sans KR', sans-serif`,
+            });
+            
+            const direction = dom.direction.value;
+            const title = dom.title.value;
+            const data = dom.data.value;
+            
+            dom.titleDisplay.textContent = title;
+            
+            const graphDefinition = `${styleDefinition}\ngraph ${direction};\n${data}`;
+            
+            try {
+                dom.output.innerHTML = ''; 
+                const { svg } = await mermaid.render('graphDiv', graphDefinition);
+                dom.output.innerHTML = svg;
+            } catch (error) {
+                dom.output.innerHTML = `<pre class="text-red-400">${error.str || error.message}</pre>`;
+            }
+        }
+
+        // Download as SVG
+        function downloadSVG() {
+            const svgElement = dom.output.querySelector('svg');
+            if (!svgElement) {
+                alert('먼저 순서도를 생성해주세요.');
+                return;
+            }
+
+            const isLight = document.documentElement.classList.contains('light');
+            const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim();
+            
+            const style = document.createElement('style');
+            style.innerHTML = `svg { background-color: ${bgColor}; }`;
+            svgElement.prepend(style);
+
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${dom.title.value || 'flowchart'}.svg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            svgElement.querySelector('style').remove();
+        }
+        
+        // Theme Toggle
+        function toggleTheme() {
+            document.documentElement.classList.toggle('light');
+            const isNowLight = document.documentElement.classList.contains('light');
+            updateThemeIcon(isNowLight);
+            updateFlowchart();
+        }
+
+        function updateThemeIcon(isLight) {
+            dom.themeIcon.innerHTML = isLight 
+                ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`
+                : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
+        }
+
+        // Event Listeners
+        dom.generateBtn.addEventListener('click', updateFlowchart);
+        dom.downloadBtn.addEventListener('click', downloadSVG);
+        dom.themeToggle.addEventListener('click', toggleTheme);
+        [dom.direction, dom.stylePreset].forEach(el => el.addEventListener('change', updateFlowchart));
+
+        // Initial Load
+        dom.data.value = 'A[아이디어 구상] --> B(프로토타입 제작);\nB --> C{피드백 수렴};\nC -- 예 --> D[기능 개선];\nC -- 아니오 --> E(프로젝트 완료);\nD --> B;';
+        dom.title.value = '제품 개발 프로세스';
+        const isLight = document.documentElement.classList.contains('light');
+        updateThemeIcon(isLight);
+        updateFlowchart();
+    </script>
+</body>
+</html>
