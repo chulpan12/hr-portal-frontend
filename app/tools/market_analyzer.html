@@ -320,7 +320,7 @@
             const isLight = document.documentElement.classList.contains('light');
             const textColor = isLight ? '#1f2937' : '#f3f4f6';
             dom.marketSummary.textContent = data.overall.market_summary;
-            const wordList = data.overall.common_keywords.map((kw, i) => [kw, 60 - i * 5]);
+            const wordList = data.overall.keywords.map((kw, i) => [kw, 60 - i * 5]);
 
             if (mode === 'risk_issue') {
                 dom.radarChartTitle.textContent = '리스크 유형 비교';
