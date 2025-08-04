@@ -59,66 +59,89 @@
 <body>
 
     <div class="container mx-auto p-4 md:p-8">
-        <header class="text-center mb-10 relative">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
-                설문조사 분석기 Pro
-            </h1>
-            <p class="text-lg mt-3" style="color: var(--text-secondary);">수많은 주관식 답변 속에서 핵심 주제와 여론을 발견하세요.(Google AI모델을 사용합니다)</p>
-            
-            <!-- Theme Toggle -->
-            <div class="absolute top-0 right-0">
-                <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
-                    <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
-                </button>
-            </div>
-        </header>
-
-        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- 왼쪽: 컨트롤 패널 -->
-            <div class="lg:col-span-1 backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel flex flex-col" style="background-color: var(--bg-panel); border-color: var(--border-color);">
-                <div class="flex-grow flex flex-col">
-                    <div class="flex justify-between items-end mb-2">
-                        <label for="textInput" class="text-sm" style="color: var(--text-secondary);">주관식 답변들을 붙여넣으세요</label>
-                        <!-- ✨ [추가] 응답 구분자 입력 필드 -->
-                        <div class="flex items-center gap-2">
-                            <label for="delimiterInput" class="text-xs" style="color: var(--text-secondary);">응답 구분자:</label>
-                            <input type="text" id="delimiterInput" value="---" class="w-20 p-1 text-xs text-center rounded-md focus:ring-2 focus:border-transparent">
-                        </div>
-                    </div>
-                    <textarea id="textInput" class="w-full flex-grow p-4 rounded-lg placeholder-custom focus:ring-2 focus:border-transparent text-sm leading-relaxed"></textarea>
-                </div>
-                <button id="analyzeBtn" class="w-full mt-6 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" /><path d="M15 7v2a2 2 0 012 2v5a2 2 0 01-2 2h-1v-2a5 5 0 00-5-5H9v-2a2 2 0 012-2h4z" /></svg>
-                    <span>주제별 분석</span>
-                </button>
-            </div>
-
-            <!-- 오른쪽: 분석 결과 -->
-            <div id="resultWrapper" class="lg:col-span-1 space-y-6 lg:min-h-[700px]">
-                <!-- 로딩 스피너 -->
-                <div id="loader" class="hidden h-full w-full flex justify-center items-center">
-                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-                </div>
+        <!-- ✨ [수정] 헤더와 메인 콘텐츠를 #main-content div로 감쌉니다. -->
+        <div id="main-content" class="hidden">
+            <header class="text-center mb-10 relative">
+                <!-- ✨ [수정] 각 툴에 맞는 제목으로 변경하세요 -->
+                <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
+                    설문조사 분석기 Pro
+                </h1>
+                <p class="text-lg mt-3" style="color: var(--text-secondary);">수많은 주관식 답변 속에서 핵심 주제와 여론을 발견하세요.</p>
                 
-                <!-- 결과 카드들 -->
-                <div id="resultContainer" class="hidden space-y-6">
-                    <!-- 전체 요약 -->
-                    <div id="overallSummary" class="result-card p-5 rounded-xl"></div>
-                    <!-- 주제별 분석 결과가 여기에 동적으로 추가됩니다 -->
-                    <div id="topicResults" class="space-y-6"></div>
+                <div class="absolute top-0 right-0">
+                    <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
+                        <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
+                    </button>
                 </div>
-            </div>
-        </main>
+            </header>
 
-        <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
+            <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 왼쪽: 컨트롤 패널 -->
+                <div class="lg:col-span-1 backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel flex flex-col" style="background-color: var(--bg-panel); border-color: var(--border-color);">
+                    <div class="flex-grow flex flex-col">
+                        <div class="flex justify-between items-end mb-2">
+                            <label for="textInput" class="text-sm" style="color: var(--text-secondary);">주관식 답변들을 붙여넣으세요</label>
+                            <div class="flex items-center gap-2">
+                                <label for="delimiterInput" class="text-xs" style="color: var(--text-secondary);">응답 구분자:</label>
+                                <input type="text" id="delimiterInput" value="---" class="w-20 p-1 text-xs text-center rounded-md focus:ring-2 focus:border-transparent">
+                            </div>
+                        </div>
+                        <textarea id="textInput" class="w-full flex-grow p-4 rounded-lg placeholder-custom focus:ring-2 focus:border-transparent text-sm leading-relaxed"></textarea>
+                    </div>
+                    <button id="analyzeBtn" class="w-full mt-6 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" /><path d="M15 7v2a2 2 0 012 2v5a2 2 0 01-2 2h-1v-2a5 5 0 00-5-5H9v-2a2 2 0 012-2h4z" /></svg>
+                        <span>주제별 분석</span>
+                    </button>
+                </div>
+
+                <!-- 오른쪽: 분석 결과 -->
+                <div id="resultWrapper" class="lg:col-span-1 space-y-6 lg:min-h-[700px]">
+                    <div id="loader" class="hidden h-full w-full flex justify-center items-center">
+                        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+                    </div>
+                    <div id="resultContainer" class="hidden space-y-6">
+                        <div id="overallSummary" class="result-card p-5 rounded-xl"></div>
+                        <div id="topicResults" class="space-y-6"></div>
+                    </div>
+                </div>
+            </main>
+            <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
             <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
             <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
         </footer>
+        </div>
+
+        <!-- ✨ [추가] 로그인 모달 HTML -->
+        <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
+                <h2 class="text-2xl font-bold text-white text-center mb-6">AI 기능 로그인</h2>
+                <p class="text-center text-sm text-gray-400 mb-6">이 기능을 사용하려면 DokuWiki 계정으로 로그인해야 합니다.</p>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-400 text-sm font-bold mb-2">아이디</label>
+                        <input type="text" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-400 text-sm font-bold mb-2">비밀번호</label>
+                        <input type="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <button type="submit" id="login-submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                            로그인
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
         // --- Setup ---
         const dom = {
+            mainContent: document.getElementById('main-content'),
+            loginModal: document.getElementById('login-modal'),
+            loginForm: document.getElementById('login-form'),
+            loginSubmitBtn: document.getElementById('login-submit-btn'),
             textInput: document.getElementById('textInput'),
             delimiterInput: document.getElementById('delimiterInput'),
             analyzeBtn: document.getElementById('analyzeBtn'),
@@ -133,16 +156,57 @@
         // --- Event Listeners ---
         dom.analyzeBtn.addEventListener('click', analyzeText);
         dom.themeToggle.addEventListener('click', toggleTheme);
+        dom.loginForm.addEventListener('submit', handleLogin);
 
-        // ✨ [추가] 페이지 로드 시 로그인 상태 확인
+        // --- Core Functions ---
         document.addEventListener('DOMContentLoaded', () => {
             const token = sessionStorage.getItem('ai-tool-token');
-            if (!token) {
-                alert('이 기능을 사용하려면 로그인이 필요합니다.');
-                // 로그인 페이지나 메인 페이지로 리디렉션
-                window.location.href = '/'; // 실제 메인 페이지 주소로 변경
+            if (token) {
+                dom.mainContent.classList.remove('hidden');
+                dom.loginModal.classList.add('hidden');
+            } else {
+                dom.mainContent.classList.add('hidden');
+                dom.loginModal.classList.remove('hidden');
             }
+            updateThemeIcon();
         });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = dom.loginForm.username.value;
+            const password = dom.loginForm.password.value;
+            
+            dom.loginSubmitBtn.disabled = true;
+            dom.loginSubmitBtn.textContent = '로그인 중...';
+
+            const apiUrl = 'https://api.dreamofenc.com/api/auth/login';
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '로그인에 실패했습니다.');
+                }
+
+                const data = await response.json();
+                sessionStorage.setItem('ai-tool-token', data.token);
+                
+                dom.loginModal.classList.add('hidden');
+                dom.mainContent.classList.remove('hidden');
+                dom.loginForm.reset();
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                dom.loginSubmitBtn.disabled = false;
+                dom.loginSubmitBtn.textContent = '로그인';
+            }
+        }
 
         // --- Core Functions ---
         async function analyzeText() {
@@ -179,9 +243,9 @@
             const token = sessionStorage.getItem('ai-tool-token');
 
             if (!token) {
-                alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-                window.location.href = '/';
-                return;
+                dom.mainContent.classList.add('hidden');
+                dom.loginModal.classList.remove('hidden');
+                throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
             }
 
             const response = await fetch(apiUrl, {
@@ -194,11 +258,11 @@
                 body: JSON.stringify({ text: text, delimiter: delimiter })
             });
 
-            if (response.status === 401) { // 401 Unauthorized
-                 alert('인증에 실패했습니다. 다시 로그인해주세요.');
+            if (response.status === 401) {
                  sessionStorage.removeItem('ai-tool-token');
-                 window.location.href = '/';
-                 throw new Error('인증 실패');
+                 dom.mainContent.classList.add('hidden');
+                 dom.loginModal.classList.remove('hidden');
+                 throw new Error('인증에 실패했습니다. 다시 로그인해주세요.');
             }
 
             if (!response.ok) {

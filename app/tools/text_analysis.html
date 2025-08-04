@@ -36,12 +36,12 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         .control-panel label { font-weight: 600; }
-        .control-panel textarea {
+        .control-panel textarea, .control-panel input {
             background-color: var(--input-bg);
             border-color: var(--input-border);
             color: var(--text-primary);
         }
-        .control-panel textarea:focus {
+        .control-panel textarea:focus, .control-panel input:focus {
             --tw-ring-color: #2dd4bf;
         }
         .placeholder-custom::placeholder { color: var(--text-secondary); }
@@ -61,103 +61,123 @@
 <body>
 
     <div class="container mx-auto p-4 md:p-8">
-        <header class="text-center mb-10 relative">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
-                텍스트 분석 및 인사이트
-            </h1>
-            <p class="text-lg mt-3" style="color: var(--text-secondary);">긴 글의 핵심을 빠르게 파악하고 숨겨진 의미를 발견하세요.(Google AI모델을 사용합니다)</p>
-            
-            <!-- Theme Toggle -->
-            <div class="absolute top-0 right-0">
-                <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
-                    <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
-                </button>
-            </div>
-        </header>
-
-        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- 왼쪽: 컨트롤 패널 -->
-            <div class="lg:col-span-1 backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel flex flex-col" style="background-color: var(--bg-panel); border-color: var(--border-color);">
-                <div class="flex-grow flex flex-col">
-                    <label for="textInput" class="text-sm mb-2" style="color: var(--text-secondary);">분석할 텍스트를 여기에 붙여넣으세요</label>
-                    <textarea id="textInput" class="w-full flex-grow p-4 rounded-lg placeholder-custom focus:ring-2 focus:border-transparent text-sm leading-relaxed"></textarea>
-                </div>
-                <button id="analyzeBtn" class="w-full mt-6 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-                    <span>분석하기</span>
-                </button>
-            </div>
-
-            <!-- 오른쪽: 분석 결과 -->
-            <div id="resultWrapper" class="lg:col-span-1 space-y-6 lg:min-h-[700px]">
-                <!-- 로딩 스피너 -->
-                <div id="loader" class="hidden h-full w-full flex justify-center items-center">
-                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-                </div>
+        <div id="main-content" class="hidden">
+            <header class="text-center mb-10 relative">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
+                    텍스트 분석 및 인사이트
+                </h1>
+                <p class="text-lg mt-3" style="color: var(--text-secondary);">긴 글의 핵심을 빠르게 파악하고 숨겨진 의미를 발견하세요.(Google AI모델을 사용합니다)</p>
                 
-                <!-- 결과 카드들 -->
-                <div id="resultCards" class="hidden space-y-6">
-                    <!-- 핵심 요약 -->
-                    <div class="result-card p-5 rounded-xl">
-                        <h3 class="font-bold text-lg mb-2 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                            핵심 요약
-                        </h3>
-                        <p id="summary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
+                <div class="absolute top-0 right-0">
+                    <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
+                        <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
+                    </button>
+                </div>
+            </header>
+
+            <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 왼쪽: 컨트롤 패널 -->
+                <div class="lg:col-span-1 backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel flex flex-col" style="background-color: var(--bg-panel); border-color: var(--border-color);">
+                    <div class="flex-grow flex flex-col">
+                        <label for="textInput" class="text-sm mb-2" style="color: var(--text-secondary);">분석할 텍스트를 여기에 붙여넣으세요</label>
+                        <textarea id="textInput" class="w-full flex-grow p-4 rounded-lg placeholder-custom focus:ring-2 focus:border-transparent text-sm leading-relaxed"></textarea>
+                    </div>
+                    <button id="analyzeBtn" class="w-full mt-6 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                        <span>분석하기</span>
+                    </button>
+                </div>
+
+                <!-- 오른쪽: 분석 결과 -->
+                <div id="resultWrapper" class="lg:col-span-1 space-y-6 lg:min-h-[700px]">
+                    <div id="loader" class="hidden h-full w-full flex justify-center items-center">
+                        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
                     </div>
                     
-                    <!-- ✨ [추가] 워드 클라우드 -->
-                    <div class="result-card p-5 rounded-xl">
-                        <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" /></svg>
-                            워드 클라우드
-                        </h3>
-                        <div class="flex justify-center items-center">
-                            <canvas id="wordCloudCanvas" width="400" height="250"></canvas>
+                    <div id="resultCards" class="hidden space-y-6">
+                        <div class="result-card p-5 rounded-xl">
+                            <h3 class="font-bold text-lg mb-2 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                핵심 요약
+                            </h3>
+                            <p id="summary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
                         </div>
-                    </div>
-
-                    <!-- 핵심 키워드 -->
-                    <div class="result-card p-5 rounded-xl">
-                        <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 8v5z" /></svg>
-                            핵심 키워드
-                        </h3>
-                        <div id="keywords" class="flex flex-wrap gap-2"></div>
-                    </div>
-                    <!-- 감성 분석 -->
-                    <div class="result-card p-5 rounded-xl">
-                        <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            감성 분석
-                        </h3>
-                        <div class="space-y-2">
-                            <div class="w-full bg-gray-700 rounded-full h-2.5">
-                                <div id="sentiment-bar" class="h-2.5 rounded-full" style="width: 0%;"></div>
+                        
+                        <div class="result-card p-5 rounded-xl">
+                            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" /></svg>
+                                워드 클라우드
+                            </h3>
+                            <div class="flex justify-center items-center">
+                                <canvas id="wordCloudCanvas" width="400" height="250"></canvas>
                             </div>
-                            <p id="sentiment-text" class="text-sm text-center" style="color: var(--text-secondary);"></p>
                         </div>
-                    </div>
-                    <!-- 텍스트 통계 -->
-                    <div class="result-card p-5 rounded-xl">
-                        <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                            텍스트 통계
-                        </h3>
-                        <div id="stats" class="grid grid-cols-2 gap-4 text-center text-sm"></div>
+
+                        <div class="result-card p-5 rounded-xl">
+                            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 8v5z" /></svg>
+                                핵심 키워드
+                            </h3>
+                            <div id="keywords" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="result-card p-5 rounded-xl">
+                            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                감성 분석
+                            </h3>
+                            <div class="space-y-2">
+                                <div class="w-full bg-gray-700 rounded-full h-2.5">
+                                    <div id="sentiment-bar" class="h-2.5 rounded-full" style="width: 0%;"></div>
+                                </div>
+                                <p id="sentiment-text" class="text-sm text-center" style="color: var(--text-secondary);"></p>
+                            </div>
+                        </div>
+                        <div class="result-card p-5 rounded-xl">
+                            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                텍스트 통계
+                            </h3>
+                            <div id="stats" class="grid grid-cols-2 gap-4 text-center text-sm"></div>
+                        </div>
                     </div>
                 </div>
+            </main>
+            <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
+                <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
+                <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
+            </footer>
+        </div>
+
+        <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
+                <h2 class="text-2xl font-bold text-white text-center mb-6">AI 기능 로그인</h2>
+                <p class="text-center text-sm text-gray-400 mb-6">이 기능을 사용하려면 DokuWiki 계정으로 로그인해야 합니다.</p>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-400 text-sm font-bold mb-2">아이디</label>
+                        <input type="text" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-400 text-sm font-bold mb-2">비밀번호</label>
+                        <input type="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <button type="submit" id="login-submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                            로그인
+                        </button>
+                    </div>
+                </form>
             </div>
-        </main>
-        <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
-            <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
-            <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
-        </footer>
+        </div>
     </div>
 
     <script>
         // --- Setup ---
         const dom = {
+            mainContent: document.getElementById('main-content'),
+            loginModal: document.getElementById('login-modal'),
+            loginForm: document.getElementById('login-form'),
+            loginSubmitBtn: document.getElementById('login-submit-btn'),
             textInput: document.getElementById('textInput'),
             analyzeBtn: document.getElementById('analyzeBtn'),
             resultWrapper: document.getElementById('resultWrapper'),
@@ -176,18 +196,58 @@
         // --- Event Listeners ---
         dom.analyzeBtn.addEventListener('click', analyzeText);
         dom.themeToggle.addEventListener('click', toggleTheme);
-
-        // ✨ [추가] 페이지 로드 시 로그인 상태 확인
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = sessionStorage.getItem('ai-tool-token');
-            if (!token) {
-                alert('이 기능을 사용하려면 로그인이 필요합니다.');
-                // 로그인 페이지나 메인 페이지로 리디렉션
-                window.location.href = '/'; // 실제 메인 페이지 주소로 변경
-            }
-        });
+        dom.loginForm.addEventListener('submit', handleLogin);
 
         // --- Core Functions ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = sessionStorage.getItem('ai-tool-token');
+            if (token) {
+                dom.mainContent.classList.remove('hidden');
+                dom.loginModal.classList.add('hidden');
+            } else {
+                dom.mainContent.classList.add('hidden');
+                dom.loginModal.classList.remove('hidden');
+            }
+            updateThemeIcon();
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = dom.loginForm.username.value;
+            const password = dom.loginForm.password.value;
+            
+            dom.loginSubmitBtn.disabled = true;
+            dom.loginSubmitBtn.textContent = '로그인 중...';
+
+            const apiUrl = 'https://api.dreamofenc.com/api/auth/login';
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '로그인에 실패했습니다.');
+                }
+
+                const data = await response.json();
+                sessionStorage.setItem('ai-tool-token', data.token);
+                
+                dom.loginModal.classList.add('hidden');
+                dom.mainContent.classList.remove('hidden');
+                dom.loginForm.reset();
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                dom.loginSubmitBtn.disabled = false;
+                dom.loginSubmitBtn.textContent = '로그인';
+            }
+        }
+
         async function analyzeText() {
             const textToAnalyze = dom.textInput.value;
             if (textToAnalyze.trim() === '') {
@@ -197,59 +257,43 @@
 
             dom.loader.classList.remove('hidden');
             dom.resultCards.classList.add('hidden');
-
-            const prompt = `
-                주어진 텍스트를 분석하여 다음 항목들을 JSON 형식으로 반환해줘:
-                1.  summary: 텍스트의 핵심 내용을 한국어로 3문장으로 요약.
-                2.  keywords: 가장 중요한 키워드 10~15개를 { "keyword": "단어", "frequency": 빈도수 } 형태의 객체 배열로 추출.
-                3.  sentiment: 텍스트의 전체적인 감성을 분석하여 { "score": 1~10 사이의 점수, "reason": "점수에 대한 한 줄 요약 이유" } 형태로 반환. (1=매우 부정, 5=중립, 10=매우 긍정)
-                4.  stats: 텍스트의 통계를 { "charCount": 글자 수(공백 포함), "wordCount": 단어 수, "readability": "읽기 쉬운 정도 (매우 쉬움, 쉬움, 보통, 어려움, 매우 어려움 중 하나)" } 형태로 계산.
-
-                분석할 텍스트:
-                ---
-                ${textToAnalyze}
-                ---
-            `;
             
             try {
-                // ✨ [수정] Gemini API 직접 호출 대신, 우리 백엔드 서버를 호출합니다.
                 const result = await callBackendAPI(textToAnalyze);
                 renderResults(result);
             } catch (error) {
                 console.error("API 호출 오류:", error);
-                alert("분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                alert(`분석 중 오류가 발생했습니다: ${error.message}`);
             } finally {
                 dom.loader.classList.add('hidden');
                 dom.resultCards.classList.remove('hidden');
             }
         }
 
-        // ✨ [수정] callBackendAPI 함수
-        async function callBackendAPI(text, delimiter) {
-            const apiUrl = 'https://api.dreamofenc.com/api/analyzer/analyze'; // 각 툴에 맞는 주소
+        async function callBackendAPI(text) {
+            const apiUrl = 'https://api.dreamofenc.com/api/analyzer/analyze';
             const token = sessionStorage.getItem('ai-tool-token');
 
             if (!token) {
-                alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-                window.location.href = '/';
-                return;
+                dom.mainContent.classList.add('hidden');
+                dom.loginModal.classList.remove('hidden');
+                throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
             }
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // ✨ [추가] Authorization 헤더에 토큰을 담아 보냅니다.
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ text: text, delimiter: delimiter })
+                body: JSON.stringify({ text: text })
             });
 
-            if (response.status === 401) { // 401 Unauthorized
-                 alert('인증에 실패했습니다. 다시 로그인해주세요.');
+            if (response.status === 401) {
                  sessionStorage.removeItem('ai-tool-token');
-                 window.location.href = '/';
-                 throw new Error('인증 실패');
+                 dom.mainContent.classList.add('hidden');
+                 dom.loginModal.classList.remove('hidden');
+                 throw new Error('인증에 실패했습니다. 다시 로그인해주세요.');
             }
 
             if (!response.ok) {
@@ -267,10 +311,8 @@
         function renderResults(data) {
             const isLight = document.documentElement.classList.contains('light');
 
-            // 1. 요약
             dom.summary.textContent = data.summary;
 
-            // 2. 키워드
             dom.keywords.innerHTML = '';
             data.keywords.slice(0, 5).forEach(kw => {
                 const tag = document.createElement('span');
@@ -279,7 +321,6 @@
                 dom.keywords.appendChild(tag);
             });
 
-            // 3. 워드 클라우드
             const wordList = data.keywords.map(kw => [kw.keyword, kw.frequency * 5]);
             if (wordList.length > 0) {
                 WordCloud(dom.wordCloudCanvas, {
@@ -295,7 +336,6 @@
                 });
             }
 
-            // 4. 감성 분석
             const score = data.sentiment.score;
             const percentage = (score - 1) * (100 / 9);
             dom.sentimentBar.style.width = `${percentage}%`;
@@ -306,7 +346,6 @@
             dom.sentimentBar.className = `h-2.5 rounded-full ${colorClass}`;
             dom.sentimentText.textContent = `${data.sentiment.reason} (점수: ${score}/10)`;
 
-            // 5. 텍스트 통계
             dom.stats.innerHTML = `
                 <div>
                     <div class="font-bold text-xl">${new Intl.NumberFormat().format(data.stats.charCount)}</div>
