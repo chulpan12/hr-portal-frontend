@@ -28,6 +28,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .tab-btn { transition: all 0.2s ease-in-out; }
         .tab-btn.active { border-color: #6366f1; color: #a5b4fc; }
+        .mode-btn.active { background-color: #4f46e5; color: white; }
         .custom-checkbox:checked { background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e"); }
     </style>
 </head>
@@ -39,7 +40,7 @@
                 <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
                     경쟁사 동향 대시보드
                 </h1>
-                <p class="text-lg mt-3" style="color: var(--text-secondary);">AI가 분석한 Big 5 건설사 최신 동향을 한눈에 파악하세요.</p>
+                <p class="text-lg mt-3" style="color: var(--text-secondary);">AI가 분석한 건설사 최신 동향을 한눈에 파악하세요.</p>
                 <!-- 홈/테마 버튼 -->
                 <div class="absolute top-0 right-0 flex items-center gap-2">
                     <a href="/" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="Home">
@@ -56,10 +57,14 @@
                 <div class="backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel" style="background-color: var(--bg-panel); border-color: var(--border-color);">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                         <div class="md:col-span-2">
-                            <label class="text-sm font-semibold" style="color: var(--text-secondary);">1. 분석 대상 선택</label>
-                            <div id="company-selector" class="mt-2 flex flex-wrap gap-x-6 gap-y-2">
-                                <!-- 체크박스가 동적으로 생성될 위치 -->
+                            <div class="flex justify-between items-center">
+                                <label class="text-sm font-semibold" style="color: var(--text-secondary);">1. 분석 대상 선택</label>
+                                <div class="flex items-center">
+                                    <input id="selectAll" type="checkbox" class="custom-checkbox h-4 w-4 rounded text-indigo-500 focus:ring-indigo-500" style="background-color: var(--input-bg); border-color: var(--input-border);">
+                                    <label for="selectAll" class="ml-2 text-xs font-medium" style="color: var(--text-primary);">모두 선택</label>
+                                </div>
                             </div>
+                            <div id="company-selector" class="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-2"></div>
                         </div>
                         <div class="flex gap-4">
                             <div class="flex-grow">
@@ -71,6 +76,13 @@
                             </button>
                         </div>
                     </div>
+                    <div class="mt-4">
+                        <label class="text-sm font-semibold" style="color: var(--text-secondary);">3. 분석 관점</label>
+                        <div id="analysis-mode-selector" class="mt-2 flex items-center gap-2 rounded-lg p-1" style="background-color: var(--input-bg);">
+                             <button data-mode="business_strategy" class="mode-btn active flex-1 text-center text-sm py-2 rounded-md">경영 전략</button>
+                             <button data-mode="risk_issue" class="mode-btn flex-1 text-center text-sm py-2 rounded-md">리스크 / 이슈</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 결과 대시보드 -->
@@ -80,18 +92,18 @@
                         <p class="ml-4" style="color: var(--text-secondary);">AI가 기사를 분석 중입니다... (최대 1~2분 소요)</p>
                     </div>
                     <div id="resultDashboard" class="hidden space-y-8">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div class="result-card p-6 rounded-xl">
-                                <h3 class="font-bold text-xl mb-3">종합 브리핑</h3>
-                                <p id="marketSummary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
-                            </div>
-                            <div class="result-card p-6 rounded-xl">
-                                <h3 class="font-bold text-xl mb-3">업계 공통 키워드</h3>
-                                <canvas id="keywordCloud" width="400" height="200"></canvas>
+                        <div class="result-card p-6 rounded-xl">
+                            <h3 class="font-bold text-xl mb-3">종합 브리핑</h3>
+                            <p id="marketSummary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                            <div class="lg:col-span-3 result-card p-6 rounded-xl">
+                                <h3 class="font-bold text-xl mb-3">전략 포커스 비교</h3>
+                                <div class="h-80"><canvas id="radarChart"></canvas></div>
                             </div>
                             <div class="lg:col-span-2 result-card p-6 rounded-xl">
-                                <h3 class="font-bold text-xl mb-3">전략 포커스 비교</h3>
-                                <canvas id="radarChart"></canvas>
+                                <h3 class="font-bold text-xl mb-3">업계 공통 키워드</h3>
+                                <canvas id="keywordCloud" width="400" height="300"></canvas>
                             </div>
                         </div>
                         <div>
@@ -101,13 +113,12 @@
                     </div>
                 </div>
             </main>
-            <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
+             <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
                 <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
                 <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
             </footer>
         </div>
         
-        <!-- ✨ [추가] 로그인 모달 -->
         <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
             <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
                 <h2 class="text-2xl font-bold text-white text-center mb-6">AI 기능 로그인</h2>
@@ -131,7 +142,7 @@
         </div>
     </div>
     <script>
-        const BIG5 = ["삼성물산", "현대건설", "DL이앤씨", "GS건설", "대우건설"];
+        const COMPANIES = ["삼성물산", "현대건설", "DL이앤씨", "GS건설", "대우건설", "현대엔지니어링", "포스코이앤씨", "롯데건설", "SK에코플랜트", "HDC현대산업개발"];
         let radarChartInstance = null;
         
         const dom = {
@@ -139,8 +150,10 @@
             loginModal: document.getElementById('login-modal'),
             loginForm: document.getElementById('login-form'),
             loginSubmitBtn: document.getElementById('login-submit-btn'),
+            selectAll: document.getElementById('selectAll'),
             companySelector: document.getElementById('company-selector'),
             keywordInput: document.getElementById('keywordInput'),
+            analysisModeSelector: document.getElementById('analysis-mode-selector'),
             analyzeBtn: document.getElementById('analyzeBtn'),
             loader: document.getElementById('loader'),
             resultDashboard: document.getElementById('resultDashboard'),
@@ -163,7 +176,7 @@
                 dom.loginModal.classList.remove('hidden');
             }
             
-            BIG5.forEach(company => {
+            COMPANIES.forEach(company => {
                 dom.companySelector.innerHTML += `
                     <div class="flex items-center">
                         <input id="${company}" type="checkbox" value="${company}" class="custom-checkbox h-4 w-4 rounded text-indigo-500 focus:ring-indigo-500" style="background-color: var(--input-bg); border-color: var(--input-border);">
@@ -177,36 +190,39 @@
         dom.analyzeBtn.addEventListener('click', handleAnalysis);
         dom.themeToggle.addEventListener('click', toggleTheme);
         dom.loginForm.addEventListener('submit', handleLogin);
+        dom.selectAll.addEventListener('click', () => {
+            const isChecked = dom.selectAll.checked;
+            dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
+        });
+        dom.analysisModeSelector.addEventListener('click', (e) => {
+            if (e.target.classList.contains('mode-btn')) {
+                dom.analysisModeSelector.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
+                e.target.classList.add('active', 'bg-indigo-600', 'text-white');
+            }
+        });
 
         async function handleLogin(e) {
             e.preventDefault();
             const username = dom.loginForm.username.value;
             const password = dom.loginForm.password.value;
-            
             dom.loginSubmitBtn.disabled = true;
             dom.loginSubmitBtn.textContent = '로그인 중...';
-
             const apiUrl = 'https://api.dreamofenc.com/api/auth/login';
-
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
-
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || '로그인에 실패했습니다.');
                 }
-
                 const data = await response.json();
                 sessionStorage.setItem('ai-tool-token', data.token);
-                
                 dom.loginModal.classList.add('hidden');
                 dom.mainContent.classList.remove('hidden');
                 dom.loginForm.reset();
-
             } catch (error) {
                 alert(error.message);
             } finally {
@@ -218,10 +234,10 @@
         async function handleAnalysis() {
             const selectedCompanies = Array.from(dom.companySelector.querySelectorAll('input:checked')).map(cb => cb.value);
             if (selectedCompanies.length === 0) {
-                alert('분석할 회사를 하나 이상 선택해주세요.');
-                return;
+                alert('분석할 회사를 하나 이상 선택해주세요.'); return;
             }
             const keyword = dom.keywordInput.value.trim();
+            const analysisMode = dom.analysisModeSelector.querySelector('.mode-btn.active').dataset.mode;
 
             dom.loader.classList.remove('hidden');
             dom.resultDashboard.classList.add('hidden');
@@ -229,7 +245,7 @@
             dom.analyzeBtn.innerHTML = '<span>분석 중...</span>';
 
             try {
-                const data = await callBackendAPI(selectedCompanies, keyword);
+                const data = await callBackendAPI(selectedCompanies, keyword, analysisMode);
                 renderDashboard(data);
             } catch (error) {
                 console.error("분석 오류:", error);
@@ -242,99 +258,68 @@
             }
         }
         
-        async function callBackendAPI(companies, keyword) {
+        async function callBackendAPI(companies, keyword, mode) {
             const apiUrl = 'https://api.dreamofenc.com/api/market/analyze';
             const token = sessionStorage.getItem('ai-tool-token');
-
             if (!token) {
                 dom.mainContent.classList.add('hidden');
                 dom.loginModal.classList.remove('hidden');
                 throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
             }
-
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ companies, keyword })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ companies, keyword, mode })
             });
-            
             if (response.status === 401) {
                  sessionStorage.removeItem('ai-tool-token');
                  dom.mainContent.classList.add('hidden');
                  dom.loginModal.classList.remove('hidden');
                  throw new Error('인증에 실패했습니다. 다시 로그인해주세요.');
             }
-
             if (!response.ok) {
-                try {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `서버 응답 오류: ${response.status}`);
-                } catch (e) {
-                    throw new Error(`서버 응답 오류: ${response.status}`);
-                }
+                const errorData = await response.json().catch(() => ({error: `서버 응답 오류: ${response.status}`}));
+                throw new Error(errorData.error);
             }
-
             return await response.json();
         }
 
         function renderDashboard(data) {
             const isLight = document.documentElement.classList.contains('light');
             const textColor = isLight ? '#1f2937' : '#f3f4f6';
-
-            // 1. 종합 브리핑
             dom.marketSummary.textContent = data.overall.market_summary;
-
-            // 2. 워드 클라우드
             const wordList = data.overall.common_keywords.map((kw, i) => [kw, 60 - i * 5]);
             WordCloud(dom.keywordCloud, {
-                list: wordList,
-                gridSize: 10,
-                weightFactor: 3,
-                fontFamily: "'Noto Sans KR', sans-serif",
-                color: isLight ? '#4b5563' : '#9ca3af',
-                backgroundColor: 'transparent',
-                rotateRatio: 0,
+                list: wordList, gridSize: 10, weightFactor: 3, fontFamily: "'Noto Sans KR', sans-serif",
+                color: isLight ? '#4b5563' : '#9ca3af', backgroundColor: 'transparent', rotateRatio: 0,
             });
-
-            // 3. 레이더 차트
             if (radarChartInstance) radarChartInstance.destroy();
-            const radarLabels = Object.keys(data.companies[Object.keys(data.companies)[0]].focus_scores);
+            const firstCompanyData = data.companies[Object.keys(data.companies)[0]];
+            if (!firstCompanyData) return;
+            const radarLabels = Object.keys(firstCompanyData.focus_scores);
             const radarDatasets = Object.entries(data.companies).map(([company, analysis], index) => {
                 const color = colorPalettes.aurora[index % colorPalettes.aurora.length];
                 return {
-                    label: company,
-                    data: Object.values(analysis.focus_scores),
-                    borderColor: color,
-                    backgroundColor: color + '33',
-                    pointBackgroundColor: color,
+                    label: company, data: Object.values(analysis.focus_scores),
+                    borderColor: color, backgroundColor: color + '33', pointBackgroundColor: color,
                 };
             });
-            
             radarChartInstance = new Chart(dom.radarChart, {
-                type: 'radar',
-                data: { labels: radarLabels, datasets: radarDatasets },
+                type: 'radar', data: { labels: radarLabels, datasets: radarDatasets },
                 options: {
+                    maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: textColor } } },
                     scales: {
                         r: {
                             angleLines: { color: isLight ? '#e5e7eb' : '#374151' },
                             grid: { color: isLight ? '#e5e7eb' : '#374151' },
                             pointLabels: { color: textColor, font: { size: 12 } },
-                            ticks: {
-                                backdropColor: 'transparent',
-                                color: textColor,
-                                stepSize: 1,
-                            },
+                            ticks: { backdropColor: 'transparent', color: textColor, stepSize: 1, },
                             min: 0, max: 5
                         }
                     }
                 }
             });
-
-            // 4. 개별 회사 탭 및 콘텐츠
             dom.companyTabs.innerHTML = '';
             dom.companyContent.innerHTML = '';
             Object.keys(data.companies).forEach((company, index) => {
@@ -348,17 +333,17 @@
                 };
                 dom.companyTabs.appendChild(tab);
             });
-            
             const firstCompany = Object.keys(data.companies)[0];
-            renderCompanyContent(firstCompany, data.companies[firstCompany]);
-            dom.companyTabs.querySelector('.tab-btn').classList.add('border-indigo-400');
+            if (firstCompany) {
+                renderCompanyContent(firstCompany, data.companies[firstCompany]);
+                dom.companyTabs.querySelector('.tab-btn').classList.add('border-indigo-400');
+            }
         }
 
         function renderCompanyContent(company, analysis) {
             const swot = analysis.swot;
             const sentimentScore = analysis.sentiment.score;
             const sentimentColor = sentimentScore > 7 ? 'text-green-400' : (sentimentScore < 4 ? 'text-red-400' : 'text-yellow-400');
-
             dom.companyContent.innerHTML = `
                 <div class="space-y-6">
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -381,21 +366,18 @@
                     </div>
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">분석 근거 기사</h4>
-                        <div class="space-y-4">${analysis.key_articles.map(a => `<div class="border-l-2 border-gray-600 pl-3"><p class="font-semibold text-sm">${a.title}</p><p class="text-xs mt-1" style="color: var(--text-secondary);">${a.summary}</p></div>`).join('')}</div>
+                        <div class="space-y-4">${analysis.key_articles.map(a => `
+                            <div class="border-l-2 border-gray-600 pl-3">
+                                <a href="${a.link}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${a.title}</a>
+                                <p class="text-xs mt-1" style="color: var(--text-secondary);">${a.summary}</p>
+                            </div>`).join('')}
+                        </div>
                     </div>
                 </div>
             `;
         }
         
-        function renderSwotCard(title, items, bgColor) {
-            return `
-                <div class="result-card p-4 rounded-lg ${bgColor}">
-                    <h5 class="font-bold mb-2">${title}</h5>
-                    <ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${items.map(i => `<li>${i}</li>`).join('')}</ul>
-                </div>
-            `;
-        }
-
+        function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
         function toggleTheme() { document.documentElement.classList.toggle('light'); updateThemeIcon(); }
         function updateThemeIcon() {
             const isLight = document.documentElement.classList.contains('light');
@@ -404,27 +386,7 @@
                 : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
         }
         
-        // Dummy data for testing without API calls
-        function getDummyData(companies) {
-            const dummy = {
-                overall: {
-                    market_summary: "건설업계는 현재 AI 기술 도입과 해외 친환경 에너지 플랜트 수주 경쟁이 핵심 트렌드입니다. 특히 현대건설과 삼성물산이 신사업 분야에서 두각을 보이고 있습니다.",
-                    common_keywords: ["SMR", "해외수주", "AI", "친환경", "원자력", "플랜트", "기술협력"]
-                },
-                companies: {}
-            };
-            companies.forEach(c => {
-                dummy.companies[c] = {
-                    swot: { strengths: ["강력한 브랜드 인지도", "SMR 기술 선점"], weaknesses: ["높은 부채 비율"], opportunities: ["정부의 원전 정책 지원"], threats: ["원자재 가격 상승"] },
-                    strategies: ["신사업 포트폴리오 다각화", "해외 원전 시장 공략", "AI 기반 스마트 건설 현장 도입"],
-                    sentiment: { score: 7.5, reason: "신사업에 대한 긍정적 전망이 우세하나, 일부 리스크 요인도 존재함." },
-                    focus_scores: { "기술": Math.random()*2+3, "마케팅": Math.random()*2+1, "해외사업": Math.random()*2+3, "고객서비스": Math.random()*2+1, "인재영입": Math.random()*2+2 },
-                    key_articles: [{ title: `${c}, 미국과 SMR 기술 협력 MOU 체결`, summary: "차세대 에너지원으로 주목받는 소형모듈원전(SMR) 시장 선점을 위해 미국 기업과 기술 협력 MOU를 체결하며 글로벌 경쟁력 강화에 나섰다." }]
-                };
-            });
-            return dummy;
-        }
-        const colorPalettes = { aurora: ['#2dd4bf', '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185'] };
+        const colorPalettes = { aurora: ['#2dd4bf', '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185', '#fdba74', '#facc15', '#a3e635', '#4ade80'] };
     </script>
 </body>
 </html>
