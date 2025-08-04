@@ -68,7 +68,13 @@
                 </h1>
                 <p class="text-lg mt-3" style="color: var(--text-secondary);">수많은 주관식 답변 속에서 핵심 주제와 여론을 발견하세요.</p>
                 
-                <div class="absolute top-0 right-0">
+                <!-- ✨ [수정] 아이콘들을 감싸는 div 추가 -->
+                <div class="absolute top-0 right-0 flex items-center gap-2">
+                    <!-- 홈 버튼 -->
+                    <a href="https://dreamofenc.com" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="Home">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    </a>
+                    <!-- 테마 변경 버튼 -->
                     <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
                         <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
                     </button>
