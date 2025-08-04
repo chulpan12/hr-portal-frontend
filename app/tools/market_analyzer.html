@@ -354,21 +354,39 @@
         function renderDashboard(data, mode) {
             const isLight = document.documentElement.classList.contains('light');
             const textColor = isLight ? '#1f2937' : '#f3f4f6';
-            dom.marketSummary.textContent = data.overall.market_summary;
-            const wordList = data.overall.common_keywords.map((kw, i) => [kw, 60 - i * 5]);
+            dom.marketSummary.textContent = data.overall.market_summary || "종합 분석 요약이 없습니다.";
+
+            // ✨✨✨ [수정] 이 부분이 핵심입니다! ✨✨✨
+            // 1. AI 응답 필드명을 'keywords'로 변경하고, 없을 경우 빈 배열[]을 기본값으로 설정합니다.
+            const keywordsData = data.overall.keywords || [];
+            // 2. 객체 배열을 워드클라우드 형식에 맞게 [단어, 가중치] 형태의 배열로 변환합니다.
+            const wordList = keywordsData.map(item => [item.keyword, item.weight * 5]);
 
             if (mode === 'risk_issue') {
                 dom.radarChartTitle.textContent = '리스크 유형 비교';
                 dom.keywordChartTitle.textContent = '핵심 리스크 키워드';
             } else {
                 dom.radarChartTitle.textContent = '전략 포커스 비교';
-                dom.keywordChartTitle.textContent = '업계 공통 키워드';
+                dom.keywordChartTitle.textContent = '핵심 사업/기술 키워드';
             }
 
-            WordCloud(dom.keywordCloud, {
-                list: wordList, gridSize: 10, weightFactor: 3, fontFamily: "'Noto Sans KR', sans-serif",
-                color: isLight ? '#4b5563' : '#9ca3af', backgroundColor: 'transparent', rotateRatio: 0,
-            });
+            // 워드클라우드에 데이터가 있을 때만 그리도록 조건 추가
+            if (wordList.length > 0) {
+                WordCloud(dom.keywordCloud, {
+                    list: wordList, 
+                    gridSize: 10, 
+                    weightFactor: 1, // 가중치를 직접 사용하므로 1로 설정하거나 조절
+                    fontFamily: "'Noto Sans KR', sans-serif",
+                    color: 'random-light',
+                    backgroundColor: 'transparent',
+                    rotateRatio: 0,
+                });
+            } else {
+                // 데이터가 없을 경우 캔버스를 비웁니다.
+                const ctx = dom.keywordCloud.getContext('2d');
+                ctx.clearRect(0, 0, dom.keywordCloud.width, dom.keywordCloud.height);
+            }
+
 
             if (radarChartInstance) radarChartInstance.destroy();
             
