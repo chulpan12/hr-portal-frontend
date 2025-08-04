@@ -34,14 +34,12 @@
 </head>
 <body>
     <div class="container mx-auto p-4 md:p-8">
-        <!-- 메인 콘텐츠 -->
         <div id="main-content" class="hidden">
             <header class="text-center mb-10 relative">
                 <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
                     경쟁사 동향 대시보드
                 </h1>
                 <p class="text-lg mt-3" style="color: var(--text-secondary);">AI가 분석한 건설사 최신 동향을 한눈에 파악하세요.</p>
-                <!-- 홈/테마 버튼 -->
                 <div class="absolute top-0 right-0 flex items-center gap-2">
                     <a href="/" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="Home">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
@@ -53,7 +51,6 @@
             </header>
 
             <main class="space-y-8">
-                <!-- 컨트롤 패널 -->
                 <div class="backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel" style="background-color: var(--bg-panel); border-color: var(--border-color);">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                         <div class="md:col-span-2">
@@ -85,11 +82,10 @@
                     </div>
                 </div>
 
-                <!-- 결과 대시보드 -->
                 <div id="resultWrapper">
-                    <div id="loader" class="hidden h-64 w-full flex justify-center items-center">
+                    <div id="loader" class="hidden h-64 w-full flex-col justify-center items-center">
                         <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-                        <p class="ml-4" style="color: var(--text-secondary);">AI가 기사를 분석 중입니다... (최대 1~2분 소요)</p>
+                        <p id="loader-text" class="ml-4 mt-4" style="color: var(--text-secondary);">AI가 기사를 분석 중입니다... (최대 1~2분 소요)</p>
                     </div>
                     <div id="resultDashboard" class="hidden space-y-8">
                         <div class="result-card p-6 rounded-xl">
@@ -156,6 +152,7 @@
             analysisModeSelector: document.getElementById('analysis-mode-selector'),
             analyzeBtn: document.getElementById('analyzeBtn'),
             loader: document.getElementById('loader'),
+            loaderText: document.getElementById('loader-text'),
             resultDashboard: document.getElementById('resultDashboard'),
             marketSummary: document.getElementById('marketSummary'),
             keywordCloud: document.getElementById('keywordCloud'),
@@ -196,8 +193,8 @@
         });
         dom.analysisModeSelector.addEventListener('click', (e) => {
             if (e.target.classList.contains('mode-btn')) {
-                dom.analysisModeSelector.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
-                e.target.classList.add('active', 'bg-indigo-600', 'text-white');
+                dom.analysisModeSelector.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
             }
         });
 
@@ -231,6 +228,7 @@
             }
         }
 
+        // ✨ [수정] API 호출 로직을 순차적으로 변경
         async function handleAnalysis() {
             const selectedCompanies = Array.from(dom.companySelector.querySelectorAll('input:checked')).map(cb => cb.value);
             if (selectedCompanies.length === 0) {
@@ -240,45 +238,84 @@
             const analysisMode = dom.analysisModeSelector.querySelector('.mode-btn.active').dataset.mode;
 
             dom.loader.classList.remove('hidden');
+            dom.loader.classList.add('flex'); // flex로 변경하여 내부 아이템 정렬
             dom.resultDashboard.classList.add('hidden');
             dom.analyzeBtn.disabled = true;
             dom.analyzeBtn.innerHTML = '<span>분석 중...</span>';
 
+            const companyAnalyses = {};
             try {
-                const data = await callBackendAPI(selectedCompanies, keyword, analysisMode);
-                renderDashboard(data);
+                // 1. 각 회사를 순차적으로 분석합니다.
+                for (const [index, company] of selectedCompanies.entries()) {
+                    dom.loaderText.textContent = `AI가 ${company} 관련 기사를 분석 중입니다... (${index + 1}/${selectedCompanies.length})`;
+                    const result = await callCompanyAnalysisAPI(company, keyword, analysisMode);
+                    if (result) {
+                        companyAnalyses[company] = result;
+                    }
+                }
+
+                // 2. 모든 개별 분석이 끝나면, 종합 분석을 요청합니다.
+                dom.loaderText.textContent = `종합 분석 보고서를 생성 중입니다...`;
+                const overallData = await callOverallAnalysisAPI(companyAnalyses);
+
+                // 3. 최종 데이터를 합쳐서 대시보드를 렌더링합니다.
+                const finalData = {
+                    overall: overallData,
+                    companies: companyAnalyses
+                };
+                renderDashboard(finalData);
+
             } catch (error) {
                 console.error("분석 오류:", error);
                 alert(`분석 중 오류가 발생했습니다: ${error.message}`);
             } finally {
                 dom.loader.classList.add('hidden');
+                dom.loader.classList.remove('flex');
                 dom.resultDashboard.classList.remove('hidden');
                 dom.analyzeBtn.disabled = false;
                 dom.analyzeBtn.innerHTML = '<span>분석</span>';
             }
         }
         
-        async function callBackendAPI(companies, keyword, mode) {
-            const apiUrl = 'https://api.dreamofenc.com/api/market/analyze';
+        // ✨ [추가] 개별 회사 분석 API 호출 함수
+        async function callCompanyAnalysisAPI(company, keyword, mode) {
+            const apiUrl = `/api/market/analyze-company`;
             const token = sessionStorage.getItem('ai-tool-token');
-            if (!token) {
-                dom.mainContent.classList.add('hidden');
-                dom.loginModal.classList.remove('hidden');
-                throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
-            }
+            if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+            
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ companies, keyword, mode })
+                body: JSON.stringify({ company, keyword, mode })
             });
+
             if (response.status === 401) {
-                 sessionStorage.removeItem('ai-tool-token');
-                 dom.mainContent.classList.add('hidden');
-                 dom.loginModal.classList.remove('hidden');
-                 throw new Error('인증에 실패했습니다. 다시 로그인해주세요.');
+                sessionStorage.removeItem('ai-tool-token');
+                dom.mainContent.classList.add('hidden');
+                dom.loginModal.classList.remove('hidden');
+                throw new Error('인증에 실패했습니다. 다시 로그인해주세요.');
             }
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({error: `서버 응답 오류: ${response.status}`}));
+                const errorData = await response.json().catch(() => ({error: `[${company}] 분석 중 서버 응답 오류: ${response.status}`}));
+                throw new Error(errorData.error);
+            }
+            return await response.json();
+        }
+
+        // ✨ [추가] 종합 분석 API 호출 함수
+        async function callOverallAnalysisAPI(companyAnalyses) {
+            const apiUrl = `/api/market/analyze-overall`;
+            const token = sessionStorage.getItem('ai-tool-token');
+            if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(companyAnalyses)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({error: `종합 분석 중 서버 응답 오류: ${response.status}`}));
                 throw new Error(errorData.error);
             }
             return await response.json();
@@ -327,8 +364,8 @@
                 tab.className = `py-2 px-4 text-sm font-medium border-b-2 tab-btn ${index === 0 ? 'active' : 'border-transparent'}`;
                 tab.textContent = company;
                 tab.onclick = () => {
-                    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active', 'border-indigo-400'));
-                    tab.classList.add('active', 'border-indigo-400');
+                    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
                     renderCompanyContent(company, data.companies[company]);
                 };
                 dom.companyTabs.appendChild(tab);
@@ -336,7 +373,7 @@
             const firstCompany = Object.keys(data.companies)[0];
             if (firstCompany) {
                 renderCompanyContent(firstCompany, data.companies[firstCompany]);
-                dom.companyTabs.querySelector('.tab-btn').classList.add('border-indigo-400');
+                dom.companyTabs.querySelector('.tab-btn').classList.add('active');
             }
         }
 
@@ -361,24 +398,30 @@
                         <p class="text-sm italic mb-2" style="color: var(--text-secondary);">${analysis.sentiment.reason}</p>
                         <div class="flex items-center gap-4">
                             <div class="font-bold text-2xl ${sentimentColor}">${sentimentScore}/10</div>
-                            <div class="w-full bg-gray-700 rounded-full h-2.5"><div class="${sentimentColor.replace('text','bg')}" style="width: ${sentimentScore*10}%"></div></div>
+                            <div class="w-full bg-gray-700 rounded-full h-2.5"><div class="${sentimentColor.replace('text','bg')}-500/50 h-2.5 rounded-full" style="width: ${sentimentScore*10}%"></div></div>
                         </div>
                     </div>
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">분석 근거 기사</h4>
                         <div class="space-y-4">${analysis.key_articles.map(a => `
-                            <div class="border-l-2 border-gray-600 pl-3">
+                            <div class="border-l-2 pl-3" style="border-color: var(--input-border);">
                                 <a href="${a.link}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${a.title}</a>
                                 <p class="text-xs mt-1" style="color: var(--text-secondary);">${a.summary}</p>
                             </div>`).join('')}
-                        </div>
                     </div>
                 </div>
             `;
         }
         
         function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
-        function toggleTheme() { document.documentElement.classList.toggle('light'); updateThemeIcon(); }
+        function toggleTheme() { 
+            document.documentElement.classList.toggle('light'); 
+            updateThemeIcon();
+            // 차트가 이미 렌더링된 경우, 테마에 맞춰 다시 렌더링
+            if (!dom.resultDashboard.classList.contains('hidden')) {
+                dom.analyzeBtn.click();
+            }
+        }
         function updateThemeIcon() {
             const isLight = document.documentElement.classList.contains('light');
             dom.themeIcon.innerHTML = isLight 
