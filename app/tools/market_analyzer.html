@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --bg-primary: #111827; --bg-secondary: #1f2937; --bg-panel: #1f293780;
@@ -26,8 +28,21 @@
         .loader { border-top-color: #6366f1; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .tab-btn.active { border-color: #6366f1; color: #a5b4fc; }
-        .mode-btn.active { background-color: #4f46e5; color: white; }
+        #analysis-mode-selector .mode-label { transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; color: var(--text-secondary); }
+        #analysis-mode-selector .mode-label.active { background-color: #4f46e5; color: #ffffff; }
         .custom-checkbox:checked { background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e"); }
+        .pdf-loader::after {
+            content: '...';
+            display: inline-block;
+            animation: dots 1.4s infinite;
+            animation-timing-function: steps(3, end);
+        }
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            40% { color: white; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            60% { text-shadow: .25em 0 0 white, .5em 0 0 rgba(0,0,0,0); }
+            80%, 100% { text-shadow: .25em 0 0 white, .5em 0 0 white; }
+        }
     </style>
 </head>
 <body>
@@ -48,33 +63,42 @@
                 </div>
             </header>
             <main class="space-y-8">
-                <div class="backdrop-blur-sm border p-6 rounded-2xl shadow-lg control-panel" style="background-color: var(--bg-panel); border-color: var(--border-color);">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                        <div class="md:col-span-2">
+                <div class="backdrop-blur-sm border p-6 md:p-8 rounded-2xl shadow-lg control-panel" style="background-color: var(--bg-panel); border-color: var(--border-color);">
+                    <div class="space-y-8">
+                        <div>
                             <div class="flex justify-between items-center">
-                                <label class="text-sm font-semibold" style="color: var(--text-secondary);">1. 분석 대상 선택</label>
+                                <label class="text-lg font-semibold" style="color: var(--text-primary);">1. 분석 대상 기업</label>
                                 <div class="flex items-center">
                                     <input id="selectAll" type="checkbox" class="custom-checkbox h-4 w-4 rounded text-indigo-500 focus:ring-indigo-500" style="background-color: var(--input-bg); border-color: var(--input-border);">
-                                    <label for="selectAll" class="ml-2 text-xs font-medium" style="color: var(--text-primary);">모두 선택</label>
+                                    <label for="selectAll" class="ml-2 text-sm font-medium" style="color: var(--text-primary);">모두 선택</label>
                                 </div>
                             </div>
-                            <div id="company-selector" class="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-2"></div>
+                            <div id="company-selector" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-3"></div>
                         </div>
-                        <div class="flex gap-4">
-                            <div class="flex-grow">
-                                <label for="keywordInput" class="text-sm font-semibold" style="color: var(--text-secondary);">2. (선택) 심층 분석 키워드</label>
-                                <input type="text" id="keywordInput" class="w-full mt-2 p-3 rounded-lg focus:ring-2 focus:border-transparent" placeholder="예: SMR, 해외수주">
+
+                        <div>
+                            <label class="text-lg font-semibold" style="color: var(--text-primary);">2. 분석 관점</label>
+                            <div id="analysis-mode-selector" class="mt-3 p-1 rounded-lg flex space-x-1" style="background-color: var(--input-bg);">
+                                <input type="radio" name="analysis_mode" id="mode_strategy" value="business_strategy" class="hidden" checked>
+                                <label for="mode_strategy" class="mode-label flex-1 text-center py-2 px-3 rounded-md cursor-pointer transition-all text-sm font-medium">
+                                    경영 전략
+                                </label>
+                                <input type="radio" name="analysis_mode" id="mode_risk" value="risk_issue" class="hidden">
+                                <label for="mode_risk" class="mode-label flex-1 text-center py-2 px-3 rounded-md cursor-pointer transition-all text-sm font-medium">
+                                    리스크 & 이슈
+                                </label>
                             </div>
-                            <button id="analyzeBtn" class="self-end h-[48px] w-32 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-all">
-                                <span>분석</span>
-                            </button>
                         </div>
-                    </div>
-                    <div class="mt-4">
-                        <label class="text-sm font-semibold" style="color: var(--text-secondary);">3. 분석 관점</label>
-                        <div id="analysis-mode-selector" class="mt-2 flex items-center gap-2 rounded-lg p-1" style="background-color: var(--input-bg);">
-                             <button data-mode="business_strategy" class="mode-btn active flex-1 text-center text-sm py-2 rounded-md">경영 전략</button>
-                             <button data-mode="risk_issue" class="mode-btn flex-1 text-center text-sm py-2 rounded-md">리스크 / 이슈</button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end pt-4">
+                            <div class="md:col-span-2">
+                                 <label for="keywordInput" class="text-lg font-semibold" style="color: var(--text-primary);">3. (선택) 심층 분석 키워드</label>
+                                <input type="text" id="keywordInput" class="w-full mt-2 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="예: SMR, 해외수주, 중대재해" style="background-color: var(--input-bg); border: 1px solid var(--input-border);">
+                            </div>
+                            <button id="analyzeBtn" class="w-full h-[52px] flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-all text-lg">
+                                <span>분석 실행</span>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -85,7 +109,13 @@
                     </div>
                     <div id="resultDashboard" class="hidden space-y-8">
                         <div class="result-card p-6 rounded-xl">
-                            <h3 class="font-bold text-xl mb-3">종합 브리핑</h3>
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-bold text-xl">종합 브리핑</h3>
+                                <button id="downloadPdfBtn" class="flex items-center gap-2 text-sm bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    <span id="pdfBtnText">PDF 저장</span>
+                                </button>
+                            </div>
                             <p id="marketSummary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -160,6 +190,8 @@
             companyContent: document.getElementById('companyContent'),
             themeToggle: document.getElementById('themeToggle'),
             themeIcon: document.getElementById('themeIcon'),
+            downloadPdfBtn: document.getElementById('downloadPdfBtn'),
+            pdfBtnText: document.getElementById('pdfBtnText'),
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -186,16 +218,19 @@
             dom.analyzeBtn.addEventListener('click', handleAnalysis);
             dom.themeToggle.addEventListener('click', toggleTheme);
             dom.loginForm.addEventListener('submit', handleLogin);
+            dom.downloadPdfBtn.addEventListener('click', handleDownloadPdf);
             dom.selectAll.addEventListener('click', () => {
                 const isChecked = dom.selectAll.checked;
                 dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
             });
-            dom.analysisModeSelector.addEventListener('click', (e) => {
-                if (e.target.classList.contains('mode-btn')) {
-                    dom.analysisModeSelector.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
+            dom.analysisModeSelector.addEventListener('change', (e) => {
+                if (e.target.name === 'analysis_mode') {
+                    dom.analysisModeSelector.querySelectorAll('label').forEach(label => label.classList.remove('active'));
+                    const selectedLabel = document.querySelector(`label[for="${e.target.id}"]`);
+                    if(selectedLabel) selectedLabel.classList.add('active');
                 }
             });
+             document.querySelector(`label[for="mode_strategy"]`).classList.add('active');
         });
 
         async function handleLogin(e) {
@@ -235,7 +270,7 @@
                 alert('분석할 회사를 하나 이상 선택해주세요.'); return;
             }
             const keyword = dom.keywordInput.value.trim();
-            const analysisMode = dom.analysisModeSelector.querySelector('.mode-btn.active').dataset.mode;
+            const analysisMode = dom.analysisModeSelector.querySelector('input[type="radio"]:checked').value;
 
             dom.loader.classList.remove('hidden');
             dom.loader.classList.add('flex');
@@ -268,7 +303,7 @@
                 dom.loader.classList.remove('flex');
                 dom.resultDashboard.classList.remove('hidden');
                 dom.analyzeBtn.disabled = false;
-                dom.analyzeBtn.innerHTML = '<span>분석</span>';
+                dom.analyzeBtn.innerHTML = '<span>분석 실행</span><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>';
             }
         }
         
@@ -433,6 +468,56 @@
             `;
         }
         
+        async function handleDownloadPdf() {
+            const { jsPDF } = window.jspdf;
+            const reportElement = dom.resultDashboard;
+            const originalBackgroundColor = reportElement.style.backgroundColor;
+            const pdfBtn = dom.downloadPdfBtn;
+            const pdfBtnText = dom.pdfBtnText;
+            pdfBtn.disabled = true;
+            pdfBtnText.textContent = '변환 중';
+            pdfBtn.classList.add('pdf-loader');
+            reportElement.style.backgroundColor = document.documentElement.classList.contains('light') ? '#f9fafb' : '#111827';
+            pdfBtn.style.display = 'none';
+            try {
+                const canvas = await html2canvas(reportElement, {
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: null 
+                });
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const ratio = canvasWidth / canvasHeight;
+                const imgWidth = pdfWidth;
+                const imgHeight = pdfWidth / ratio;
+                
+                let heightLeft = imgHeight;
+                let position = 0;
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+                }
+                pdf.save('경쟁사_동향_분석_보고서.pdf');
+            } catch (error) {
+                console.error("PDF 생성 중 오류 발생:", error);
+                alert("PDF를 생성하는 데 실패했습니다. 다시 시도해주세요.");
+            } finally {
+                reportElement.style.backgroundColor = originalBackgroundColor;
+                pdfBtn.style.display = 'flex';
+                pdfBtn.disabled = false;
+                pdfBtnText.textContent = 'PDF 저장';
+                pdfBtn.classList.remove('pdf-loader');
+            }
+        }
+
         function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${(items || []).map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
         
         function toggleTheme() { 
