@@ -138,6 +138,9 @@
         </div>
     </div>
     <script>
+        // ✨✨✨ [수정] API 서버의 기본 주소를 변수로 관리합니다. ✨✨✨
+        const API_BASE_URL = 'https://api.dreamofenc.com';
+        
         const COMPANIES = ["삼성물산", "현대건설", "DL이앤씨", "GS건설", "대우건설", "현대엔지니어링", "포스코이앤씨", "롯데건설", "SK에코플랜트", "HDC현대산업개발"];
         let radarChartInstance = null;
         
@@ -204,7 +207,10 @@
             const password = dom.loginForm.password.value;
             dom.loginSubmitBtn.disabled = true;
             dom.loginSubmitBtn.textContent = '로그인 중...';
-            const apiUrl = 'https://api.dreamofenc.com/api/auth/login';
+
+            // ✨ [수정] API 기본 주소 변수 사용
+            const apiUrl = `${API_BASE_URL}/api/auth/login`; 
+            
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -228,7 +234,6 @@
             }
         }
 
-        // ✨ [수정] API 호출 로직을 순차적으로 변경
         async function handleAnalysis() {
             const selectedCompanies = Array.from(dom.companySelector.querySelectorAll('input:checked')).map(cb => cb.value);
             if (selectedCompanies.length === 0) {
@@ -238,27 +243,22 @@
             const analysisMode = dom.analysisModeSelector.querySelector('.mode-btn.active').dataset.mode;
 
             dom.loader.classList.remove('hidden');
-            dom.loader.classList.add('flex'); // flex로 변경하여 내부 아이템 정렬
+            dom.loader.classList.add('flex');
             dom.resultDashboard.classList.add('hidden');
             dom.analyzeBtn.disabled = true;
             dom.analyzeBtn.innerHTML = '<span>분석 중...</span>';
 
             const companyAnalyses = {};
             try {
-                // 1. 각 회사를 순차적으로 분석합니다.
                 for (const [index, company] of selectedCompanies.entries()) {
                     dom.loaderText.textContent = `AI가 ${company} 관련 기사를 분석 중입니다... (${index + 1}/${selectedCompanies.length})`;
                     const result = await callCompanyAnalysisAPI(company, keyword, analysisMode);
-                    if (result) {
-                        companyAnalyses[company] = result;
-                    }
+                    if (result) companyAnalyses[company] = result;
                 }
 
-                // 2. 모든 개별 분석이 끝나면, 종합 분석을 요청합니다.
                 dom.loaderText.textContent = `종합 분석 보고서를 생성 중입니다...`;
                 const overallData = await callOverallAnalysisAPI(companyAnalyses);
 
-                // 3. 최종 데이터를 합쳐서 대시보드를 렌더링합니다.
                 const finalData = {
                     overall: overallData,
                     companies: companyAnalyses
@@ -277,9 +277,9 @@
             }
         }
         
-        // ✨ [추가] 개별 회사 분석 API 호출 함수
         async function callCompanyAnalysisAPI(company, keyword, mode) {
-            const apiUrl = `/api/market/analyze-company`;
+            // ✨ [수정] API 기본 주소 변수 사용
+            const apiUrl = `${API_BASE_URL}/api/market/analyze-company`;
             const token = sessionStorage.getItem('ai-tool-token');
             if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
             
@@ -296,15 +296,20 @@
                 throw new Error('인증에 실패했습니다. 다시 로그인해주세요.');
             }
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({error: `[${company}] 분석 중 서버 응답 오류: ${response.status}`}));
-                throw new Error(errorData.error);
+                const errorText = await response.text();
+                try {
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(errorData.error || `[${company}] 분석 중 서버 응답 오류: ${response.status}`);
+                } catch {
+                    throw new Error(`[${company}] 분석 중 서버 응답 오류: ${response.status} - ${errorText}`);
+                }
             }
             return await response.json();
         }
 
-        // ✨ [추가] 종합 분석 API 호출 함수
         async function callOverallAnalysisAPI(companyAnalyses) {
-            const apiUrl = `/api/market/analyze-overall`;
+            // ✨ [수정] API 기본 주소 변수 사용
+            const apiUrl = `${API_BASE_URL}/api/market/analyze-overall`;
             const token = sessionStorage.getItem('ai-tool-token');
             if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
             
@@ -331,13 +336,19 @@
                 color: isLight ? '#4b5563' : '#9ca3af', backgroundColor: 'transparent', rotateRatio: 0,
             });
             if (radarChartInstance) radarChartInstance.destroy();
-            const firstCompanyData = data.companies[Object.keys(data.companies)[0]];
-            if (!firstCompanyData) return;
+            
+            const companyKeys = Object.keys(data.companies);
+            if(companyKeys.length === 0) return;
+
+            const firstCompanyData = data.companies[companyKeys[0]];
+            if (!firstCompanyData || !firstCompanyData.focus_scores) return;
+
             const radarLabels = Object.keys(firstCompanyData.focus_scores);
-            const radarDatasets = Object.entries(data.companies).map(([company, analysis], index) => {
+            const radarDatasets = companyKeys.map((company, index) => {
+                const analysis = data.companies[company];
                 const color = colorPalettes.aurora[index % colorPalettes.aurora.length];
                 return {
-                    label: company, data: Object.values(analysis.focus_scores),
+                    label: company, data: Object.values(analysis.focus_scores || {}),
                     borderColor: color, backgroundColor: color + '33', pointBackgroundColor: color,
                 };
             });
@@ -359,7 +370,7 @@
             });
             dom.companyTabs.innerHTML = '';
             dom.companyContent.innerHTML = '';
-            Object.keys(data.companies).forEach((company, index) => {
+            companyKeys.forEach((company, index) => {
                 const tab = document.createElement('button');
                 tab.className = `py-2 px-4 text-sm font-medium border-b-2 tab-btn ${index === 0 ? 'active' : 'border-transparent'}`;
                 tab.textContent = company;
@@ -370,7 +381,8 @@
                 };
                 dom.companyTabs.appendChild(tab);
             });
-            const firstCompany = Object.keys(data.companies)[0];
+            
+            const firstCompany = companyKeys[0];
             if (firstCompany) {
                 renderCompanyContent(firstCompany, data.companies[firstCompany]);
                 dom.companyTabs.querySelector('.tab-btn').classList.add('active');
@@ -378,9 +390,14 @@
         }
 
         function renderCompanyContent(company, analysis) {
-            const swot = analysis.swot;
-            const sentimentScore = analysis.sentiment.score;
+            const swot = analysis.swot || {strengths:[], weaknesses:[], opportunities:[], threats:[]};
+            const sentiment = analysis.sentiment || {score: 5, reason: "N/A"};
+            const strategies = analysis.strategies || [];
+            const key_articles = analysis.key_articles || [];
+            
+            const sentimentScore = sentiment.score;
             const sentimentColor = sentimentScore > 7 ? 'text-green-400' : (sentimentScore < 4 ? 'text-red-400' : 'text-yellow-400');
+            
             dom.companyContent.innerHTML = `
                 <div class="space-y-6">
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -391,11 +408,11 @@
                     </div>
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">핵심 전략</h4>
-                        <ul class="list-disc list-inside text-sm space-y-1" style="color: var(--text-secondary);">${analysis.strategies.map(s => `<li>${s}</li>`).join('')}</ul>
+                        <ul class="list-disc list-inside text-sm space-y-1" style="color: var(--text-secondary);">${strategies.map(s => `<li>${s}</li>`).join('')}</ul>
                     </div>
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">시장 평판 (감성 분석)</h4>
-                        <p class="text-sm italic mb-2" style="color: var(--text-secondary);">${analysis.sentiment.reason}</p>
+                        <p class="text-sm italic mb-2" style="color: var(--text-secondary);">${sentiment.reason}</p>
                         <div class="flex items-center gap-4">
                             <div class="font-bold text-2xl ${sentimentColor}">${sentimentScore}/10</div>
                             <div class="w-full bg-gray-700 rounded-full h-2.5"><div class="${sentimentColor.replace('text','bg')}-500/50 h-2.5 rounded-full" style="width: ${sentimentScore*10}%"></div></div>
@@ -403,7 +420,7 @@
                     </div>
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">분석 근거 기사</h4>
-                        <div class="space-y-4">${analysis.key_articles.map(a => `
+                        <div class="space-y-4">${key_articles.map(a => `
                             <div class="border-l-2 pl-3" style="border-color: var(--input-border);">
                                 <a href="${a.link}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${a.title}</a>
                                 <p class="text-xs mt-1" style="color: var(--text-secondary);">${a.summary}</p>
@@ -413,11 +430,11 @@
             `;
         }
         
-        function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
+        function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${(items || []).map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
+        
         function toggleTheme() { 
             document.documentElement.classList.toggle('light'); 
             updateThemeIcon();
-            // 차트가 이미 렌더링된 경우, 테마에 맞춰 다시 렌더링
             if (!dom.resultDashboard.classList.contains('hidden')) {
                 dom.analyzeBtn.click();
             }
