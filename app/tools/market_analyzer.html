@@ -111,7 +111,26 @@
             </footer>
         </div>
         <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
+                <h2 class="text-2xl font-bold text-white text-center mb-6">AI 기능 로그인</h2>
+                <p class="text-center text-sm text-gray-400 mb-6">이 기능을 사용하려면 DokuWiki 계정으로 로그인해야 합니다.</p>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-400 text-sm font-bold mb-2">아이디</label>
+                        <input type="text" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-400 text-sm font-bold mb-2">비밀번호</label>
+                        <input type="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <button type="submit" id="login-submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                            로그인
+                        </button>
+                    </div>
+                </form>
             </div>
+        </div>
     </div>
 
     <script>
@@ -120,7 +139,6 @@
         let radarChartInstance = null;
         
         const dom = {
-            // dom 객체 정의는 이전과 동일
             mainContent: document.getElementById('main-content'),
             loginModal: document.getElementById('login-modal'),
             loginForm: document.getElementById('login-form'),
@@ -134,7 +152,6 @@
             loaderText: document.getElementById('loader-text'),
             resultDashboard: document.getElementById('resultDashboard'),
             marketSummary: document.getElementById('marketSummary'),
-            // ✨ 제목 DOM 객체 추가
             radarChartTitle: document.getElementById('radarChartTitle'),
             keywordChartTitle: document.getElementById('keywordChartTitle'),
             keywordCloud: document.getElementById('keywordCloud'),
@@ -145,11 +162,72 @@
             themeIcon: document.getElementById('themeIcon'),
         };
 
-        // DOMContentLoaded, 이벤트 리스너 등은 이전과 동일하게 유지
-        document.addEventListener('DOMContentLoaded', () => { /* 이전과 동일 */ });
-        // 이벤트 리스너 생략
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = sessionStorage.getItem('ai-tool-token');
+            if (token) {
+                dom.mainContent.classList.remove('hidden');
+                dom.loginModal.classList.add('hidden');
+            } else {
+                dom.mainContent.classList.add('hidden');
+                dom.loginModal.classList.remove('hidden');
+            }
+            
+            COMPANIES.forEach(company => {
+                dom.companySelector.innerHTML += `
+                    <div class="flex items-center">
+                        <input id="${company}" type="checkbox" value="${company}" class="custom-checkbox h-4 w-4 rounded text-indigo-500 focus:ring-indigo-500" style="background-color: var(--input-bg); border-color: var(--input-border);">
+                        <label for="${company}" class="ml-2 text-sm">${company}</label>
+                    </div>
+                `;
+            });
+            updateThemeIcon();
 
-        async function handleLogin(e) { /* 이전과 동일 */ }
+            // 이벤트 리스너들은 여기에 있어야 null 에러를 피할 수 있습니다.
+            dom.analyzeBtn.addEventListener('click', handleAnalysis);
+            dom.themeToggle.addEventListener('click', toggleTheme);
+            dom.loginForm.addEventListener('submit', handleLogin);
+            dom.selectAll.addEventListener('click', () => {
+                const isChecked = dom.selectAll.checked;
+                dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
+            });
+            dom.analysisModeSelector.addEventListener('click', (e) => {
+                if (e.target.classList.contains('mode-btn')) {
+                    dom.analysisModeSelector.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                }
+            });
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = dom.loginForm.username.value;
+            const password = dom.loginForm.password.value;
+            dom.loginSubmitBtn.disabled = true;
+            dom.loginSubmitBtn.textContent = '로그인 중...';
+            const apiUrl = `${API_BASE_URL}/api/auth/login`; 
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '로그인에 실패했습니다.');
+                }
+                const data = await response.json();
+                sessionStorage.setItem('ai-tool-token', data.token);
+                dom.loginModal.classList.add('hidden');
+                dom.mainContent.classList.remove('hidden');
+                dom.loginForm.reset();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                dom.loginSubmitBtn.disabled = false;
+                dom.loginSubmitBtn.textContent = '로그인';
+            }
+        }
 
         async function handleAnalysis() {
             const selectedCompanies = Array.from(dom.companySelector.querySelectorAll('input:checked')).map(cb => cb.value);
@@ -174,14 +252,12 @@
                 }
 
                 dom.loaderText.textContent = `종합 분석 보고서를 생성 중입니다...`;
-                // ✨ [수정] 종합 분석 시 mode 정보 전달
                 const overallData = await callOverallAnalysisAPI(companyAnalyses, analysisMode);
 
                 const finalData = {
                     overall: overallData,
                     companies: companyAnalyses
                 };
-                // ✨ [수정] 대시보드 렌더링 시 mode 정보 전달
                 renderDashboard(finalData, analysisMode);
 
             } catch (error) {
@@ -196,7 +272,7 @@
             }
         }
         
-        async function callCompanyAnalysisAPI(company, keyword, mode) { /* 이전과 동일 */ 
+        async function callCompanyAnalysisAPI(company, keyword, mode) {
              const apiUrl = `${API_BASE_URL}/api/market/analyze-company`;
              const token = sessionStorage.getItem('ai-tool-token');
              if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
@@ -222,7 +298,6 @@
              return await response.json();
         }
 
-        // ✨ [수정] 종합 분석 API 호출 시 mode 정보 추가
         async function callOverallAnalysisAPI(analyses, mode) {
             const apiUrl = `${API_BASE_URL}/api/market/analyze-overall`;
             const token = sessionStorage.getItem('ai-tool-token');
@@ -231,7 +306,6 @@
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                // ✨ [수정] body에 analyses와 mode를 함께 전달
                 body: JSON.stringify({ analyses, mode })
             });
 
@@ -242,14 +316,12 @@
             return await response.json();
         }
 
-        // ✨ [수정] 대시보드 렌더링 함수에서 mode에 따라 다르게 표시
         function renderDashboard(data, mode) {
             const isLight = document.documentElement.classList.contains('light');
             const textColor = isLight ? '#1f2937' : '#f3f4f6';
             dom.marketSummary.textContent = data.overall.market_summary;
             const wordList = data.overall.common_keywords.map((kw, i) => [kw, 60 - i * 5]);
 
-            // ✨ [수정] 모드에 따라 차트 제목 변경
             if (mode === 'risk_issue') {
                 dom.radarChartTitle.textContent = '리스크 유형 비교';
                 dom.keywordChartTitle.textContent = '핵심 리스크 키워드';
@@ -302,7 +374,6 @@
 
             dom.companyTabs.innerHTML = '';
             dom.companyContent.innerHTML = '';
-            // renderCompanyContent 호출 부분은 이전과 동일하게 유지
             companyKeys.forEach((company, index) => {
                 const tab = document.createElement('button');
                 tab.className = `py-2 px-4 text-sm font-medium border-b-2 tab-btn ${index === 0 ? 'active' : 'border-transparent'}`;
@@ -339,11 +410,11 @@
                         ${renderSwotCard('위협', swot.threats, 'bg-yellow-500/20')}
                     </div>
                     <div class="result-card p-6 rounded-xl">
-                        <h4 class="font-bold text-lg mb-2">핵심 전략</h4>
+                        <h4 class="font-bold text-lg mb-2">핵심 전략/리스크</h4>
                         <ul class="list-disc list-inside text-sm space-y-1" style="color: var(--text-secondary);">${strategies.map(s => `<li>${s}</li>`).join('')}</ul>
                     </div>
                     <div class="result-card p-6 rounded-xl">
-                        <h4 class="font-bold text-lg mb-2">시장 평판 (감성 분석)</h4>
+                        <h4 class="font-bold text-lg mb-2">시장 평판/리스크 레벨</h4>
                         <p class="text-sm italic mb-2" style="color: var(--text-secondary);">${sentiment.reason}</p>
                         <div class="flex items-center gap-4">
                             <div class="font-bold text-2xl ${sentimentColor}">${sentimentScore}/10</div>
@@ -378,7 +449,6 @@
                 : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
         }
         
-        const colorPalettes = { aurora: ['#2dd4bf', '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185', '#fdba74', '#facc15', '#a3e635', '#4ade80'] };
+        const colorPalettes = { aurora: ['#2dd4bf', '#38bdf8', '#818cf8', '##c084fc', '#f472b6', '#fb7185', '#fdba74', '#facc15', '#a3e635', '#4ade80'] };
     </script>
 </body>
-</html>
