@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경쟁사 동향 대시보드</title>
+    <title>경쟁사 동향 분석 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+    <!-- ✨ [추가] Font Awesome 아이콘 로드 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -73,18 +75,19 @@
     <div id="wrapper" class="container mx-auto p-4 md:p-8">
         <div id="main-content" class="hidden">
             <header class="text-center mb-10 relative">
-                <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
-                    경쟁사 동향 대시보드
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                    <i class="fas fa-chart-line mr-3 text-blue-400"></i>경쟁사 동향 분석 대시보드
                 </h1>
-                <p class="text-lg mt-3" style="color: var(--text-secondary);">AI가 분석한 건설사 최신 동향을 한눈에 파악하세요.</p>
-                <div class="absolute top-0 right-0 flex items-center gap-2">
-                    <a href="/" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="Home">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    </a>
+                <p class="text-lg mt-3" style="color: var(--text-secondary);">DART 공시 데이터와 최신 뉴스를 기반으로 AI가 기업을 분석합니다.</p>
+                <!-- ✨ [수정] 아카이브 버튼 추가 -->
+                <div class="absolute top-0 right-0 flex items-center gap-3">
+                    <button id="archive-btn" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="분석 기록 보기">
+                        <i class="fas fa-folder w-6 h-6"></i>
+                    </button>
                     <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
                         <!-- ✨ [아이콘 복원] SVG 아이콘을 HTML에 직접 추가 -->
-                        <svg id="themeIconMoon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <svg id="themeIconSun" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="themeIconSun" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 16.464A1 1 0 106.465 15.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-1.414-2.12a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"></path></svg>
+                        <svg id="themeIconMoon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     </button>
                 </div>
             </header>
