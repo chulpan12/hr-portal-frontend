@@ -31,8 +31,7 @@ const dom = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ✨ [수정] 로그인 로직 복원
-    const token = sessionStorage.getItem('userToken');
+    const token = sessionStorage.getItem('ai-tool-token'); // ✨ [수정] 토큰 키 통일
     if (!token) {
         dom.mainContent.classList.add('hidden');
         dom.loginModal.classList.remove('hidden');
@@ -55,12 +54,44 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.analyzeBtn.addEventListener('click', handleAnalysis);
     dom.themeToggle.addEventListener('click', toggleTheme);
     dom.downloadBtn.addEventListener('click', handleDownloadHtml);
+    dom.loginForm.addEventListener('submit', handleLogin); // ✨ [추가] 로그인 이벤트 리스너
     dom.selectAll.addEventListener('click', () => {
         const isChecked = dom.selectAll.checked;
         dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
     });
 });
 
+// ✨ [추가] handleLogin 함수 전체 복원
+async function handleLogin(e) {
+    e.preventDefault();
+    const username = dom.loginForm.username.value;
+    const password = dom.loginForm.password.value;
+    dom.loginSubmitBtn.disabled = true;
+    dom.loginSubmitBtn.textContent = '로그인 중...';
+    const apiUrl = `${API_BASE_URL}/api/auth/login`; 
+    
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || '로그인에 실패했습니다.');
+        }
+        const data = await response.json();
+        sessionStorage.setItem('ai-tool-token', data.token); // ✨ [수정] 토큰 키 통일
+        dom.loginModal.classList.add('hidden');
+        dom.mainContent.classList.remove('hidden');
+        dom.loginForm.reset();
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        dom.loginSubmitBtn.disabled = false;
+        dom.loginSubmitBtn.textContent = '로그인';
+    }
+}
 
 async function handleAnalysis() {
     const selectedCompanies = Array.from(dom.companySelector.querySelectorAll('input:checked')).map(cb => cb.value);
@@ -110,7 +141,13 @@ async function handleAnalysis() {
 
 async function callCompanyAnalysisAPI(company, keyword) {
      const apiUrl = `${API_BASE_URL}/api/market/analyze-company`;
-     const token = sessionStorage.getItem('userToken'); // ✨ [수정] 토큰 가져오기
+     const token = sessionStorage.getItem('ai-tool-token'); // ✨ [수정] 토큰 키 통일
+     if (!token) { // ✨ [추가] 토큰 부재 시 에러 처리
+         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+         sessionStorage.removeItem('ai-tool-token');
+         window.location.reload();
+         throw new Error('로그인 토큰이 없습니다.');
+     }
      const response = await fetch(apiUrl, {
          method: 'POST',
          headers: { 
@@ -133,7 +170,13 @@ async function callCompanyAnalysisAPI(company, keyword) {
 
 async function callOverallAnalysisAPI(analyses) {
     const apiUrl = `${API_BASE_URL}/api/market/analyze-overall`;
-    const token = sessionStorage.getItem('userToken'); // ✨ [수정] 토큰 가져오기
+    const token = sessionStorage.getItem('ai-tool-token'); // ✨ [수정] 토큰 키 통일
+     if (!token) { // ✨ [추가] 토큰 부재 시 에러 처리
+         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+         sessionStorage.removeItem('ai-tool-token');
+         window.location.reload();
+         throw new Error('로그인 토큰이 없습니다.');
+     }
     const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
