@@ -103,9 +103,8 @@
                             </div>
                             <p id="marketSummary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
                         </div>
-                        <!-- ✨ [개선] 레이더 차트 제거, 워드 클라우드 중심으로 변경 -->
                         <div class="result-card p-6 rounded-xl">
-                            <h3 id="keywordChartTitle" class="font-bold text-xl mb-3">주요 키워드 분석</h3>
+                            <h3 class="font-bold text-xl mb-3">업계 공통 키워드</h3>
                             <div class="w-full h-80 flex justify-center items-center">
                                 <canvas id="keywordCloud" width="500" height="320"></canvas>
                             </div>
@@ -148,7 +147,7 @@
     <script>
         const API_BASE_URL = 'https://api.dreamofenc.com';
         const COMPANIES = ["삼성물산", "현대건설", "DL이앤씨", "GS건설", "대우건설", "현대엔지니어링", "포스코이앤씨", "롯데건설", "SK에코플랜트", "HDC현대산업개발"];
-        // ✨ [삭제] radarChartInstance 제거
+        let dynamicRadarChartInstance = null; // ✨ [개선] 동적 레이더 차트 인스턴스
         
         const dom = {
             mainContent: document.getElementById('main-content'),
@@ -158,16 +157,12 @@
             selectAll: document.getElementById('selectAll'),
             companySelector: document.getElementById('company-selector'),
             keywordInput: document.getElementById('keywordInput'),
-            // ✨ [삭제] analysisModeSelector 제거
             analyzeBtn: document.getElementById('analyzeBtn'),
             loader: document.getElementById('loader'),
             loaderText: document.getElementById('loader-text'),
             resultDashboard: document.getElementById('resultDashboard'),
             marketSummary: document.getElementById('marketSummary'),
-            radarChartTitle: document.getElementById('radarChartTitle'), // 나중에 삭제될 수 있음
-            keywordChartTitle: document.getElementById('keywordChartTitle'),
             keywordCloud: document.getElementById('keywordCloud'),
-            // ✨ [삭제] radarChart 제거
             companyTabs: document.getElementById('companyTabs'),
             companyContent: document.getElementById('companyContent'),
             themeToggle: document.getElementById('themeToggle'),
@@ -340,24 +335,21 @@
             dom.marketSummary.textContent = data.overall.market_summary || "종합 분석 요약이 없습니다.";
 
             const keywordsData = data.overall.keywords || [];
-            const wordList = keywordsData.map(item => [item.keyword, item.weight * 5]);
+            const wordList = keywordsData.map(item => [item.keyword, item.weight * 1.5]);
 
-            // 워드클라우드에 데이터가 있을 때만 그리도록 조건 추가
             const ctx = dom.keywordCloud.getContext('2d');
             ctx.clearRect(0, 0, dom.keywordCloud.width, dom.keywordCloud.height);
             if (wordList.length > 0) {
                 WordCloud(dom.keywordCloud, {
                     list: wordList, 
-                    gridSize: 10, 
-                    weightFactor: 1.5,
+                    gridSize: 8, 
+                    weightFactor: 2,
                     fontFamily: "'Noto Sans KR', sans-serif",
                     color: isLight ? '#4b5563' : '#9ca3af',
                     backgroundColor: 'transparent',
                     rotateRatio: 0,
                 });
             }
-
-            // ✨ [삭제] 레이더 차트 관련 로직 모두 제거
             
             const companyKeys = Object.keys(data.companies);
             if(companyKeys.length === 0) return;
@@ -371,35 +363,61 @@
                 tab.onclick = () => {
                     document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    renderCompanyContent(company, data.companies[company]);
+                    renderCompanyContent(data.companies[company]);
                 };
                 dom.companyTabs.appendChild(tab);
             });
             const firstCompany = companyKeys[0];
             if (firstCompany) {
-                renderCompanyContent(firstCompany, data.companies[firstCompany]);
+                renderCompanyContent(data.companies[firstCompany]);
                 dom.companyTabs.querySelector('.tab-btn').classList.add('active');
             }
         }
 
         // ✨ [대규모 수정] 새로운 데이터 구조에 맞게 회사별 상세 콘텐츠 렌더링 로직 개편
-        function renderCompanyContent(company, analysis) {
+        function renderCompanyContent(analysis) {
             const swot = analysis.swot || {strengths:[], weaknesses:[], opportunities:[], threats:[]};
             const overallAssessment = analysis.overall_assessment || "종합 평가 정보가 없습니다.";
+            const dynamicAssessment = analysis.dynamic_assessment || {dimensions: {}, summary: "동적 평가 정보가 없습니다."};
+            const keywordAnalysis = analysis.keyword_analysis; // 없을 수도 있음
             const key_articles = analysis.key_articles || [];
             
+            let keywordAnalysisHtml = '';
+            if (keywordAnalysis && keywordAnalysis.summary !== 'N/A') {
+                const score = keywordAnalysis.score || 0;
+                const scoreColor = score > 3.5 ? 'text-green-400' : (score < 2.5 ? 'text-red-400' : 'text-yellow-400');
+                keywordAnalysisHtml = `
+                    <div class="result-card p-6 rounded-xl">
+                        <h4 class="font-bold text-lg mb-2">심층 키워드 분석: "${dom.keywordInput.value.trim()}"</h4>
+                        <p class="text-sm mb-3" style="color: var(--text-secondary);">${keywordAnalysis.summary}</p>
+                        <div class="flex items-center gap-4">
+                            <div class="font-bold text-2xl ${scoreColor}">${score}/5</div>
+                            <div class="w-full bg-gray-700 rounded-full h-2.5"><div class="${scoreColor.replace('text','bg')}-500/50 h-2.5 rounded-full" style="width: ${score*20}%"></div></div>
+                        </div>
+                        <p class="text-xs italic mt-2" style="color: var(--text-secondary);">평가 근거: ${keywordAnalysis.reason}</p>
+                    </div>`;
+            }
+
             dom.companyContent.innerHTML = `
                 <div class="space-y-6">
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">AI 종합 평가</h4>
                         <p class="text-sm" style="color: var(--text-secondary);">${overallAssessment}</p>
                     </div>
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        ${renderSwotCard('강점 (Strengths)', swot.strengths, 'bg-green-500/20')}
-                        ${renderSwotCard('약점 (Weaknesses)', swot.weaknesses, 'bg-red-500/20')}
-                        ${renderSwotCard('기회 (Opportunities)', swot.opportunities, 'bg-blue-500/20')}
-                        ${renderSwotCard('위협 (Threats)', swot.threats, 'bg-yellow-500/20')}
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div class="result-card p-6 rounded-xl">
+                            <h4 class="font-bold text-lg mb-2">동적 역량 평가</h4>
+                            <div class="h-80"><canvas id="dynamicRadarChart"></canvas></div>
+                             <p class="text-xs text-center mt-2" style="color: var(--text-secondary);">${dynamicAssessment.summary}</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            ${renderSwotCard('강점', swot.strengths, 'bg-green-500/20')}
+                            ${renderSwotCard('약점', swot.weaknesses, 'bg-red-500/20')}
+                            ${renderSwotCard('기회', swot.opportunities, 'bg-blue-500/20')}
+                            ${renderSwotCard('위협', swot.threats, 'bg-yellow-500/20')}
+                        </div>
                     </div>
+                    ${keywordAnalysisHtml}
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">분석 근거 기사</h4>
                         <div class="space-y-4">${key_articles.map(a => `
@@ -407,9 +425,57 @@
                                 <a href="${a.link}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${a.title}</a>
                                 <p class="text-xs mt-1" style="color: var(--text-secondary);">${a.summary}</p>
                             </div>`).join('')}
+                        </div>
                     </div>
-                </div>
-            `;
+                </div>`;
+            
+            renderDynamicChart(dynamicAssessment.dimensions);
+        }
+
+        function renderDynamicChart(dimensions) {
+            if (dynamicRadarChartInstance) {
+                dynamicRadarChartInstance.destroy();
+            }
+            const chartCanvas = document.getElementById('dynamicRadarChart');
+            if (!chartCanvas) return;
+
+            const labels = Object.keys(dimensions);
+            const data = Object.values(dimensions);
+            const isLight = document.documentElement.classList.contains('light');
+            const textColor = isLight ? '#1f2937' : '#f3f4f6';
+            const gridColor = isLight ? '#e5e7eb' : '#374151';
+
+            dynamicRadarChartInstance = new Chart(chartCanvas, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(99, 102, 241, 1)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: gridColor },
+                            grid: { color: gridColor },
+                            pointLabels: { color: textColor, font: { size: 12 } },
+                            ticks: { backdropColor: 'transparent', color: textColor, stepSize: 1 },
+                            min: 0, max: 5
+                        }
+                    }
+                }
+            });
         }
         
         function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${(items || []).map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
