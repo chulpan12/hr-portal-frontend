@@ -54,6 +54,18 @@
         .dynamic-assessment-container {
             height: 100%;
         }
+        .article-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .show-more-btn {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            transition: all 0.2s ease-in-out;
+        }
+        .show-more-btn:hover {
+            background-color: var(--input-border);
+        }
     </style>
 </head>
 <body>
@@ -415,8 +427,9 @@
             const overallAssessment = analysis.overall_assessment || "종합 평가 정보가 없습니다.";
             const dynamicAssessment = analysis.dynamic_assessment || {dimensions: {}, summary: "동적 평가 정보가 없습니다."};
             const keywordAnalysis = analysis.keyword_analysis; // 없을 수도 있음
-            const key_articles = analysis.key_articles || [];
-            
+            const keyArticles = analysis.key_articles || [];
+            const sourceArticles = analysis.source_articles || [];
+
             let keywordAnalysisHtml = '';
             if (keywordAnalysis && keywordAnalysis.summary !== 'N/A') {
                 keywordAnalysisHtml = `
@@ -434,6 +447,23 @@
                             </div>
                         </div>
                     </div>`;
+            }
+
+            // ✨ [최종 개선] '더보기' 기능 로직
+            const keyArticleLinks = new Set(keyArticles.map(a => a.link));
+            const otherArticles = sourceArticles.filter(a => !keyArticleLinks.has(a.link));
+
+            let articlesHtml = '';
+            if (keyArticles.length > 0) {
+                articlesHtml += `<h5 class="font-semibold mb-3 text-indigo-400">AI가 선별한 핵심 기사</h5>`;
+                articlesHtml += `<div class="space-y-4">${keyArticles.map(a => createArticleHtml(a, true)).join('')}</div>`;
+            }
+
+            if (otherArticles.length > 0) {
+                articlesHtml += `<div id="other-articles" class="hidden mt-4 space-y-4">${otherArticles.map(a => createArticleHtml(a, false)).join('')}</div>`;
+                articlesHtml += `<div class="mt-4 text-center"><button id="show-more-btn" class="show-more-btn w-full py-2 px-4 rounded-lg text-sm font-medium">더보기 (${otherArticles.length}건)</button></div>`;
+            } else if (keyArticles.length === 0) {
+                articlesHtml = `<p style="color: var(--text-secondary);">참고 기사를 찾을 수 없습니다.</p>`
             }
 
             dom.companyContent.innerHTML = `
@@ -458,16 +488,19 @@
                     ${keywordAnalysisHtml}
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">분석 근거 기사</h4>
-                        <div class="space-y-4">${key_articles.map(a => `
-                            <div class="border-l-2 pl-3" style="border-color: var(--input-border);">
-                                <a href="${a.link}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${a.title}</a>
-                                <p class="text-xs mt-1" style="color: var(--text-secondary);">${a.summary}</p>
-                            </div>`).join('')}
-                        </div>
+                        ${articlesHtml}
                     </div>
                 </div>`;
             
             renderDynamicChart(dynamicAssessment.dimensions);
+
+            const showMoreBtn = document.getElementById('show-more-btn');
+            if (showMoreBtn) {
+                showMoreBtn.addEventListener('click', () => {
+                    document.getElementById('other-articles').classList.remove('hidden');
+                    showMoreBtn.style.display = 'none';
+                });
+            }
         }
 
         function renderDynamicChart(dimensions) {
@@ -691,6 +724,15 @@
             dom.themeIcon.innerHTML = isLight 
                 ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`
                 : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
+        }
+
+        function createArticleHtml(article, isKeyArticle) {
+            const content = isKeyArticle ? article.summary : article.content;
+            return `
+                <div class="border-l-2 pl-3" style="border-color: var(--input-border);">
+                    <a href="${article.link}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${article.title}</a>
+                    <p class="text-xs mt-1" style="color: var(--text-secondary);">${content}</p>
+                </div>`;
         }
 
     </script>
