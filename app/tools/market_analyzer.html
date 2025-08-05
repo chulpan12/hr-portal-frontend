@@ -167,6 +167,7 @@
         const COMPANIES = ["삼성물산", "현대건설", "DL이앤씨", "GS건설", "대우건설", "현대엔지니어링", "포스코이앤씨", "롯데건설", "SK에코플랜트", "HDC현대산업개발"];
         let dynamicRadarChartInstance = null; // ✨ [개선] 동적 레이더 차트 인스턴스
         let keywordBarChartInstance = null;
+        let lastAnalysisData = null; // ✨ [추가] 마지막 분석 결과를 저장하기 위한 변수
         
         const dom = {
             mainContent: document.getElementById('main-content'),
@@ -287,7 +288,7 @@
                     overall: overallData,
                     companies: companyAnalyses
                 };
-                // ✨ [수정] renderDashboard 호출 시 mode 제거
+                lastAnalysisData = finalData; // ✨ [추가] 분석 결과를 전역 변수에 저장
                 renderDashboard(finalData);
 
             } catch (error) {
@@ -674,6 +675,22 @@
                     }
                 }
             });
+        }
+
+        // ✨ [복원 및 개선] 아래 두 함수를 다시 추가하고, 테마 변경 로직을 개선합니다.
+        function toggleTheme() { 
+            document.documentElement.classList.toggle('light'); 
+            updateThemeIcon();
+            if (lastAnalysisData && !dom.resultDashboard.classList.contains('hidden')) {
+                renderDashboard(lastAnalysisData);
+            }
+        }
+
+        function updateThemeIcon() {
+            const isLight = document.documentElement.classList.contains('light');
+            dom.themeIcon.innerHTML = isLight 
+                ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`
+                : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
         }
 
     </script>
