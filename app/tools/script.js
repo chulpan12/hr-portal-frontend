@@ -28,6 +28,10 @@ const dom = {
     themeIconSun: document.getElementById('themeIconSun'),   // ✨ [아이콘 복원]
     downloadBtn: document.getElementById('downloadBtn'),
     downloadBtnText: document.getElementById('downloadBtnText'),
+    archiveBtn: document.getElementById('archive-btn'),
+    archiveModal: document.getElementById('archive-modal'),
+    closeArchiveModalBtn: document.getElementById('close-archive-modal'),
+    archiveList: document.getElementById('archive-list'),
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isChecked = dom.selectAll.checked;
         dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
     });
+
+    // ✨ [추가] 아카이브 모달 이벤트 리스너
+    dom.archiveBtn.addEventListener('click', showArchiveModal);
+    dom.closeArchiveModalBtn.addEventListener('click', () => dom.archiveModal.classList.add('hidden'));
 });
 
 // ✨ [추가] handleLogin 함수 전체 복원
@@ -125,6 +133,9 @@ async function handleAnalysis() {
         };
         lastAnalysisData = finalData;
         renderDashboard(finalData);
+
+        // ✨ [추가] 분석 성공 시 자동으로 아카이브에 저장
+        await saveResultToArchive();
 
     } catch (error) {
         console.error("분석 오류:", error);
@@ -641,132 +652,217 @@ function renderEmployeeRatio(hrInfo) {
 }
 
 
+// ✨ [추가] 아카이브 관련 함수들
+async function saveResultToArchive() {
+    if (!lastAnalysisData) return;
+
+    console.log("분석 결과 자동 저장을 시작합니다...");
+    try {
+        const htmlContent = await generateReportHtml(); // handleDownloadHtml 로직 재활용
+        
+        const today = new Date();
+        const dateString = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        const companiesString = Object.keys(lastAnalysisData.companies).join('_');
+        const keywordString = lastAnalysisData.keyword ? `_${lastAnalysisData.keyword}` : '';
+        const filename = `${dateString}-${companiesString}${keywordString}.html`;
+
+        const token = sessionStorage.getItem('ai-tool-token');
+        const response = await fetch(`${API_BASE_URL}/api/market/archives`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ filename, html_content: htmlContent })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || '아카이브 저장에 실패했습니다.');
+        }
+        console.log("분석 결과가 성공적으로 서버에 저장되었습니다.");
+
+    } catch (error) {
+        console.error("아카이브 저장 중 오류:", error);
+        // 사용자에게 오류를 알리지 않고 콘솔에만 기록 (백그라운드 작업이므로)
+    }
+}
+
+async function showArchiveModal() {
+    dom.archiveModal.classList.remove('hidden');
+    dom.archiveList.innerHTML = '<p>목록을 불러오는 중...</p>';
+
+    try {
+        const token = sessionStorage.getItem('ai-tool-token');
+        const response = await fetch(`${API_BASE_URL}/api/market/archives`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || '목록 로딩에 실패했습니다.');
+        }
+
+        const files = await response.json();
+        if (files.length === 0) {
+            dom.archiveList.innerHTML = '<p>저장된 분석 기록이 없습니다.</p>';
+            return;
+        }
+
+        const listHtml = files.map(file => {
+            // 파일명 파싱 (날짜-회사-키워드.html)
+            const parts = file.replace('.html', '').split('-');
+            const date = parts[0];
+            const companyAndKeyword = parts.slice(1).join('-');
+            const formattedDate = `${date.substring(0,4)}-${date.substring(4,6)}-${date.substring(6,8)}`;
+
+            return `
+                <a href="${API_BASE_URL}/api/market/archives/${file}" target="_blank" class="block p-3 rounded-lg hover:bg-gray-700/50 transition">
+                    <p class="font-semibold text-indigo-400">${companyAndKeyword}</p>
+                    <p class="text-sm text-gray-400">${formattedDate} 분석</p>
+                </a>
+            `;
+        }).join('');
+
+        dom.archiveList.innerHTML = `<div class="space-y-2">${listHtml}</div>`;
+
+    } catch (error) {
+        dom.archiveList.innerHTML = `<p class="text-red-400">오류: ${error.message}</p>`;
+    }
+}
+
+// `handleDownloadHtml` 함수를 `generateReportHtml` 헬퍼 함수로 분리하여 재활용
+async function generateReportHtml() {
+    // 기존 handleDownloadHtml 함수의 HTML 생성 로직을 그대로 가져옵니다.
+    const pageHead = document.head.innerHTML;
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    // 1. 보고서 본문 구성: 현재 대시보드를 복제한 후 다운로드 버튼만 제거
+    const reportContainer = document.getElementById('resultDashboard').cloneNode(true);
+    const downloadBtnInReport = reportContainer.querySelector('#downloadBtn');
+    if (downloadBtnInReport) {
+        downloadBtnInReport.remove();
+    }
+    const reportBody = reportContainer.innerHTML;
+
+
+    // 2. 보고서 전체 구조 생성
+    const reportHeader = `
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
+            <p class="text-lg mt-3" style="color: var(--text-secondary);">${dateString}</p>
+        </header>`;
+    
+    const footerHtml = document.querySelector('footer').outerHTML;
+
+    const bodyStructure = `
+        <div class="container mx-auto p-4 md:p-8">
+            ${reportHeader}
+            <main id="resultDashboard" class="space-y-8">${reportBody}</main>
+            ${footerHtml}
+        </div>`;
+
+    // 3. 실행에 필요한 모든 JS 함수와 플러그인을 문자열로 추출
+    const legendMarginPluginString = legendMarginPlugin.toString();
+
+    const essentialFunctions = [
+        renderDashboard, renderCompanyContent, renderKeywordBarChart, renderDynamicChart, 
+        renderFinancialTrendChart, renderSwotCard, createArticleHtml, formatNumber,
+        renderEmployeeRatio, renderDataRow
+    ].map(fn => fn.toString()).join('\n\n');
+
+    const finalHtml = `
+        <!DOCTYPE html>
+        <html lang="ko" class="${document.documentElement.className}">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>경쟁사 동향 분석 보고서 - ${dateString}</title>
+            ${pageHead}
+        </head>
+        <body>
+            ${bodyStructure}
+            <script>
+                // <![CDATA[
+                let lastAnalysisData = ${JSON.stringify(lastAnalysisData)};
+                let dynamicRadarChartInstance = null;
+                let keywordBarChartInstance = null;
+                let financialTrendChartInstance = null;
+
+                // ✨ [수정] 다운로드된 파일에 legendMarginPlugin 정의 추가
+                const legendMarginPlugin = {
+                    id: 'legendMargin',
+                    beforeInit: function (chart) {
+                        if (chart.legend.options.display === false) { return; }
+                        const originalFit = chart.legend.fit;
+                        chart.legend.fit = function () {
+                            originalFit.bind(chart.legend)();
+                            this.height += 20;
+                        }
+                    }
+                };
+
+                const dom = {
+                    marketSummary: document.getElementById('marketSummary'),
+                    keywordBarChart: document.getElementById('keywordBarChart'),
+                    competitiveContent: document.getElementById('competitive-content'),
+                    companyTabs: document.getElementById('companyTabs'),
+                    companyContent: document.getElementById('companyContent')
+                };
+                
+                ${essentialFunctions}
+                
+                document.addEventListener('DOMContentLoaded', () => {
+                    // 다운로드된 파일은 로그인 로직이 필요 없음
+                    // 테마 설정
+                    const isLight = document.documentElement.classList.contains('light');
+                    const textColor = isLight ? '#1f2937' : '#f3f4f6';
+
+                    // 대시보드 렌더링
+                    renderDashboard(lastAnalysisData);
+                    
+                    // 탭 클릭 이벤트 재연결
+                    document.querySelectorAll('.tab-btn').forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                            tab.classList.add('active');
+                            const companyName = tab.textContent;
+                            renderCompanyContent(lastAnalysisData.companies[companyName]);
+                        });
+                    });
+                });
+                // ]]>
+            <\/script>
+        </body>
+        </html>`;
+    return finalHtml;
+}
+
 async function handleDownloadHtml() {
     if (!lastAnalysisData) {
         alert('먼저 분석을 실행해주세요.');
         return;
     }
-
     const btn = dom.downloadBtn;
     const btnText = dom.downloadBtnText;
-
     btn.disabled = true;
     btnText.textContent = '생성 중...';
 
     try {
-        const pageHead = document.head.innerHTML;
+        const htmlContent = await generateReportHtml();
         const today = new Date();
-        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const downloadDateString = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        const filename = `경쟁사_동향_분석_보고서_${downloadDateString}.html`;
 
-        // 1. 보고서 본문 구성: 현재 대시보드를 복제한 후 다운로드 버튼만 제거
-        const reportContainer = document.getElementById('resultDashboard').cloneNode(true);
-        const downloadBtnInReport = reportContainer.querySelector('#downloadBtn');
-        if (downloadBtnInReport) {
-            downloadBtnInReport.remove();
-        }
-        const reportBody = reportContainer.innerHTML;
-
-
-        // 2. 보고서 전체 구조 생성
-        const reportHeader = `
-            <header class="text-center mb-10">
-                <h1 class="text-4xl md:text-5xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
-                <p class="text-lg mt-3" style="color: var(--text-secondary);">${dateString}</p>
-            </header>`;
-        
-        const footerHtml = document.querySelector('footer').outerHTML;
-
-        const bodyStructure = `
-            <div class="container mx-auto p-4 md:p-8">
-                ${reportHeader}
-                <main id="resultDashboard" class="space-y-8">${reportBody}</main>
-                ${footerHtml}
-            </div>`;
-
-        // 3. 실행에 필요한 모든 JS 함수와 플러그인을 문자열로 추출
-        const legendMarginPluginString = legendMarginPlugin.toString();
-
-        const essentialFunctions = [
-            renderDashboard, renderCompanyContent, renderKeywordBarChart, renderDynamicChart, 
-            renderFinancialTrendChart, renderSwotCard, createArticleHtml, formatNumber,
-            renderEmployeeRatio, renderDataRow
-        ].map(fn => fn.toString()).join('\n\n');
-
-        const finalHtml = `
-            <!DOCTYPE html>
-            <html lang="ko" class="${document.documentElement.className}">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>경쟁사 동향 분석 보고서 - ${dateString}</title>
-                ${pageHead}
-            </head>
-            <body>
-                ${bodyStructure}
-                <script>
-                    // <![CDATA[
-                    let lastAnalysisData = ${JSON.stringify(lastAnalysisData)};
-                    let dynamicRadarChartInstance = null;
-                    let keywordBarChartInstance = null;
-                    let financialTrendChartInstance = null;
-
-                    // ✨ [수정] 다운로드된 파일에 legendMarginPlugin 정의 추가
-                    const legendMarginPlugin = {
-                        id: 'legendMargin',
-                        beforeInit: function (chart) {
-                            if (chart.legend.options.display === false) { return; }
-                            const originalFit = chart.legend.fit;
-                            chart.legend.fit = function () {
-                                originalFit.bind(chart.legend)();
-                                this.height += 20;
-                            }
-                        }
-                    };
-
-                    const dom = {
-                        marketSummary: document.getElementById('marketSummary'),
-                        keywordBarChart: document.getElementById('keywordBarChart'),
-                        competitiveContent: document.getElementById('competitive-content'),
-                        companyTabs: document.getElementById('companyTabs'),
-                        companyContent: document.getElementById('companyContent')
-                    };
-                    
-                    ${essentialFunctions}
-                    
-                    document.addEventListener('DOMContentLoaded', () => {
-                        // 다운로드된 파일은 로그인 로직이 필요 없음
-                        // 테마 설정
-                        const isLight = document.documentElement.classList.contains('light');
-                        const textColor = isLight ? '#1f2937' : '#f3f4f6';
-
-                        // 대시보드 렌더링
-                        renderDashboard(lastAnalysisData);
-                        
-                        // 탭 클릭 이벤트 재연결
-                        document.querySelectorAll('.tab-btn').forEach(tab => {
-                            tab.addEventListener('click', () => {
-                                document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-                                tab.classList.add('active');
-                                const companyName = tab.textContent;
-                                renderCompanyContent(lastAnalysisData.companies[companyName]);
-                            });
-                        });
-                    });
-                    // ]]>
-                <\/script>
-            </body>
-            </html>`;
-
-        const blob = new Blob([finalHtml], { type: 'text/html' });
+        const blob = new Blob([htmlContent], { type: 'text/html' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        const downloadDateString = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-        a.download = `경쟁사_동향_분석_보고서_${downloadDateString}.html`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
-
     } catch (error) {
         console.error("HTML 생성 중 오류 발생:", error);
         alert("HTML 파일을 생성하는 데 실패했습니다.");

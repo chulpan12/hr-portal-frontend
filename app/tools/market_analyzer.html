@@ -158,6 +158,22 @@
                 <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
             </footer>
         </div>
+
+        <!-- ✨ [추가] 아카이브 모달 -->
+        <div id="archive-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="result-card rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                    <h2 class="text-xl font-bold">분석 기록</h2>
+                    <button id="close-archive-modal" class="p-2 rounded-full hover:bg-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div id="archive-list" class="p-6 overflow-y-auto">
+                    <!-- 분석 기록 목록이 여기에 동적으로 채워집니다. -->
+                </div>
+            </div>
+        </div>
+
         <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
             <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
                 <h2 class="text-2xl font-bold text-white text-center mb-6">AI 기능 로그인</h2>
