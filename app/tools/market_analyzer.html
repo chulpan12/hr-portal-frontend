@@ -298,7 +298,8 @@
 
                 const finalData = {
                     overall: overallData,
-                    companies: companyAnalyses
+                    companies: companyAnalyses,
+                    keyword: keyword
                 };
                 lastAnalysisData = finalData; // ✨ [추가] 분석 결과를 전역 변수에 저장
                 renderDashboard(finalData);
@@ -432,9 +433,10 @@
 
             let keywordAnalysisHtml = '';
             if (keywordAnalysis && keywordAnalysis.summary !== 'N/A') {
+                const analysisKeyword = (lastAnalysisData && lastAnalysisData.keyword) ? lastAnalysisData.keyword : '';
                 keywordAnalysisHtml = `
                     <div class="result-card p-6 rounded-xl">
-                        <h4 class="font-bold text-lg mb-4">심층 키워드 분석: "${dom.keywordInput.value.trim()}"</h4>
+                        <h4 class="font-bold text-lg mb-4">심층 키워드 분석: "${analysisKeyword}"</h4>
                         <p class="text-sm mb-4" style="color: var(--text-secondary);">${keywordAnalysis.summary}</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -565,28 +567,58 @@
             btn.classList.add('pdf-loader');
 
             try {
-                // 1. 현재 페이지의 기본 HTML 구조, CSS, 라이브러리를 가져옴
+                // 1. 현재 페이지의 <head> 내용을 가져옴
                 const pageHead = document.head.innerHTML;
+                
+                // 2. 보고서의 전체 HTML 구조를 정의
+                const today = new Date();
+                const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                
+                const reportHeader = `
+                    <header class="text-center mb-10">
+                        <h1 class="text-4xl md:text-5xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
+                        <p class="text-lg mt-3" style="color: var(--text-secondary);">${dateString}</p>
+                    </header>`;
+
+                const reportBody = `
+                    <div id="resultDashboard" class="space-y-8">
+                        <div class="result-card p-6 rounded-xl">
+                            <h3 class="font-bold text-xl mb-3">종합 브리핑</h3>
+                            <p id="marketSummary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="result-card p-6 rounded-xl">
+                                <h3 class="font-bold text-xl mb-4">업계 공통 키워드</h3>
+                                <div class="h-80"><canvas id="keywordBarChart"></canvas></div>
+                            </div>
+                            <div id="competitiveLandscape" class="result-card p-6 rounded-xl">
+                                <h3 class="font-bold text-xl mb-4">시장 경쟁 구도</h3>
+                                <div id="competitive-content" class="space-y-4 text-sm"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div id="companyTabs" class="flex border-b" style="border-color: var(--input-border);"></div>
+                            <div id="companyContent" class="mt-6"></div>
+                        </div>
+                    </div>`;
+
                 const bodyStructure = `
                     <div id="wrapper" class="container mx-auto p-4 md:p-8">
                         <div id="main-content">
+                            ${reportHeader}
                             <main class="space-y-8">
-                                <div id="resultDashboard" class="space-y-8">
-                                    <!-- 내용은 스크립트로 채워집니다. -->
-                                </div>
+                                ${reportBody}
                             </main>
                         </div>
                     </div>`;
 
-                // 2. 실행에 필요한 모든 JS 함수를 문자열로 추출
+                // 3. 실행에 필요한 모든 JS 함수를 문자열로 추출
                 const essentialFunctions = [
                     renderDashboard, renderCompanyContent, renderKeywordBarChart,
-                    renderDynamicChart, renderSwotCard, createArticleHtml, toggleTheme, updateThemeIcon
+                    renderDynamicChart, renderSwotCard, createArticleHtml
                 ].map(fn => fn.toString()).join('\n');
 
-                // 3. 최종 HTML 문서 생성
-                const today = new Date();
-                const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                // 4. 최종 HTML 문서 생성
                 const finalHtml = `
                     <!DOCTYPE html>
                     <html lang="ko" class="${document.documentElement.className}">
@@ -603,39 +635,22 @@
 
                             const dom = {
                                 resultDashboard: document.getElementById('resultDashboard'),
-                                mainContent: document.getElementById('main-content'),
-                                // 렌더링에 필요한 최소한의 DOM 요소
+                                marketSummary: document.getElementById('marketSummary'),
+                                keywordBarChart: document.getElementById('keywordBarChart'),
+                                competitiveContent: document.getElementById('competitive-content'),
+                                companyTabs: document.getElementById('companyTabs'),
+                                companyContent: document.getElementById('companyContent')
                             };
-
-                            // 보고서 제목 추가
-                            const reportTitle = document.createElement('div');
-                            reportTitle.className = 'text-center mb-10';
-                            reportTitle.innerHTML = \`
-                                <h1 class="text-4xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
-                                <p class="text-lg mt-2" style="color: var(--text-secondary);">${dateString}</p>
-                            \`;
-                            dom.mainContent.prepend(reportTitle);
                             
-                            // 모든 필수 함수 주입
                             ${essentialFunctions}
 
-                            // 데이터로 대시보드 렌더링
                             renderDashboard(lastAnalysisData);
-
-                            // 저장된 파일에서는 테마 변경 시 다시 그리기만 함
-                            function toggleTheme() {
-                                document.documentElement.classList.toggle('light');
-                                // 아이콘 업데이트는 저장 파일에서 불필요
-                                if (lastAnalysisData) {
-                                    renderDashboard(lastAnalysisData);
-                                }
-                            }
                             // ]]>
                         <\/script>
                     </body>
                     </html>`;
 
-                // 4. Blob을 생성하여 파일로 다운로드
+                // 5. Blob을 생성하여 파일로 다운로드
                 const blob = new Blob([finalHtml], { type: 'text/html' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
