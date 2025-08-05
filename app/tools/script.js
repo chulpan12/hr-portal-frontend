@@ -658,8 +658,14 @@ async function handleDownloadHtml() {
         const today = new Date();
         const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-        // 1. 보고서 본문 구성: 현재 대시보드의 HTML을 그대로 사용
-        const reportBody = document.getElementById('resultDashboard').innerHTML;
+        // 1. 보고서 본문 구성: 현재 대시보드를 복제한 후 다운로드 버튼만 제거
+        const reportContainer = document.getElementById('resultDashboard').cloneNode(true);
+        const downloadBtnInReport = reportContainer.querySelector('#downloadBtn');
+        if (downloadBtnInReport) {
+            downloadBtnInReport.remove();
+        }
+        const reportBody = reportContainer.innerHTML;
+
 
         // 2. 보고서 전체 구조 생성
         const reportHeader = `
