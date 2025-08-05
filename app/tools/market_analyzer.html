@@ -69,7 +69,7 @@
     </style>
 </head>
 <body>
-    <div class="container mx-auto p-4 md:p-8">
+    <div id="wrapper" class="container mx-auto p-4 md:p-8">
         <div id="main-content" class="hidden">
             <header class="text-center mb-10 relative">
                 <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
@@ -86,7 +86,7 @@
                 </div>
             </header>
             <main class="space-y-8">
-                <div class="backdrop-blur-sm border p-6 md:p-8 rounded-2xl shadow-lg control-panel" style="background-color: var(--bg-panel); border-color: var(--border-color);">
+                <div id="control-panel" class="backdrop-blur-sm border p-6 md:p-8 rounded-2xl shadow-lg" style="background-color: var(--bg-panel); border-color: var(--border-color);">
                     <div class="space-y-8">
                         <div>
                             <div class="flex justify-between items-center">
@@ -121,9 +121,9 @@
                         <div class="result-card p-6 rounded-xl">
                             <div class="flex justify-between items-center mb-3">
                                 <h3 class="font-bold text-xl">종합 브리핑</h3>
-                                <button id="downloadPdfBtn" class="flex items-center gap-2 text-sm bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition-all">
+                                <button id="downloadBtn" class="flex items-center gap-2 text-sm bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition-all">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                    <span id="pdfBtnText">PDF 저장</span>
+                                    <span id="downloadBtnText">HTML로 저장</span>
                                 </button>
                             </div>
                             <p id="marketSummary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
@@ -202,8 +202,8 @@
             companyContent: document.getElementById('companyContent'),
             themeToggle: document.getElementById('themeToggle'),
             themeIcon: document.getElementById('themeIcon'),
-            downloadPdfBtn: document.getElementById('downloadPdfBtn'),
-            pdfBtnText: document.getElementById('pdfBtnText'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            downloadBtnText: document.getElementById('downloadBtnText'),
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -230,7 +230,7 @@
             dom.analyzeBtn.addEventListener('click', handleAnalysis);
             dom.themeToggle.addEventListener('click', toggleTheme);
             dom.loginForm.addEventListener('submit', handleLogin);
-            dom.downloadPdfBtn.addEventListener('click', handleDownloadPdf);
+            dom.downloadBtn.addEventListener('click', handleDownloadHtml);
             dom.selectAll.addEventListener('click', () => {
                 const isChecked = dom.selectAll.checked;
                 dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
@@ -551,113 +551,84 @@
         
         function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${(items || []).map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
         
-        async function handleDownloadPdf() {
-            const { jsPDF } = window.jspdf;
-            const originalReportElement = dom.resultDashboard;
-            const pdfBtn = dom.downloadPdfBtn;
-            const pdfBtnText = dom.pdfBtnText;
+        async function handleDownloadHtml() {
+            const btn = dom.downloadBtn;
+            const btnText = dom.downloadBtnText;
 
-            // 1. PDF 변환 전 준비
-            pdfBtn.disabled = true;
-            pdfBtnText.textContent = '변환 중';
-            pdfBtn.classList.add('pdf-loader');
-            pdfBtn.style.visibility = 'hidden'; // 버튼을 잠시 안보이게 처리
+            btn.disabled = true;
+            btnText.textContent = '생성 중...';
+            btn.classList.add('pdf-loader'); // 로더 애니메이션 재활용
 
             try {
-                // --- 인쇄용 임시 컨테이너 생성 ---
-                const printableArea = document.createElement('div');
-                printableArea.style.position = 'absolute';
-                printableArea.style.left = '-9999px'; // 화면 밖에 위치
-                printableArea.style.width = '1200px'; // PDF 해상도에 맞게 너비 지정
-                printableArea.style.padding = '40px';
-                
-                document.body.appendChild(printableArea);
+                // 1. 현재 페이지의 전체 HTML을 복제
+                const fullHtml = document.documentElement.outerHTML;
 
-                // --- 2. 보고서 제목 추가 ---
-                const today = new Date();
-                const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                const reportTitle = document.createElement('div');
-                reportTitle.className = 'text-center mb-10';
-                reportTitle.innerHTML = `
-                    <h1 class="text-4xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
-                    <p class="text-lg mt-2" style="color: var(--text-secondary);">${dateString}</p>
-                `;
-                printableArea.appendChild(reportTitle);
-                
-                // --- 3. 콘텐츠 복제 및 차트를 이미지로 변환 ---
-                const contentToPrint = originalReportElement.cloneNode(true);
-                
-                const clonedPdfBtn = contentToPrint.querySelector('#downloadPdfBtn');
-                if (clonedPdfBtn && clonedPdfBtn.parentElement) {
-                    clonedPdfBtn.parentElement.parentElement.remove(); // 버튼과 감싸는 div 모두 제거
-                }
-
+                // 2. 동적 차트 데이터를 정적 이미지로 변환
                 const barChartImgData = keywordBarChartInstance ? keywordBarChartInstance.toBase64Image() : null;
                 const radarChartImgData = dynamicRadarChartInstance ? dynamicRadarChartInstance.toBase64Image() : null;
 
-                const clonedBarCanvas = contentToPrint.querySelector('#keywordBarChart');
-                const clonedRadarCanvas = contentToPrint.querySelector('#dynamicRadarChart');
+                // 3. HTML 내의 스크립트 코드를 수정하여, 저장된 파일이 열릴 때 차트를 다시 그리도록 설정
+                let processedHtml = fullHtml.replace('</body>', `
+                    <script>
+                        // 저장된 파일에서만 실행될 스크립트
+                        document.addEventListener('DOMContentLoaded', () => {
+                            // 현재 테마 유지
+                            const themeClass = document.documentElement.className;
+                            document.documentElement.className = themeClass;
 
-                if (clonedBarCanvas && barChartImgData) {
-                    const img = new Image();
-                    img.src = barChartImgData;
-                    img.style.width = '100%';
-                    img.style.height = 'auto';
-                    clonedBarCanvas.parentElement.replaceChild(img, clonedBarCanvas);
-                }
-                if (clonedRadarCanvas && radarChartImgData) {
-                    const img = new Image();
-                    img.src = radarChartImgData;
-                    img.style.width = '100%';
-                    img.style.height = 'auto';
-                    clonedRadarCanvas.parentElement.replaceChild(img, clonedRadarCanvas);
-                }
+                            // 컨트롤 패널과 버튼 제거
+                            document.getElementById('control-panel')?.remove();
+                            document.getElementById('downloadBtn')?.remove();
+
+                            // 보고서 제목 추가
+                            const today = new Date();
+                            const dateString = \`\${today.getFullYear()}-\${String(today.getMonth() + 1).padStart(2, '0')}-\${String(today.getDate()).padStart(2, '0')}\`;
+                            const reportTitle = document.createElement('div');
+                            reportTitle.className = 'text-center mb-10';
+                            reportTitle.innerHTML = \`
+                                <h1 class="text-4xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
+                                <p class="text-lg mt-2" style="color: var(--text-secondary);">\${dateString}</p>
+                            \`;
+                            document.getElementById('main-content').insertAdjacentElement('afterbegin', reportTitle);
+                            
+                            // 차트를 정적 이미지로 교체
+                            const barChartImg = new Image();
+                            if ("${barChartImgData}") {
+                                barChartImg.src = "${barChartImgData}";
+                                document.getElementById('keywordBarChart')?.parentElement.replaceChild(barChartImg, document.getElementById('keywordBarChart'));
+                            }
+
+                            const radarChartImg = new Image();
+                            if ("${radarChartImgData}") {
+                                radarChartImg.src = "${radarChartImgData}";
+                                document.getElementById('dynamicRadarChart')?.parentElement.replaceChild(radarChartImg, document.getElementById('dynamicRadarChart'));
+                            }
+
+                            // '더보기'와 같은 동적 기능은 이미 렌더링된 상태이므로 그대로 유지됨
+                        });
+                    }<\/script>
+                </body>
+                `);
                 
-                printableArea.appendChild(contentToPrint);
-
-                // --- 4. 테마에 맞는 배경색으로 html2canvas 캡처 ---
-                const themeBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim();
-                const canvas = await html2canvas(printableArea, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: themeBgColor,
-                    windowWidth: printableArea.scrollWidth,
-                    windowHeight: printableArea.scrollHeight
-                });
-                
-                // --- 5. PDF 생성 및 저장 ---
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const imgHeight = canvas.height * pdfWidth / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
-
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                heightLeft -= pdf.internal.pageSize.getHeight();
-
-                while (heightLeft > 0) {
-                    position -= pdf.internal.pageSize.getHeight();
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                    heightLeft -= pdf.internal.pageSize.getHeight();
-                }
-
-                pdf.save(`경쟁사_동향_분석_보고서_${dateString}.pdf`);
+                // 4. Blob을 생성하여 파일로 다운로드
+                const blob = new Blob([processedHtml], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                const today = new Date();
+                const dateString = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+                a.download = `경쟁사_동향_분석_보고서_${dateString}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
 
             } catch (error) {
-                console.error("PDF 생성 중 오류 발생:", error);
-                alert("PDF를 생성하는 데 실패했습니다. 다시 시도해주세요.");
+                console.error("HTML 생성 중 오류 발생:", error);
+                alert("HTML 파일을 생성하는 데 실패했습니다.");
             } finally {
-                // --- 6. 원래 상태로 복구 ---
-                const tempArea = document.querySelector('div[style*="left: -9999px"]');
-                if (tempArea) {
-                    document.body.removeChild(tempArea);
-                }
-                pdfBtn.style.visibility = 'visible';
-                pdfBtn.disabled = false;
-                pdfBtnText.textContent = 'PDF 저장';
-                pdfBtn.classList.remove('pdf-loader');
+                btn.disabled = false;
+                btnText.textContent = 'HTML로 저장';
+                btn.classList.remove('pdf-loader');
             }
         }
 
