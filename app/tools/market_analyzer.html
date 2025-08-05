@@ -28,8 +28,6 @@
         .loader { border-top-color: #6366f1; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .tab-btn.active { border-color: #6366f1; color: #a5b4fc; }
-        #analysis-mode-selector .mode-label { transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; color: var(--text-secondary); }
-        #analysis-mode-selector .mode-label.active { background-color: #4f46e5; color: #ffffff; }
         .custom-checkbox:checked { background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e"); }
         .pdf-loader::after {
             content: '...';
@@ -76,23 +74,10 @@
                             <div id="company-selector" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-3"></div>
                         </div>
 
-                        <div>
-                            <label class="text-lg font-semibold" style="color: var(--text-primary);">2. 분석 관점</label>
-                            <div id="analysis-mode-selector" class="mt-3 p-1 rounded-lg flex space-x-1" style="background-color: var(--input-bg);">
-                                <input type="radio" name="analysis_mode" id="mode_strategy" value="business_strategy" class="hidden" checked>
-                                <label for="mode_strategy" class="mode-label flex-1 text-center py-2 px-3 rounded-md cursor-pointer transition-all text-sm font-medium">
-                                    경영 전략
-                                </label>
-                                <input type="radio" name="analysis_mode" id="mode_risk" value="risk_issue" class="hidden">
-                                <label for="mode_risk" class="mode-label flex-1 text-center py-2 px-3 rounded-md cursor-pointer transition-all text-sm font-medium">
-                                    리스크 & 이슈
-                                </label>
-                            </div>
-                        </div>
-
+                        <!-- ✨ [개선] 분석 관점 선택 UI 제거 및 레이아웃 단순화 -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end pt-4">
                             <div class="md:col-span-2">
-                                 <label for="keywordInput" class="text-lg font-semibold" style="color: var(--text-primary);">3. (선택) 심층 분석 키워드</label>
+                                 <label for="keywordInput" class="text-lg font-semibold" style="color: var(--text-primary);">2. (선택) 심층 분석 키워드</label>
                                 <input type="text" id="keywordInput" class="w-full mt-2 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="예: SMR, 해외수주, 중대재해" style="background-color: var(--input-bg); border: 1px solid var(--input-border);">
                             </div>
                             <button id="analyzeBtn" class="w-full h-[52px] flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-all text-lg">
@@ -118,14 +103,11 @@
                             </div>
                             <p id="marketSummary" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></p>
                         </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                            <div class="lg:col-span-3 result-card p-6 rounded-xl">
-                                <h3 id="radarChartTitle" class="font-bold text-xl mb-3"></h3>
-                                <div class="h-80"><canvas id="radarChart"></canvas></div>
-                            </div>
-                            <div class="lg:col-span-2 result-card p-6 rounded-xl">
-                                <h3 id="keywordChartTitle" class="font-bold text-xl mb-3"></h3>
-                                <canvas id="keywordCloud" width="400" height="300"></canvas>
+                        <!-- ✨ [개선] 레이더 차트 제거, 워드 클라우드 중심으로 변경 -->
+                        <div class="result-card p-6 rounded-xl">
+                            <h3 id="keywordChartTitle" class="font-bold text-xl mb-3">주요 키워드 분석</h3>
+                            <div class="w-full h-80 flex justify-center items-center">
+                                <canvas id="keywordCloud" width="500" height="320"></canvas>
                             </div>
                         </div>
                         <div>
@@ -166,7 +148,7 @@
     <script>
         const API_BASE_URL = 'https://api.dreamofenc.com';
         const COMPANIES = ["삼성물산", "현대건설", "DL이앤씨", "GS건설", "대우건설", "현대엔지니어링", "포스코이앤씨", "롯데건설", "SK에코플랜트", "HDC현대산업개발"];
-        let radarChartInstance = null;
+        // ✨ [삭제] radarChartInstance 제거
         
         const dom = {
             mainContent: document.getElementById('main-content'),
@@ -176,16 +158,16 @@
             selectAll: document.getElementById('selectAll'),
             companySelector: document.getElementById('company-selector'),
             keywordInput: document.getElementById('keywordInput'),
-            analysisModeSelector: document.getElementById('analysis-mode-selector'),
+            // ✨ [삭제] analysisModeSelector 제거
             analyzeBtn: document.getElementById('analyzeBtn'),
             loader: document.getElementById('loader'),
             loaderText: document.getElementById('loader-text'),
             resultDashboard: document.getElementById('resultDashboard'),
             marketSummary: document.getElementById('marketSummary'),
-            radarChartTitle: document.getElementById('radarChartTitle'),
+            radarChartTitle: document.getElementById('radarChartTitle'), // 나중에 삭제될 수 있음
             keywordChartTitle: document.getElementById('keywordChartTitle'),
             keywordCloud: document.getElementById('keywordCloud'),
-            radarChart: document.getElementById('radarChart'),
+            // ✨ [삭제] radarChart 제거
             companyTabs: document.getElementById('companyTabs'),
             companyContent: document.getElementById('companyContent'),
             themeToggle: document.getElementById('themeToggle'),
@@ -223,14 +205,7 @@
                 const isChecked = dom.selectAll.checked;
                 dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
             });
-            dom.analysisModeSelector.addEventListener('change', (e) => {
-                if (e.target.name === 'analysis_mode') {
-                    dom.analysisModeSelector.querySelectorAll('label').forEach(label => label.classList.remove('active'));
-                    const selectedLabel = document.querySelector(`label[for="${e.target.id}"]`);
-                    if(selectedLabel) selectedLabel.classList.add('active');
-                }
-            });
-             document.querySelector(`label[for="mode_strategy"]`).classList.add('active');
+             // ✨ [삭제] 분석 모드 선택 이벤트 리스너 제거
         });
 
         async function handleLogin(e) {
@@ -270,7 +245,7 @@
                 alert('분석할 회사를 하나 이상 선택해주세요.'); return;
             }
             const keyword = dom.keywordInput.value.trim();
-            const analysisMode = dom.analysisModeSelector.querySelector('input[type="radio"]:checked').value;
+            // ✨ [삭제] analysisMode 변수 제거
 
             dom.loader.classList.remove('hidden');
             dom.loader.classList.add('flex');
@@ -282,18 +257,21 @@
             try {
                 for (const [index, company] of selectedCompanies.entries()) {
                     dom.loaderText.textContent = `AI가 ${company} 관련 기사를 분석 중입니다... (${index + 1}/${selectedCompanies.length})`;
-                    const result = await callCompanyAnalysisAPI(company, keyword, analysisMode);
+                    // ✨ [수정] API 호출 시 mode 제거
+                    const result = await callCompanyAnalysisAPI(company, keyword);
                     if (result) companyAnalyses[company] = result;
                 }
 
                 dom.loaderText.textContent = `종합 분석 보고서를 생성 중입니다...`;
-                const overallData = await callOverallAnalysisAPI(companyAnalyses, analysisMode);
+                // ✨ [수정] API 호출 시 mode 제거
+                const overallData = await callOverallAnalysisAPI(companyAnalyses);
 
                 const finalData = {
                     overall: overallData,
                     companies: companyAnalyses
                 };
-                renderDashboard(finalData, analysisMode);
+                // ✨ [수정] renderDashboard 호출 시 mode 제거
+                renderDashboard(finalData);
 
             } catch (error) {
                 console.error("분석 오류:", error);
@@ -307,14 +285,16 @@
             }
         }
         
-        async function callCompanyAnalysisAPI(company, keyword, mode) {
+        // ✨ [수정] API 호출 시 mode 제거
+        async function callCompanyAnalysisAPI(company, keyword) {
              const apiUrl = `${API_BASE_URL}/api/market/analyze-company`;
              const token = sessionStorage.getItem('ai-tool-token');
              if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
              const response = await fetch(apiUrl, {
                  method: 'POST',
                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                 body: JSON.stringify({ company, keyword, mode })
+                 // ✨ [수정] body에서 mode 제거
+                 body: JSON.stringify({ company, keyword })
              });
              if (response.status === 401) {
                  sessionStorage.removeItem('ai-tool-token');
@@ -333,7 +313,8 @@
              return await response.json();
         }
 
-        async function callOverallAnalysisAPI(analyses, mode) {
+        // ✨ [수정] API 호출 시 mode 제거
+        async function callOverallAnalysisAPI(analyses) {
             const apiUrl = `${API_BASE_URL}/api/market/analyze-overall`;
             const token = sessionStorage.getItem('ai-tool-token');
             if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
@@ -341,7 +322,8 @@
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ analyses, mode })
+                // ✨ [수정] body 구조 변경
+                body: JSON.stringify({ analyses })
             });
 
             if (!response.ok) {
@@ -351,80 +333,35 @@
             return await response.json();
         }
 
-        function renderDashboard(data, mode) {
+        // ✨ [대규모 수정] 새로운 데이터 구조에 맞게 대시보드 렌더링 로직 전면 개편
+        function renderDashboard(data) {
             const isLight = document.documentElement.classList.contains('light');
             const textColor = isLight ? '#1f2937' : '#f3f4f6';
             dom.marketSummary.textContent = data.overall.market_summary || "종합 분석 요약이 없습니다.";
 
-            // ✨✨✨ [수정] 이 부분이 핵심입니다! ✨✨✨
-            // 1. AI 응답 필드명을 'keywords'로 변경하고, 없을 경우 빈 배열[]을 기본값으로 설정합니다.
             const keywordsData = data.overall.keywords || [];
-            // 2. 객체 배열을 워드클라우드 형식에 맞게 [단어, 가중치] 형태의 배열로 변환합니다.
             const wordList = keywordsData.map(item => [item.keyword, item.weight * 5]);
 
-            if (mode === 'risk_issue') {
-                dom.radarChartTitle.textContent = '리스크 유형 비교';
-                dom.keywordChartTitle.textContent = '핵심 리스크 키워드';
-            } else {
-                dom.radarChartTitle.textContent = '전략 포커스 비교';
-                dom.keywordChartTitle.textContent = '핵심 사업/기술 키워드';
-            }
-
             // 워드클라우드에 데이터가 있을 때만 그리도록 조건 추가
+            const ctx = dom.keywordCloud.getContext('2d');
+            ctx.clearRect(0, 0, dom.keywordCloud.width, dom.keywordCloud.height);
             if (wordList.length > 0) {
                 WordCloud(dom.keywordCloud, {
                     list: wordList, 
                     gridSize: 10, 
-                    weightFactor: 1, // 가중치를 직접 사용하므로 1로 설정하거나 조절
+                    weightFactor: 1.5,
                     fontFamily: "'Noto Sans KR', sans-serif",
-                    color: 'random-light',
+                    color: isLight ? '#4b5563' : '#9ca3af',
                     backgroundColor: 'transparent',
                     rotateRatio: 0,
                 });
-            } else {
-                // 데이터가 없을 경우 캔버스를 비웁니다.
-                const ctx = dom.keywordCloud.getContext('2d');
-                ctx.clearRect(0, 0, dom.keywordCloud.width, dom.keywordCloud.height);
             }
 
-
-            if (radarChartInstance) radarChartInstance.destroy();
+            // ✨ [삭제] 레이더 차트 관련 로직 모두 제거
             
             const companyKeys = Object.keys(data.companies);
             if(companyKeys.length === 0) return;
-            const firstCompanyData = data.companies[companyKeys[0]];
-            if (!firstCompanyData || !firstCompanyData.focus_scores) return;
-
-            const radarLabels = Object.keys(firstCompanyData.focus_scores);
-            const radarDatasets = companyKeys.map((company, index) => {
-                const analysis = data.companies[company];
-                const color = colorPalettes.aurora[index % colorPalettes.aurora.length];
-                return {
-                    label: company, 
-                    data: radarLabels.map(label => (analysis.focus_scores && analysis.focus_scores[label]) || 0),
-                    borderColor: color, 
-                    backgroundColor: color + '33', 
-                    pointBackgroundColor: color,
-                };
-            });
-            radarChartInstance = new Chart(dom.radarChart, {
-                type: 'radar', 
-                data: { labels: radarLabels, datasets: radarDatasets },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: textColor } } },
-                    scales: {
-                        r: {
-                            angleLines: { color: isLight ? '#e5e7eb' : '#374151' },
-                            grid: { color: isLight ? '#e5e7eb' : '#374151' },
-                            pointLabels: { color: textColor, font: { size: 12 } },
-                            ticks: { backdropColor: 'transparent', color: textColor, stepSize: 1 },
-                            min: 0, max: 5
-                        }
-                    }
-                }
-            });
-
+            
             dom.companyTabs.innerHTML = '';
             dom.companyContent.innerHTML = '';
             companyKeys.forEach((company, index) => {
@@ -445,34 +382,23 @@
             }
         }
 
+        // ✨ [대규모 수정] 새로운 데이터 구조에 맞게 회사별 상세 콘텐츠 렌더링 로직 개편
         function renderCompanyContent(company, analysis) {
             const swot = analysis.swot || {strengths:[], weaknesses:[], opportunities:[], threats:[]};
-            const sentiment = analysis.sentiment || {score: 5, reason: "N/A"};
-            const strategies = analysis.strategies || [];
+            const overallAssessment = analysis.overall_assessment || "종합 평가 정보가 없습니다.";
             const key_articles = analysis.key_articles || [];
-            
-            const sentimentScore = sentiment.score;
-            const sentimentColor = sentimentScore > 7 ? 'text-green-400' : (sentimentScore < 4 ? 'text-red-400' : 'text-yellow-400');
             
             dom.companyContent.innerHTML = `
                 <div class="space-y-6">
+                    <div class="result-card p-6 rounded-xl">
+                        <h4 class="font-bold text-lg mb-2">AI 종합 평가</h4>
+                        <p class="text-sm" style="color: var(--text-secondary);">${overallAssessment}</p>
+                    </div>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        ${renderSwotCard('강점', swot.strengths, 'bg-green-500/20')}
-                        ${renderSwotCard('약점', swot.weaknesses, 'bg-red-500/20')}
-                        ${renderSwotCard('기회', swot.opportunities, 'bg-blue-500/20')}
-                        ${renderSwotCard('위협', swot.threats, 'bg-yellow-500/20')}
-                    </div>
-                    <div class="result-card p-6 rounded-xl">
-                        <h4 class="font-bold text-lg mb-2">핵심 전략/리스크</h4>
-                        <ul class="list-disc list-inside text-sm space-y-1" style="color: var(--text-secondary);">${strategies.map(s => `<li>${s}</li>`).join('')}</ul>
-                    </div>
-                    <div class="result-card p-6 rounded-xl">
-                        <h4 class="font-bold text-lg mb-2">시장 평판/리스크 레벨</h4>
-                        <p class="text-sm italic mb-2" style="color: var(--text-secondary);">${sentiment.reason}</p>
-                        <div class="flex items-center gap-4">
-                            <div class="font-bold text-2xl ${sentimentColor}">${sentimentScore}/10</div>
-                            <div class="w-full bg-gray-700 rounded-full h-2.5"><div class="${sentimentColor.replace('text','bg')}-500/50 h-2.5 rounded-full" style="width: ${sentimentScore*10}%"></div></div>
-                        </div>
+                        ${renderSwotCard('강점 (Strengths)', swot.strengths, 'bg-green-500/20')}
+                        ${renderSwotCard('약점 (Weaknesses)', swot.weaknesses, 'bg-red-500/20')}
+                        ${renderSwotCard('기회 (Opportunities)', swot.opportunities, 'bg-blue-500/20')}
+                        ${renderSwotCard('위협 (Threats)', swot.threats, 'bg-yellow-500/20')}
                     </div>
                     <div class="result-card p-6 rounded-xl">
                         <h4 class="font-bold text-lg mb-2">분석 근거 기사</h4>
@@ -484,6 +410,22 @@
                     </div>
                 </div>
             `;
+        }
+        
+        function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${(items || []).map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
+        
+        function toggleTheme() { 
+            document.documentElement.classList.toggle('light'); 
+            updateThemeIcon();
+            if (!dom.resultDashboard.classList.contains('hidden')) {
+                dom.analyzeBtn.click();
+            }
+        }
+        function updateThemeIcon() {
+            const isLight = document.documentElement.classList.contains('light');
+            dom.themeIcon.innerHTML = isLight 
+                ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`
+                : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
         }
         
         async function handleDownloadPdf() {
@@ -536,22 +478,5 @@
             }
         }
 
-        function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${(items || []).map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
-        
-        function toggleTheme() { 
-            document.documentElement.classList.toggle('light'); 
-            updateThemeIcon();
-            if (!dom.resultDashboard.classList.contains('hidden')) {
-                dom.analyzeBtn.click();
-            }
-        }
-        function updateThemeIcon() {
-            const isLight = document.documentElement.classList.contains('light');
-            dom.themeIcon.innerHTML = isLight 
-                ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`
-                : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
-        }
-        
-        const colorPalettes = { aurora: ['#2dd4bf', '#38bdf8', '#818cf8', '##c084fc', '#f472b6', '#fb7185', '#fdba74', '#facc15', '#a3e635', '#4ade80'] };
     </script>
 </body>
