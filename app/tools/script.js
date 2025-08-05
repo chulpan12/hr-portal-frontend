@@ -677,7 +677,9 @@ async function handleDownloadHtml() {
                 ${footerHtml}
             </div>`;
 
-        // 3. 실행에 필요한 모든 JS 함수를 문자열로 추출
+        // 3. 실행에 필요한 모든 JS 함수와 플러그인을 문자열로 추출
+        const legendMarginPluginString = legendMarginPlugin.toString();
+
         const essentialFunctions = [
             renderDashboard, renderCompanyContent, renderKeywordBarChart, renderDynamicChart, 
             renderFinancialTrendChart, renderSwotCard, createArticleHtml, formatNumber,
@@ -701,6 +703,19 @@ async function handleDownloadHtml() {
                     let dynamicRadarChartInstance = null;
                     let keywordBarChartInstance = null;
                     let financialTrendChartInstance = null;
+
+                    // ✨ [수정] 다운로드된 파일에 legendMarginPlugin 정의 추가
+                    const legendMarginPlugin = {
+                        id: 'legendMargin',
+                        beforeInit: function (chart) {
+                            if (chart.legend.options.display === false) { return; }
+                            const originalFit = chart.legend.fit;
+                            chart.legend.fit = function () {
+                                originalFit.bind(chart.legend)();
+                                this.height += 20;
+                            }
+                        }
+                    };
 
                     const dom = {
                         marketSummary: document.getElementById('marketSummary'),
