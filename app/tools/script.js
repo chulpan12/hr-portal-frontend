@@ -715,16 +715,16 @@ async function showArchiveModal() {
             const companyAndKeyword = parts.slice(1).join('-');
             const formattedDate = `${date.substring(0,4)}-${date.substring(4,6)}-${date.substring(6,8)}`;
 
-            // ✨ [수정] 보기/다운로드 버튼을 포함한 레이아웃으로 변경
+            // ✨ [수정] 다운로드 링크를 JS 함수 호출 버튼으로 변경
             return `
                 <div class="flex justify-between items-center p-3 rounded-lg hover:bg-gray-700/50 transition-colors duration-200">
-                    <a href="${API_BASE_URL}/api/market/archives/${file}" target="_blank" class="flex-grow">
+                    <a href="${API_BASE_URL}/api/market/archives/${file}" target="_blank" class="flex-grow" title="새 탭에서 보기">
                         <p class="font-semibold text-indigo-400">${companyAndKeyword}</p>
                         <p class="text-sm text-gray-400">${formattedDate} 분석</p>
                     </a>
-                    <a href="${API_BASE_URL}/api/market/archives/${file}" download="${file}" class="ml-4 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="HTML 파일 다운로드" onclick="event.stopPropagation();">
+                    <button onclick="handleArchiveDownload(this, '${file}')" class="ml-4 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="HTML 파일 다운로드">
                         <i class="fas fa-download"></i>
-                    </a>
+                    </button>
                 </div>
             `;
         }).join('');
@@ -735,6 +735,46 @@ async function showArchiveModal() {
         dom.archiveList.innerHTML = `<p class="text-red-400">오류: ${error.message}</p>`;
     }
 }
+
+// ✨ [추가] Blob을 이용한 아카이브 파일 다운로드 핸들러
+async function handleArchiveDownload(buttonElement, filename) {
+    const icon = buttonElement.querySelector('i');
+    const originalIconClass = icon.className;
+    
+    icon.className = 'fas fa-spinner fa-spin'; // 로딩 아이콘으로 변경
+    buttonElement.disabled = true;
+
+    try {
+        const token = sessionStorage.getItem('ai-tool-token');
+        const response = await fetch(`${API_BASE_URL}/api/market/archives/${filename}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `파일 다운로드에 실패했습니다: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+    } catch (error) {
+        console.error('다운로드 오류:', error);
+        alert(error.message);
+    } finally {
+        icon.className = originalIconClass; // 원래 아이콘으로 복원
+        buttonElement.disabled = false;
+    }
+}
+
 
 // `handleDownloadHtml` 함수를 `generateReportHtml` 헬퍼 함수로 분리하여 재활용
 async function generateReportHtml() {
