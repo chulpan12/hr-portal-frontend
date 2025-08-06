@@ -710,17 +710,22 @@ async function showArchiveModal() {
         }
 
         const listHtml = files.map(file => {
-            // 파일명 파싱 (날짜-회사-키워드.html)
             const parts = file.replace('.html', '').split('-');
             const date = parts[0];
             const companyAndKeyword = parts.slice(1).join('-');
             const formattedDate = `${date.substring(0,4)}-${date.substring(4,6)}-${date.substring(6,8)}`;
 
+            // ✨ [수정] 보기/다운로드 버튼을 포함한 레이아웃으로 변경
             return `
-                <a href="${API_BASE_URL}/api/market/archives/${file}" target="_blank" class="block p-3 rounded-lg hover:bg-gray-700/50 transition">
-                    <p class="font-semibold text-indigo-400">${companyAndKeyword}</p>
-                    <p class="text-sm text-gray-400">${formattedDate} 분석</p>
-                </a>
+                <div class="flex justify-between items-center p-3 rounded-lg hover:bg-gray-700/50 transition-colors duration-200">
+                    <a href="${API_BASE_URL}/api/market/archives/${file}" target="_blank" class="flex-grow">
+                        <p class="font-semibold text-indigo-400">${companyAndKeyword}</p>
+                        <p class="text-sm text-gray-400">${formattedDate} 분석</p>
+                    </a>
+                    <a href="${API_BASE_URL}/api/market/archives/${file}" download="${file}" class="ml-4 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="HTML 파일 다운로드" onclick="event.stopPropagation();">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
             `;
         }).join('');
 
@@ -748,10 +753,17 @@ async function generateReportHtml() {
 
 
     // 2. 보고서 전체 구조 생성
+    // ✨ [수정] 보고서 헤더에 테마 토글 버튼 추가
     const reportHeader = `
-        <header class="text-center mb-10">
+        <header class="text-center mb-10 relative">
             <h1 class="text-4xl md:text-5xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
             <p class="text-lg mt-3" style="color: var(--text-secondary);">${dateString}</p>
+            <div class="absolute top-0 right-0">
+                <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
+                    <svg id="themeIconSun" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 16.464A1 1 0 106.465 15.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-1.414-2.12a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"></path></svg>
+                    <svg id="themeIconMoon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+            </div>
         </header>`;
     
     const footerHtml = document.querySelector('footer').outerHTML;
@@ -769,7 +781,7 @@ async function generateReportHtml() {
     const essentialFunctions = [
         renderDashboard, renderCompanyContent, renderKeywordBarChart, renderDynamicChart, 
         renderFinancialTrendChart, renderSwotCard, createArticleHtml, formatNumber,
-        renderEmployeeRatio, renderDataRow
+        renderEmployeeRatio, renderDataRow, toggleTheme, updateThemeIcon // ✨ [추가] 테마 변경 함수
     ].map(fn => fn.toString()).join('\n\n');
 
     const finalHtml = `
@@ -803,21 +815,26 @@ async function generateReportHtml() {
                     }
                 };
 
+                // ✨ [수정] 보고서 내에서 사용할 dom 객체 확장
                 const dom = {
                     marketSummary: document.getElementById('marketSummary'),
                     keywordBarChart: document.getElementById('keywordBarChart'),
                     competitiveContent: document.getElementById('competitive-content'),
                     companyTabs: document.getElementById('companyTabs'),
-                    companyContent: document.getElementById('companyContent')
+                    companyContent: document.getElementById('companyContent'),
+                    resultDashboard: document.getElementById('resultDashboard'),
+                    themeIconSun: document.getElementById('themeIconSun'),
+                    themeIconMoon: document.getElementById('themeIconMoon')
                 };
                 
                 ${essentialFunctions}
                 
                 document.addEventListener('DOMContentLoaded', () => {
-                    // 다운로드된 파일은 로그인 로직이 필요 없음
-                    // 테마 설정
-                    const isLight = document.documentElement.classList.contains('light');
-                    const textColor = isLight ? '#1f2937' : '#f3f4f6';
+                    // 테마 설정 및 아이콘 초기화
+                    updateThemeIcon();
+                    
+                    // 테마 토글 버튼 이벤트 연결
+                    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 
                     // 대시보드 렌더링
                     renderDashboard(lastAnalysisData);
