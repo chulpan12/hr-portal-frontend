@@ -288,7 +288,7 @@ function renderCompanyContent(analysis) {
     const finHrTrendHtml = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
             <div class="result-card p-6 rounded-xl flex flex-col">
-                <h4 class="font-bold text-lg mb-4">주요 재무 지표 (전년도 기준)</h4>
+                <h4 class="font-bold text-lg mb-4">주요 재무 지표 (연결-전년도 기준)</h4>
                 <div class="space-y-3 flex-grow">
                     ${renderDataRow('매출액', formatNumber(financialInfo['매출액'], '억'))}
                     ${renderDataRow('영업이익', formatNumber(financialInfo['영업이익'], '억'))}
@@ -299,7 +299,7 @@ function renderCompanyContent(analysis) {
                 </div>
             </div>
             <div class="result-card p-6 rounded-xl flex flex-col">
-                <h4 class="font-bold text-lg mb-4">임직원 현황 (전년도 기준)</h4>
+                <h4 class="font-bold text-lg mb-4">임직원 현황 (단독-전년도 기준)</h4>
                 <div class="space-y-4 flex-grow">
                     ${renderDataRow('총 임직원 수', formatNumber(hrInfo['총 임직원 수'], '명'))}
                     ${renderEmployeeRatio(hrInfo)}
@@ -389,7 +389,7 @@ function renderCompanyContent(analysis) {
             ${finHrTrendHtml}
             ${keywordAnalysisHtml}
             <div class="result-card p-6 rounded-xl">
-                <h4 class="font-bold text-lg mb-2">분석 근거 자료 (뉴스)</h4>
+                <h4 class="font-bold text-lg mb-2">분석 근거 자료 (기사/공시)</h4>
                 ${articlesHtml}
             </div>
             ${disclosuresHtml}
