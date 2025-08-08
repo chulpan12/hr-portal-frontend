@@ -112,13 +112,35 @@
         <!-- 입력 폼 -->
         <div id="input-section" class="card p-8 rounded-2xl mb-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                <div>
-                    <label for="name" class="block text-sm font-semibold mb-2">성명 (한글/한자)</label>
-                    <input type="text" id="name" name="name" class="input-field w-full p-3 rounded-lg" placeholder="예: 홍길동 洪吉童" value="홍길동 洪吉童">
+                <div class="md:col-span-2 grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="koreanName" class="block text-sm font-semibold mb-2">한글 이름</label>
+                        <input type="text" id="koreanName" name="korean_name" class="input-field w-full p-3 rounded-lg" placeholder="예: 홍길동" value="홍길동" required>
+                    </div>
+                    <div>
+                        <label for="chineseName" class="block text-sm font-semibold mb-2">한자 이름 (선택)</label>
+                        <input type="text" id="chineseName" name="chinese_name" class="input-field w-full p-3 rounded-lg" placeholder="예: 洪吉童" value="洪吉童">
+                    </div>
                 </div>
                 <div>
                     <label for="birthDate" class="block text-sm font-semibold mb-2">생년월일</label>
-                    <input type="date" id="birthDate" name="birth_date" class="input-field w-full p-3 rounded-lg" value="1990-03-15">
+                    <div class="space-y-3">
+                        <input type="date" id="birthDate" name="birth_date" class="input-field w-full p-3 rounded-lg" value="1990-03-15">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center">
+                                <input type="radio" id="solar" name="calendarType" value="solar" class="mr-2" checked>
+                                <label for="solar" class="text-sm font-medium">양력</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="radio" id="lunar" name="calendarType" value="lunar" class="mr-2">
+                                <label for="lunar" class="text-sm font-medium">음력</label>
+                            </div>
+                            <div class="flex items-center" id="leapMonthContainer" style="display: none;">
+                                <input type="checkbox" id="isLeapMonth" name="isLeapMonth" class="mr-2">
+                                <label for="isLeapMonth" class="text-sm font-medium">윤달</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label for="birthTime" class="block text-sm font-semibold mb-2">태어난 시</label>

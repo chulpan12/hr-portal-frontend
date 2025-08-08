@@ -46,6 +46,12 @@ const dom = {
     loginModal: document.getElementById('login-modal'),
     loginForm: document.getElementById('login-form'),
     loginSubmitBtn: document.getElementById('login-submit-btn'),
+    
+    // ✨ [추가] 달력 타입 관련 DOM 요소
+    solarRadio: document.getElementById('solar'),
+    lunarRadio: document.getElementById('lunar'),
+    leapMonthContainer: document.getElementById('leapMonthContainer'),
+    isLeapMonth: document.getElementById('isLeapMonth')
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -56,6 +62,22 @@ document.addEventListener('DOMContentLoaded', function() {
         dom.loginModal.classList.add('flex');
     } else {
         dom.loginModal.classList.add('hidden');
+    }
+    
+    // ✨ [추가] 음력/양력 선택에 따른 윤달 옵션 표시/숨김
+    if (dom.lunarRadio && dom.solarRadio && dom.leapMonthContainer) {
+        dom.lunarRadio.addEventListener('change', function() {
+            if (this.checked) {
+                dom.leapMonthContainer.style.display = 'flex';
+            }
+        });
+        
+        dom.solarRadio.addEventListener('change', function() {
+            if (this.checked) {
+                dom.leapMonthContainer.style.display = 'none';
+                dom.isLeapMonth.checked = false;
+            }
+        });
     }
     
     // Chart.js 기본 설정
@@ -234,13 +256,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================================
 
     dom.analyzeBtn.addEventListener('click', async () => {
-        const name = document.getElementById('name').value;
+        // ✨ [수정] 두 개의 입력 필드에서 값을 가져옵니다.
+        const koreanName = document.getElementById('koreanName').value;
+        const chineseName = document.getElementById('chineseName').value;
+        
+        // 한글 이름은 필수, 한자 이름은 선택
+        if (!koreanName) {
+            alert("한글 이름을 입력해주세요.");
+            return;
+        }
+        
+        // ✨ [수정] API에 보낼 name 변수를 생성합니다. (기존 로직과 호환)
+        // 한자가 있으면 "한글 한자" 형식으로, 없으면 "한글"만 포함합니다.
+        const name = chineseName ? `${koreanName} ${chineseName}` : koreanName;
+        
         const birthDate = document.getElementById('birthDate').value;
         const birthTime = document.getElementById('birthTime').value;
         const gender = document.getElementById('gender').value;
+        
+        // ✨ [추가] 달력 타입과 윤달 여부 가져오기
+        const calendarType = document.querySelector('input[name="calendarType"]:checked')?.value || 'solar';
+        const isLeapMonth = document.getElementById('isLeapMonth')?.checked || false;
 
-        if (!name || !birthDate || !birthTime) {
-            alert("성명, 생년월일, 시간을 모두 입력해주세요.");
+        if (!birthDate || !birthTime) {
+            alert("생년월일과 시간을 모두 입력해주세요.");
             return;
         }
 
@@ -284,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ name, birthDate, birthTime, gender })
+                body: JSON.stringify({ name, birthDate, birthTime, gender, calendarType, isLeapMonth })
             });
 
             if (!response.ok) {
@@ -825,8 +864,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const htmlContent = await generateReportHtml();
             const today = new Date();
             const downloadDateString = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-            const name = document.getElementById('name').value.split(' ')[0]; // 한글 이름만 추출
-            const filename = `사주분석_${name}_${downloadDateString}.html`;
+            const koreanNameForFile = document.getElementById('koreanName').value; // 한글 이름만 추출
+            const filename = `사주분석_${koreanNameForFile}_${downloadDateString}.html`;
 
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const a = document.createElement('a');
@@ -849,7 +888,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const pageHead = document.head.innerHTML;
         const today = new Date();
         const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const name = document.getElementById('name').value;
+        const koreanNameForTitle = document.getElementById('koreanName').value;
+        const chineseNameForTitle = document.getElementById('chineseName').value;
+        const fullNameForTitle = chineseNameForTitle ? `${koreanNameForTitle} ${chineseNameForTitle}` : koreanNameForTitle;
 
         // 보고서 본문 구성
         const reportContainer = document.getElementById('resultDashboard').cloneNode(true);
@@ -863,7 +904,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const reportHeader = `
             <header class="text-center mb-10 relative">
                 <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">AI 명리학 인생 분석 보고서</h1>
-                <p class="text-lg mt-3 text-gray-400">${name}님의 인생 분석 결과</p>
+                <p class="text-lg mt-3 text-gray-400">${fullNameForTitle}님의 인생 분석 결과</p>
                 <p class="text-sm mt-2 text-gray-500">${dateString}</p>
             </header>`;
 
@@ -879,7 +920,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>AI 명리학 인생 분석 보고서 - ${name}</title>
+                <title>AI 명리학 인생 분석 보고서 - ${fullNameForTitle}</title>
                 <script src="https://cdn.tailwindcss.com"></script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -943,6 +984,117 @@ document.addEventListener('DOMContentLoaded', function() {
                 <script>
                     // 분석 데이터를 전역 변수로 설정
                     window.lastAnalysisData = ${JSON.stringify(lastAnalysisData)};
+                    
+                    // 다운로드된 파일에서 차트를 생성하는 함수
+                    document.addEventListener('DOMContentLoaded', function() {
+                        if (window.lastAnalysisData) {
+                            createChartsInDownloadedFile(window.lastAnalysisData);
+                        }
+                    });
+                    
+                    function createChartsInDownloadedFile(data) {
+                        // 오행 분포 차트 생성
+                        const fiveElementsCanvas = document.getElementById('fiveElementsChart');
+                        if (fiveElementsCanvas && data.saju_data && data.saju_data.five_elements && data.saju_data.five_elements.counts) {
+                            const fiveElementsData = data.saju_data.five_elements.counts;
+                            const fiveElementsValues = [
+                                parseInt(fiveElementsData['木']) || 0,
+                                parseInt(fiveElementsData['火']) || 0,
+                                parseInt(fiveElementsData['土']) || 0,
+                                parseInt(fiveElementsData['金']) || 0,
+                                parseInt(fiveElementsData['水']) || 0
+                            ];
+                            
+                            new Chart(fiveElementsCanvas, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['木 (나무)', '火 (불)', '土 (흙)', '金 (금)', '水 (물)'],
+                                    datasets: [{
+                                        data: fiveElementsValues,
+                                        backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#6b7280', '#3b82f6'],
+                                        borderWidth: 2,
+                                        borderColor: '#1f2937'
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom',
+                                            labels: {
+                                                color: '#E5E7EB',
+                                                font: { size: 12 },
+                                                padding: 15
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // 핵심 역량 차트 생성
+                        const competenciesCanvas = document.getElementById('coreCompetenciesChart');
+                        if (competenciesCanvas && data.potential_dashboard && data.potential_dashboard.core_competencies) {
+                            const competenciesData = data.potential_dashboard.core_competencies;
+                            const competenciesValues = [
+                                parseInt(competenciesData.leadership) || 0,
+                                parseInt(competenciesData.creativity) || 0,
+                                parseInt(competenciesData.communication) || 0,
+                                parseInt(competenciesData.analytical) || 0,
+                                parseInt(competenciesData.execution) || 0
+                            ];
+                            
+                            new Chart(competenciesCanvas, {
+                                type: 'radar',
+                                data: {
+                                    labels: ['리더십', '창의성', '소통력', '분석력', '실행력'],
+                                    datasets: [{
+                                        label: '핵심 역량',
+                                        data: competenciesValues,
+                                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                                        borderColor: 'rgb(99, 102, 241)',
+                                        borderWidth: 2,
+                                        pointBackgroundColor: 'rgb(99, 102, 241)',
+                                        pointBorderColor: '#fff',
+                                        pointHoverBackgroundColor: '#fff',
+                                        pointHoverBorderColor: 'rgb(99, 102, 241)'
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            labels: {
+                                                color: '#E5E7EB',
+                                                font: { size: 12 }
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        r: {
+                                            min: 0,
+                                            max: 10,
+                                            ticks: {
+                                                color: '#9CA3AF',
+                                                font: { size: 12 },
+                                                backdropColor: 'transparent'
+                                            },
+                                            grid: {
+                                                color: '#374151'
+                                            },
+                                            pointLabels: {
+                                                color: '#E5E7EB',
+                                                font: { size: 14, weight: 'bold' },
+                                                padding: 15
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
                 </script>
             </body>
             </html>`;
