@@ -258,10 +258,16 @@ document.addEventListener('DOMContentLoaded', function() {
         streamingResult.className = 'bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg mb-6';
         streamingResult.innerHTML = '<h3 class="text-lg font-semibold mb-4">AI가 분석 중입니다...</h3><pre class="whitespace-pre-wrap text-sm" id="streaming-text"></pre>';
         
-        // 기존 결과 영역 앞에 삽입
-        const resultContainer = document.querySelector('.result-container');
-        resultContainer.insertBefore(streamingResult, resultContainer.firstChild);
-        streamingResult.classList.remove('hidden');
+        // 기존 결과 영역 앞에 삽입 (main 태그를 찾아서 사용)
+        const resultContainer = document.querySelector('main');
+        if (resultContainer) {
+            resultContainer.insertBefore(streamingResult, resultContainer.firstChild);
+            streamingResult.classList.remove('hidden');
+        } else {
+            // main 태그가 없으면 body에 추가
+            document.body.insertBefore(streamingResult, document.body.firstChild);
+            streamingResult.classList.remove('hidden');
+        }
 
         try {
             const token = sessionStorage.getItem('ai-tool-token');
