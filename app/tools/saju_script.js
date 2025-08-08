@@ -49,6 +49,15 @@ const dom = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+    // ✨ [추가] 로그인 상태 확인 및 모달 표시
+    const token = sessionStorage.getItem('ai-tool-token');
+    if (!token) {
+        dom.loginModal.classList.remove('hidden');
+        dom.loginModal.classList.add('flex');
+    } else {
+        dom.loginModal.classList.add('hidden');
+    }
+    
     // Chart.js 기본 설정
     Chart.defaults.color = '#9CA3AF';
     Chart.defaults.borderColor = '#374151';
@@ -265,6 +274,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('API 호출 또는 데이터 처리 오류:', error);
+            
+            // 로그인 오류인 경우 모달 표시
+            if (error.message === '로그인이 필요합니다.') {
+                dom.loginModal.classList.remove('hidden');
+                dom.loginModal.classList.add('flex');
+            }
+            
             // 로딩 상태 복구
             dom.btnText.classList.remove('hidden');
             dom.loader.classList.add('hidden');
