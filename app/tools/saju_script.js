@@ -710,12 +710,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } else { console.warn('사주 데이터 또는 sajuTableBody DOM 요소 누락'); }
             
             console.log('4. 사주 구조 분석 렌더링 시도...');
-            console.log('용신 관련 데이터 확인:', {
-                data_yongsin: data.yongsin,
-                data_saju_strength: data.saju_strength,
-                data_saju_structure: data.saju_structure
-            });
-            
             if (data.saju_structure && dom.sajuStructureSummary && dom.yongsinAnalysis) {
                 try {
                     // ✨ [수정] 용신 데이터를 직접 사용
@@ -723,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const sajuStrengthData = data.saju_strength || '사주 강약 분석 중...';
                     
                     dom.sajuStructureSummary.innerHTML = `<p><strong>사주 구조 해석:</strong> ${data.saju_structure.summary || '분석 중...'}</p>`;
-                    dom.yongsinAnalysis.innerHTML = `<p><strong>용신 분석:</strong> ${yongsinData}</p>`;
+                    dom.yongsinAnalysis.innerHTML = `<p><strong>용신 분석:</strong> ${data.saju_structure.yongsin}</p>`;
                     console.log('✅ 사주 구조 분석 렌더링 완료');
                     console.log('용신 데이터:', yongsinData);
                     console.log('사주 강약 데이터:', sajuStrengthData);
@@ -791,8 +785,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // 핵심 역량 차트 데이터 업데이트
                     const competenciesData = data.potential_dashboard?.core_competencies;
-                    console.log('역량 데이터 확인:', competenciesData);
-                    
                     if (competenciesData && coreCompetenciesChartInstance) {
                         const competenciesValues = [
                             parseInt(competenciesData.leadership) || 0,
@@ -801,14 +793,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             parseInt(competenciesData.analytical) || 0,
                             parseInt(competenciesData.execution) || 0
                         ];
-                        console.log('파싱된 역량 값들:', competenciesValues);
-                        
-                        // 모든 값이 0인지 확인
-                        const allZero = competenciesValues.every(val => val === 0);
-                        if (allZero) {
-                            console.warn('모든 역량 값이 0입니다. AI가 계산하지 않았을 수 있습니다.');
-                        }
-                        
                         coreCompetenciesChartInstance.data.datasets[0].data = competenciesValues;
                         // ✨ [추가] 차트 색상 설정 업데이트
                         updateChartDefaults();
