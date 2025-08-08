@@ -288,6 +288,69 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('차트 초기화 완료.');
     }
     initializeCharts();
+    
+    // ✨ [추가] 사주 테이블만 먼저 렌더링하는 함수 (4행 완전 표시)
+    function renderSajuTableOnly(sajuData) {
+        console.log("🔮 사주 테이블 즉시 렌더링 시작:", sajuData);
+        
+        if (sajuData.saju_pillars && dom.sajuTableBody) {
+            try {
+                const pillars = sajuData.saju_pillars;
+                
+                // 기존 테이블 구조를 활용하여 4행 모두 표시
+                // 천간 행
+                const hourStem = dom.sajuTableBody.querySelector('[data-saju="hour_stem"]');
+                const dayStem = dom.sajuTableBody.querySelector('[data-saju="day_stem"]');
+                const monthStem = dom.sajuTableBody.querySelector('[data-saju="month_stem"]');
+                const yearStem = dom.sajuTableBody.querySelector('[data-saju="year_stem"]');
+                
+                if (hourStem) hourStem.textContent = pillars.hour?.[0] || '계산중';
+                if (dayStem) dayStem.textContent = pillars.day?.[0] || '계산중';
+                if (monthStem) monthStem.textContent = pillars.month?.[0] || '계산중';
+                if (yearStem) yearStem.textContent = pillars.year?.[0] || '계산중';
+                
+                // 지지 행
+                const hourBranch = dom.sajuTableBody.querySelector('[data-saju="hour_branch"]');
+                const dayBranch = dom.sajuTableBody.querySelector('[data-saju="day_branch"]');
+                const monthBranch = dom.sajuTableBody.querySelector('[data-saju="month_branch"]');
+                const yearBranch = dom.sajuTableBody.querySelector('[data-saju="year_branch"]');
+                
+                if (hourBranch) hourBranch.textContent = pillars.hour?.[1] || '계산중';
+                if (dayBranch) dayBranch.textContent = pillars.day?.[1] || '계산중';
+                if (monthBranch) monthBranch.textContent = pillars.month?.[1] || '계산중';
+                if (yearBranch) yearBranch.textContent = pillars.year?.[1] || '계산중';
+                
+                // 십신과 지장간은 AI 해석 후에 채워질 예정이므로 임시 메시지
+                const sipsinElements = dom.sajuTableBody.querySelectorAll('[data-saju*="sipsin"]');
+                const jijangganElements = dom.sajuTableBody.querySelectorAll('[data-saju*="jijanggan"]');
+                
+                sipsinElements.forEach(el => {
+                    el.textContent = '분석중...';
+                    el.classList.add('text-gray-400', 'text-xs');
+                });
+                
+                jijangganElements.forEach(el => {
+                    el.textContent = '분석중...';
+                    el.classList.add('text-gray-400', 'text-xs');
+                });
+                
+                // 사주 구조 분석 영역에 임시 메시지 표시
+                if (dom.sajuStructureSummary) {
+                    dom.sajuStructureSummary.innerHTML = '<p class="text-gray-400">🤖 AI가 사주 구조를 분석하고 있습니다...</p>';
+                }
+                if (dom.yongsinAnalysis) {
+                    dom.yongsinAnalysis.innerHTML = '<p class="text-gray-400">🔮 용신 분석 중입니다...</p>';
+                }
+                
+                console.log("✅ 사주 테이블 즉시 렌더링 완료! (4행 구조 유지)");
+                
+            } catch (e) {
+                console.error("❌ 사주 테이블 렌더링 오류:", e);
+            }
+        } else {
+            console.warn("사주 데이터 또는 테이블 DOM 요소 누락");
+        }
+    }
     // ==========================================================
 
     dom.analyzeBtn.addEventListener('click', async () => {
@@ -326,11 +389,22 @@ document.addEventListener('DOMContentLoaded', function() {
         dom.resultDashboard.classList.add('hidden');
         dom.downloadBtn.classList.add('hidden');
         
-        // 스트리밍 결과를 표시할 임시 영역 생성
+        // 스트리밍 결과를 표시할 임시 영역 생성 (개선된 디자인)
         const streamingResult = document.createElement('div');
         streamingResult.id = 'streaming-result';
-        streamingResult.className = 'bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg mb-6';
-        streamingResult.innerHTML = '<h3 class="text-lg font-semibold mb-4">AI가 분석 중입니다...</h3><pre class="whitespace-pre-wrap text-sm" id="streaming-text"></pre>';
+        streamingResult.className = 'bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-6 shadow-lg mb-6 text-white';
+        streamingResult.innerHTML = `
+            <div class="flex items-center mb-4">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                <h3 class="text-lg font-semibold">AI 인생 분석 진행 중</h3>
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm opacity-90" id="streaming-text">🤖 AI가 상세한 인생 분석을 작성하고 있습니다...</p>
+                <div class="w-full bg-white bg-opacity-20 rounded-full h-2">
+                    <div class="bg-white h-2 rounded-full animate-pulse" style="width: 60%"></div>
+                </div>
+            </div>
+        `;
         
         // 기존 결과 영역 앞에 삽입 (main 태그를 찾아서 사용)
         const resultContainer = document.querySelector('main');
@@ -352,13 +426,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('로그인이 필요합니다.');
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/saju/analyze`, {
+            // ✨ [1단계] 계산 API 호출 - 즉시 반환
+            console.log("🔮 1단계: 사주 계산 API 호출 시작...");
+            dom.btnText.innerHTML = '🧮 사주 계산 중...';
+            
+            const calcResponse = await fetch(`${API_BASE_URL}/api/saju/calculate`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ name, birthDate, birthTime, gender, calendarType, isLeapMonth })
+                body: JSON.stringify({ birthDate, birthTime, gender, calendarType, isLeapMonth })
+            });
+
+            if (!calcResponse.ok) {
+                const errorData = await calcResponse.json();
+                throw new Error(errorData.error || '사주 계산에 실패했습니다.');
+            }
+
+            const sajuData = await calcResponse.json();
+            console.log("✅ 1단계 완료! 계산된 사주 데이터:", sajuData);
+
+            // ✨ [즉시 피드백] 계산 결과를 바로 사주 테이블로 렌더링
+            renderSajuTableOnly(sajuData);
+            dom.resultDashboard.classList.remove('hidden'); // 결과 대시보드를 미리 보여줌
+            
+            // 스트리밍 메시지 업데이트
+            streamingResult.innerHTML = '<h3 class="text-lg font-semibold mb-4">🤖 AI가 상세 해석을 작성하고 있습니다...</h3><pre class="whitespace-pre-wrap text-sm" id="streaming-text"></pre>';
+            
+            // ✨ [임시] 2단계 해석 API는 나중에 구현하고 1단계만 완료
+            console.log("📊 2단계: 사주 해석 API는 준비 중입니다...");
+            dom.btnText.innerHTML = '✅ 계산 완료';
+            
+            // 성공 메시지 제거 - 분석이 완료되었으므로 더 이상 필요하지 않음
+            
+            // ✨ [2단계] 해석 API 호출 - 스트리밍
+            console.log("📊 2단계: 사주 해석 API 호출 시작...");
+            dom.btnText.innerHTML = '🔮 AI 해석 중...';
+            
+            // 버튼 텍스트를 원래 상태로 복원
+            setTimeout(() => {
+                dom.btnText.innerHTML = '<span class="text-xl">🔮</span><span>내 인생 보고서 분석하기</span>';
+            }, 1000);
+
+            const response = await fetch(`${API_BASE_URL}/api/saju/interpret`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name,
+                    gender: sajuData.gender,
+                    birth_time: sajuData.birth_time,
+                    solar_birth_date: sajuData.solar_birth_date,
+                    saju_pillars: sajuData.saju_pillars,
+                    sipsin: sajuData.sipsin,
+                    jijanggan: sajuData.jijanggan,
+                    daewoon_flow: sajuData.daewoon_flow
+                })
             });
 
             if (!response.ok) {
@@ -366,73 +492,77 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorData.error || '분석에 실패했습니다.');
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder('utf-8');
-            let accumulatedText = ''; // 스트리밍 텍스트를 보여주기 위한 변수
-            const streamingTextElement = document.getElementById('streaming-text');
-            
-            // ✨ [수정 1] 분리된 JSON 조각을 임시 저장할 버퍼
-            let buffer = '';
+            // ✨ [스트리밍 처리] - 오류 처리 개선
+            try {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let accumulatedText = '';
+                const streamingTextElement = document.getElementById('streaming-text');
+                let buffer = '';
+                let finalAnalysisData = null;
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                // ✨ [수정 2] 들어오는 모든 텍스트를 버퍼에 추가
-                buffer += decoder.decode(value, { stream: true });
-
-                // ✨ [수정 3] 버퍼에서 완전한 SSE 메시지(data: ...\n\n)를 찾아 처리
                 while (true) {
-                    const eolIndex = buffer.indexOf('\n\n');
-                    if (eolIndex < 0) {
-                        // 완전한 메시지가 없으면 다음 조각을 위해 대기
-                        break;
-                    }
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-                    // 완전한 메시지 하나를 추출
-                    const message = buffer.substring(0, eolIndex);
-                    // 버퍼에서는 처리한 메시지를 제거
-                    buffer = buffer.substring(eolIndex + 2);
+                    buffer += decoder.decode(value, { stream: true });
 
-                    if (message.startsWith('data:')) {
-                        const jsonData = message.substring(5).trim();
-                        try {
-                            const parsedData = JSON.parse(jsonData);
+                    while (true) {
+                        const eolIndex = buffer.indexOf('\n\n');
+                        if (eolIndex < 0) break;
 
-                            if (parsedData.event === 'done') {
-                                console.log("스트리밍 완료 신호 수신!");
-                                break; 
-                            }
-                            
-                            if (parsedData.final_json) {
-                                console.log("최종 정리된 JSON 데이터 수신!");
-                                finalAnalysisData = JSON.parse(parsedData.final_json);
-                                accumulatedText = "AI가 분석 결과를 정리하고 있습니다...";
-                            }
-                            else if (parsedData.chunk) {
-                                accumulatedText += parsedData.chunk;
-                            }
+                        const message = buffer.substring(0, eolIndex);
+                        buffer = buffer.substring(eolIndex + 2);
 
-                            if (streamingTextElement) {
-                                streamingTextElement.textContent = accumulatedText;
+                        if (message.startsWith('data:')) {
+                            const jsonData = message.substring(5).trim();
+                            try {
+                                const parsedData = JSON.parse(jsonData);
+
+                                if (parsedData.event === 'done') {
+                                    console.log("스트리밍 완료 신호 수신!");
+                                    break;
+                                }
+                                
+                                if (parsedData.final_json) {
+                                    console.log("최종 정리된 JSON 데이터 수신!");
+                                    finalAnalysisData = JSON.parse(parsedData.final_json);
+                                    // 사용자에게는 친화적인 메시지만 표시
+                                    accumulatedText = "🎉 AI 분석 완료! 결과를 정리하고 있습니다...";
+                                }
+                                else if (parsedData.chunk) {
+                                    // chunk 데이터는 스트리밍 중에 표시하지 않음
+                                    // 대신 진행 상황을 표시
+                                    if (!accumulatedText.includes("분석 중")) {
+                                        accumulatedText = "🤖 AI가 상세한 인생 분석을 작성하고 있습니다...";
+                                    }
+                                }
+
+                                if (streamingTextElement) {
+                                    // 사용자 친화적인 메시지만 표시
+                                    streamingTextElement.textContent = accumulatedText;
+                                }
+                            } catch (e) {
+                                console.error('스트리밍 중 JSON 파싱 오류:', jsonData, e);
                             }
-                        } catch (e) {
-                            console.error('스트리밍 중 JSON 파싱 오류:', jsonData, e);
                         }
                     }
                 }
-            }
-            
-            // ✨ [수정 3] 스트림이 끝나면, 불필요한 후처리 없이 바로 렌더링
-            console.log('최종 데이터로 렌더링 시작:', finalAnalysisData);
-            if (finalAnalysisData) {
-                lastAnalysisData = finalAnalysisData; // 다운로드 기능을 위해 저장
-                renderDashboard(finalAnalysisData);
-                dom.resultDashboard.classList.remove('hidden');
-                dom.downloadBtn.classList.remove('hidden');
-            } else {
-                // final_json을 받지 못한 예외적인 경우
-                throw new Error("최종 분석 데이터를 받지 못했습니다. 다시 시도해주세요.");
+                
+                // 최종 렌더링
+                console.log('최종 데이터로 렌더링 시작:', finalAnalysisData);
+                if (finalAnalysisData) {
+                    lastAnalysisData = finalAnalysisData;
+                    renderDashboard(finalAnalysisData);
+                    dom.resultDashboard.classList.remove('hidden');
+                    dom.downloadBtn.classList.remove('hidden');
+                } else {
+                    throw new Error("최종 분석 데이터를 받지 못했습니다.");
+                }
+                
+            } catch (streamingError) {
+                console.error('스트리밍 처리 중 오류:', streamingError);
+                throw new Error(`스트리밍 처리 실패: ${streamingError.message}`);
             }
             
         } catch (error) {
@@ -455,15 +585,15 @@ document.addEventListener('DOMContentLoaded', function() {
             dom.loader.classList.add('hidden');
             dom.analyzeBtn.disabled = false;
             
+            // 버튼 텍스트를 원래 상태로 복원
+            dom.btnText.innerHTML = '<span class="text-xl">🔮</span><span>내 인생 보고서 분석하기</span>';
+            
             // 임시 스트리밍 결과 영역 제거
             const streamingResult = document.getElementById('streaming-result');
             if (streamingResult) {
                 streamingResult.remove();
             }
         }
-        dom.btnText.classList.remove('hidden');
-        dom.loader.classList.add('hidden');
-        dom.analyzeBtn.disabled = false;
     });
 
     // ✨ [추가] 테마 토글 이벤트 리스너
