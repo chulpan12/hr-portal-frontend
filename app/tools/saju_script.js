@@ -296,17 +296,32 @@ document.addEventListener('DOMContentLoaded', function() {
             const decoder = new TextDecoder('utf-8');
             let accumulatedText = ''; // 스트리밍 텍스트를 보여주기 위한 변수
             const streamingTextElement = document.getElementById('streaming-text');
+            
+            // ✨ [수정 1] 분리된 JSON 조각을 임시 저장할 버퍼
+            let buffer = '';
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunkText = decoder.decode(value);
-                const lines = chunkText.split('\n\n').filter(line => line.trim() !== '');
+                // ✨ [수정 2] 들어오는 모든 텍스트를 버퍼에 추가
+                buffer += decoder.decode(value, { stream: true });
 
-                for (const line of lines) {
-                    if (line.startsWith('data:')) {
-                        const jsonData = line.substring(5).trim();
+                // ✨ [수정 3] 버퍼에서 완전한 SSE 메시지(data: ...\n\n)를 찾아 처리
+                while (true) {
+                    const eolIndex = buffer.indexOf('\n\n');
+                    if (eolIndex < 0) {
+                        // 완전한 메시지가 없으면 다음 조각을 위해 대기
+                        break;
+                    }
+
+                    // 완전한 메시지 하나를 추출
+                    const message = buffer.substring(0, eolIndex);
+                    // 버퍼에서는 처리한 메시지를 제거
+                    buffer = buffer.substring(eolIndex + 2);
+
+                    if (message.startsWith('data:')) {
+                        const jsonData = message.substring(5).trim();
                         try {
                             const parsedData = JSON.parse(jsonData);
 
@@ -315,24 +330,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                 break; 
                             }
                             
-                            // ✨ [수정 2] final_json을 받으면 바로 최종 데이터로 확정
                             if (parsedData.final_json) {
                                 console.log("최종 정리된 JSON 데이터 수신!");
-                                // 백엔드가 보내준 깨끗한 JSON 문자열을 객체로 파싱
                                 finalAnalysisData = JSON.parse(parsedData.final_json);
                                 accumulatedText = "AI가 분석 결과를 정리하고 있습니다...";
                             }
-                            
-                            // 'chunk' 데이터는 화면 표시용으로만 사용
                             else if (parsedData.chunk) {
                                 accumulatedText += parsedData.chunk;
                             }
 
-                            // 실시간으로 화면에 텍스트 업데이트
                             if (streamingTextElement) {
                                 streamingTextElement.textContent = accumulatedText;
                             }
-
                         } catch (e) {
                             console.error('스트리밍 중 JSON 파싱 오류:', jsonData, e);
                         }
@@ -445,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         data.hanja_details.forEach(hanja => {
                             nameTableHtml += `
                                 <div class="card p-4 text-center">
-                                    <p class="text-2xl font-bold mb-2">${hanja.character}</p>
+                                    <p class="text-2xl font-bold mb-2">${hanja.hanja || '글자 없음'}</p>
                                     <p class="text-sm text-gray-400">${hanja.meaning}</p>
                                     <p class="text-xs mt-1 text-gray-500">(${hanja.element} 오행)</p>
                                 </div>
