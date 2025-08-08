@@ -712,9 +712,15 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('4. 사주 구조 분석 렌더링 시도...');
             if (data.saju_structure && dom.sajuStructureSummary && dom.yongsinAnalysis) {
                 try {
+                    // ✨ [수정] 용신 데이터를 직접 사용
+                    const yongsinData = data.yongsin || data.saju_structure.yongsin || '용신 분석 중...';
+                    const sajuStrengthData = data.saju_strength || '사주 강약 분석 중...';
+                    
                     dom.sajuStructureSummary.innerHTML = `<p><strong>사주 구조 해석:</strong> ${data.saju_structure.summary || '분석 중...'}</p>`;
-                    dom.yongsinAnalysis.innerHTML = `<p><strong>용신 분석:</strong> ${data.saju_structure.yongsin || '분석 중...'}</p>`;
+                    dom.yongsinAnalysis.innerHTML = `<p><strong>용신 분석:</strong> ${yongsinData}</p>`;
                     console.log('✅ 사주 구조 분석 렌더링 완료');
+                    console.log('용신 데이터:', yongsinData);
+                    console.log('사주 강약 데이터:', sajuStrengthData);
                 } catch (e) {
                     console.error('❌ 사주 구조 분석 렌더링 오류:', e);
                 }
@@ -738,6 +744,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.saju_data.five_elements && data.saju_data.five_elements.counts) { 
                         fiveElementsData = data.saju_data.five_elements.counts; 
                         console.log('five_elements.counts에서 데이터 가져옴:', fiveElementsData);
+                        
+                        // ✨ [수정] 영어 키를 한자 키로 변환
+                        if (fiveElementsData.wood !== undefined) {
+                            fiveElementsData = {
+                                '木': fiveElementsData.wood || 0,
+                                '火': fiveElementsData.fire || 0,
+                                '土': fiveElementsData.earth || 0,
+                                '金': fiveElementsData.metal || 0,
+                                '水': fiveElementsData.water || 0
+                            };
+                            console.log('영어 키를 한자 키로 변환:', fiveElementsData);
+                        }
                     } else if (data.oheng_counts) { 
                         fiveElementsData = data.oheng_counts; 
                         console.log('oheng_counts에서 데이터 가져옴:', fiveElementsData);
