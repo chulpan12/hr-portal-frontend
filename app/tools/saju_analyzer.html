@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 명리학 인생 분석 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #111827; --bg-secondary: #1f2937; --bg-panel: #1f293780;
+            --border-color: #37415180; --text-primary: #f3f4f6; --text-secondary: #9ca3af;
+            --input-bg: #374151; --input-border: #4b5563;
+        }
+        html.light {
+            --bg-primary: #f9fafb; --bg-secondary: #ffffff; --bg-panel: #ffffffcc;
+            --border-color: #e5e7eb; --text-primary: #1f2937; --text-secondary: #6b7280;
+            --input-bg: #f3f4f6; --input-border: #d1d5db;
+        }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.3s ease, color 0.3s ease; }
+        .card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); }
+        .input-field { background-color: var(--input-bg); border-color: var(--input-border); color: var(--text-primary); }
+        .btn-primary { background-color: #4f46e5; color: white !important; }
+        .btn-primary:hover { background-color: #4338ca; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -31px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #4f46e5;
+            border: 4px solid var(--bg-secondary);
+        }
+        .loader { border-top-color: #6366f1; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* ✨ [수정] 라이트 테마 가독성 개선 - market_analyzer.html 스타일 참고 */
+        html.light .text-gray-300 { color: #1f2937 !important; }
+        html.light .text-gray-400 { color: #374151 !important; }
+        html.light .text-gray-500 { color: #6b7280 !important; }
+        html.light .text-gray-600 { color: #374151 !important; }
+        
+        /* 버튼 텍스트 색상 고정 */
+        .btn-primary { color: white !important; }
+        
+        /* 사주 테이블 헤더 셀 색상 - 라이트 테마에서 흰색 */
+        html.light .saju-table-header { color: white !important; font-weight: 600; }
+        
+        /* 사주 테이블 전체 텍스트 색상 - 라이트 테마에서 검은색 */
+        html.light .saju-table { color: #1f2937 !important; }
+        html.light .saju-table th { color: #1f2937 !important; font-weight: 600; }
+        html.light .saju-table td { color: #374151 !important; }
+        
+        /* 사주 테이블 헤더 배경색과 텍스트 색상 - 라이트 테마에서 명확하게 보이도록 */
+        html.light .saju-table thead th { 
+            background-color: #374151 !important; 
+            color: white !important; 
+            font-weight: 600; 
+        }
+        
+        /* 월별 운세 카드 배경색과 텍스트 색상 */
+        html.light .monthly-fortune-card { background-color: white !important; }
+        html.light .monthly-fortune-month { color: #1f2937 !important; font-weight: 600; }
+        html.light .monthly-fortune-text { color: #374151 !important; }
+        
+        /* 인생 경로 타임라인 배경색과 텍스트 색상 */
+        html.light .timeline-card { background-color: white !important; }
+        html.light .timeline-content { color: #1f2937 !important; }
+        html.light .timeline-opportunity { color: #059669 !important; }
+        html.light .timeline-risk { color: #dc2626 !important; }
+        
+        /* 재능 섹션 배경색 개선 */
+        html.light .talent-card-purple { background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(147, 51, 234, 0.05)); }
+        html.light .talent-card-blue { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); }
+        html.light .talent-card-green { background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05)); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto max-w-[90rem]">
+        <header class="text-center mb-12 relative">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">
+                AI 명리학 인생 분석 보고서
+            </h1>
+            <p class="text-lg mt-3 text-gray-400">데이터로 만나는 나의 인생 컨설팅 리포트</p>
+            <!-- ✨ [수정] 버튼들을 컨테이너 내부로 이동 -->
+            <div class="absolute top-0 right-0 flex items-center gap-3">
+                <a href="/" class="p-2 rounded-full transition bg-gray-800/50 hover:bg-gray-700/50" aria-label="Home">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </a>
+                <button id="downloadBtn" class="p-2 rounded-full transition bg-gray-800/50 hover:bg-gray-700/50 hidden" aria-label="분석 결과 다운로드">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                </button>
+                <button id="themeToggle" class="p-2 rounded-full transition bg-gray-800/50 hover:bg-gray-700/50">
+                    <svg id="themeIconSun" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 16.464A1 1 0 106.465 15.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-1.414-2.12a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"></path>
+                    </svg>
+                    <svg id="themeIconMoon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- 입력 폼 -->
+        <div id="input-section" class="card p-8 rounded-2xl mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div>
+                    <label for="name" class="block text-sm font-semibold mb-2">성명 (한글/한자)</label>
+                    <input type="text" id="name" name="name" class="input-field w-full p-3 rounded-lg" placeholder="예: 홍길동 洪吉童" value="홍길동 洪吉童">
+                </div>
+                <div>
+                    <label for="birthDate" class="block text-sm font-semibold mb-2">생년월일</label>
+                    <input type="date" id="birthDate" name="birth_date" class="input-field w-full p-3 rounded-lg" value="1990-03-15">
+                </div>
+                <div>
+                    <label for="birthTime" class="block text-sm font-semibold mb-2">태어난 시</label>
+                    <input type="time" id="birthTime" name="birth_time" class="input-field w-full p-3 rounded-lg" value="14:30">
+                </div>
+                <div>
+                    <label for="gender" class="block text-sm font-semibold mb-2">성별</label>
+                    <select id="gender" name="gender" class="input-field w-full p-3 rounded-lg">
+                        <option value="남자">남자</option>
+                        <option value="여자">여자</option>
+                    </select>
+                </div>
+            </div>
+            <button id="analyzeBtn" class="btn-primary w-full mt-8 py-3 text-lg font-bold rounded-lg transition-all">
+                <span id="btnText">내 인생 보고서 보기</span>
+                <span id="loader" class="hidden">분석 중...</span>
+            </button>
+        </div>
+
+        <!-- 결과 대시보드 (초기에는 숨김) -->
+        <main id="resultDashboard" class="hidden space-y-10">
+            <!-- AI 종합 평가 -->
+            <section class="card p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-4 text-indigo-400">AI 종합 평가</h2>
+                <div id="overallAssessment" class="space-y-4 text-gray-300"></div>
+            </section>
+
+            <!-- 이름 분석 결과 -->
+            <section class="card p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-4 text-indigo-400">이름 분석</h2>
+                <div id="nameAnalysis">
+                    <!-- 이름 분석 내용이 여기에 동적으로 삽입됩니다. -->
+                </div>
+            </section>
+
+            <!-- 사주팔자 구성 -->
+            <section class="card p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-6 text-indigo-400">사주팔자 구성</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-purple-400">📊 사주팔자 테이블</h3>
+                        <div id="sajuTable" class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse saju-table">
+                                <thead>
+                                    <tr class="border-b border-gray-600">
+                                        <th class="p-2 text-center bg-gray-800">구분</th>
+                                        <th class="p-2 text-center bg-gray-800">시주(時柱)</th>
+                                        <th class="p-2 text-center bg-gray-800">일주(日柱)</th>
+                                        <th class="p-2 text-center bg-gray-800">월주(月柱)</th>
+                                        <th class="p-2 text-center bg-gray-800">연주(年柱)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sajuTableBody" class="saju-table">
+                                    <tr>
+                                        <td class="p-2 text-center font-semibold text-gray-400">천간(天干)</td>
+                                        <td class="p-3 text-center text-xl" data-saju="hour_stem"></td>
+                                        <td class="p-3 text-center text-xl" data-saju="day_stem"></td>
+                                        <td class="p-3 text-center text-xl" data-saju="month_stem"></td>
+                                        <td class="p-3 text-center text-xl" data-saju="year_stem"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 text-center font-semibold text-gray-400">십신(十神)</td>
+                                        <td class="p-3 text-center text-sm" data-saju="hour_sipsin"></td>
+                                        <td class="p-3 text-center text-sm" data-saju="day_sipsin"></td>
+                                        <td class="p-3 text-center text-sm" data-saju="month_sipsin"></td>
+                                        <td class="p-3 text-center text-sm" data-saju="year_sipsin"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 text-center font-semibold text-gray-400">지지(地支)</td>
+                                        <td class="p-3 text-center text-xl" data-saju="hour_branch"></td>
+                                        <td class="p-3 text-center text-xl" data-saju="day_branch"></td>
+                                        <td class="p-3 text-center text-xl" data-saju="month_branch"></td>
+                                        <td class="p-3 text-center text-xl" data-saju="year_branch"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 text-center font-semibold text-gray-400">지장간(地藏干)</td>
+                                        <td class="p-3 text-center text-sm" data-saju="hour_jijanggan"></td>
+                                        <td class="p-3 text-center text-sm" data-saju="day_jijanggan"></td>
+                                        <td class="p-3 text-center text-sm" data-saju="month_jijanggan"></td>
+                                        <td class="p-3 text-center text-sm" data-saju="year_jijanggan"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-purple-400">🔍 사주 분석</h3>
+                        <div class="space-y-4 text-gray-300">
+                           <div id="sajuStructureSummary"></div>
+                           <div id="yongsinAnalysis"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 잠재력 대시보드 -->
+            <section class="card p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-6 text-indigo-400">나의 잠재력 대시보드</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-green-400">📊 나의 오행 분포</h3>
+                        <canvas id="fiveElementsChart" class="max-h-80"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-yellow-400"> 나의 핵심 역량</h3>
+                        <canvas id="coreCompetenciesChart" class="max-h-80"></canvas>
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-400"> 나의 타고난 재능</h3>
+                    <div id="topTalents" class="space-y-4">
+                        <!-- Talent items will be injected here by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 인생 경로 타임라인 -->
+            <section class="card p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-6 text-indigo-400">인생 경로 타임라인</h2>
+                <div id="lifePathTimeline" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 인생 경로 타임라인이 여기에 동적으로 삽입됩니다. -->
+                </div>
+            </section>
+
+            <!-- 신년 운세 -->
+            <section class="card p-8 rounded-2xl">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div id="currentYearFortune">
+                        <h2 class="text-2xl font-bold mb-4 text-indigo-400" id="currentYearTitle">올해의 운세</h2>
+                        <div id="currentYearSummary" class="mb-6 text-gray-300"></div>
+                        <div id="currentMonthlyFortuneContainer" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                    </div>
+                    <div id="nextYearFortune">
+                        <h2 class="text-2xl font-bold mb-4 text-indigo-400" id="nextYearTitle">내년 운세</h2>
+                        <div id="nextYearSummary" class="mb-6 text-gray-300"></div>
+                        <div id="nextMonthlyFortuneContainer" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 직업운 & 재물운 분석 -->
+            <section class="card p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-6 text-indigo-400">직업운 & 재물운 분석</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-green-400">💼 직업운</h3>
+                        <div id="careerSummary" class="space-y-2"></div>
+                        <div id="suitableJobs" class="flex flex-wrap gap-2 mt-4"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-yellow-400">💰 재물운</h3>
+                        <div id="financeSummary" class="space-y-2"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 건강운 & 학업운 분석 -->
+            <section class="card p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-6 text-indigo-400">건강운 & 학업운 분석</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-red-400">🏥 건강운</h3>
+                        <div id="healthSummary" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-blue-400">📚 학업운</h3>
+                        <div id="educationSummary" class="space-y-2"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ✨ [추가] 로그인 모달 -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-white text-center mb-6">AI 기능 로그인</h2>
+            <p class="text-center text-sm text-gray-400 mb-6">이 기능을 사용하려면 DokuWiki 계정으로 로그인해야 합니다.</p>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="username" class="block text-gray-400 text-sm font-bold mb-2">아이디</label>
+                    <input type="text" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-gray-400 text-sm font-bold mb-2">비밀번호</label>
+                    <input type="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="flex items-center justify-center">
+                    <button type="submit" id="login-submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                        로그인
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 
+        모든 자바스크립트 로직은 아래 script.js 파일로 통합합니다.
+        캐시 문제를 방지하기 위해 타임스탬프를 쿼리 문자열로 추가합니다.
+    -->
+    <script src="saju_script.js?v=1.0"></script>
+</body>
+</html> 
