@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     initializeCharts();
     
-    // ✨ [추가] 사주 테이블만 먼저 렌더링하는 함수
+    // ✨ [추가] 사주 테이블만 먼저 렌더링하는 함수 (4행 완전 표시)
     function renderSajuTableOnly(sajuData) {
         console.log("🔮 사주 테이블 즉시 렌더링 시작:", sajuData);
         
@@ -297,32 +297,42 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const pillars = sajuData.saju_pillars;
                 
-                // 사주팔자 테이블 렌더링
-                const tableHtml = `
-                    <tr class="saju-table">
-                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">구분</th>
-                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">년주</th>
-                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">월주</th>
-                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">일주</th>
-                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">시주</th>
-                    </tr>
-                    <tr class="saju-table">
-                        <td class="p-3 text-center font-semibold">천간</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.year?.[0] || '계산중'}</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.month?.[0] || '계산중'}</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.day?.[0] || '계산중'}</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.hour?.[0] || '계산중'}</td>
-                    </tr>
-                    <tr class="saju-table">
-                        <td class="p-3 text-center font-semibold">지지</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.year?.[1] || '계산중'}</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.month?.[1] || '계산중'}</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.day?.[1] || '계산중'}</td>
-                        <td class="p-3 text-center text-lg font-bold">${pillars.hour?.[1] || '계산중'}</td>
-                    </tr>
-                `;
+                // 기존 테이블 구조를 활용하여 4행 모두 표시
+                // 천간 행
+                const hourStem = dom.sajuTableBody.querySelector('[data-saju="hour_stem"]');
+                const dayStem = dom.sajuTableBody.querySelector('[data-saju="day_stem"]');
+                const monthStem = dom.sajuTableBody.querySelector('[data-saju="month_stem"]');
+                const yearStem = dom.sajuTableBody.querySelector('[data-saju="year_stem"]');
                 
-                dom.sajuTableBody.innerHTML = tableHtml;
+                if (hourStem) hourStem.textContent = pillars.hour?.[0] || '계산중';
+                if (dayStem) dayStem.textContent = pillars.day?.[0] || '계산중';
+                if (monthStem) monthStem.textContent = pillars.month?.[0] || '계산중';
+                if (yearStem) yearStem.textContent = pillars.year?.[0] || '계산중';
+                
+                // 지지 행
+                const hourBranch = dom.sajuTableBody.querySelector('[data-saju="hour_branch"]');
+                const dayBranch = dom.sajuTableBody.querySelector('[data-saju="day_branch"]');
+                const monthBranch = dom.sajuTableBody.querySelector('[data-saju="month_branch"]');
+                const yearBranch = dom.sajuTableBody.querySelector('[data-saju="year_branch"]');
+                
+                if (hourBranch) hourBranch.textContent = pillars.hour?.[1] || '계산중';
+                if (dayBranch) dayBranch.textContent = pillars.day?.[1] || '계산중';
+                if (monthBranch) monthBranch.textContent = pillars.month?.[1] || '계산중';
+                if (yearBranch) yearBranch.textContent = pillars.year?.[1] || '계산중';
+                
+                // 십신과 지장간은 AI 해석 후에 채워질 예정이므로 임시 메시지
+                const sipsinElements = dom.sajuTableBody.querySelectorAll('[data-saju*="sipsin"]');
+                const jijangganElements = dom.sajuTableBody.querySelectorAll('[data-saju*="jijanggan"]');
+                
+                sipsinElements.forEach(el => {
+                    el.textContent = '분석중...';
+                    el.classList.add('text-gray-400', 'text-xs');
+                });
+                
+                jijangganElements.forEach(el => {
+                    el.textContent = '분석중...';
+                    el.classList.add('text-gray-400', 'text-xs');
+                });
                 
                 // 사주 구조 분석 영역에 임시 메시지 표시
                 if (dom.sajuStructureSummary) {
@@ -332,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     dom.yongsinAnalysis.innerHTML = '<p class="text-gray-400">🔮 용신 분석 중입니다...</p>';
                 }
                 
-                console.log("✅ 사주 테이블 즉시 렌더링 완료!");
+                console.log("✅ 사주 테이블 즉시 렌더링 완료! (4행 구조 유지)");
                 
             } catch (e) {
                 console.error("❌ 사주 테이블 렌더링 오류:", e);
@@ -433,25 +443,32 @@ document.addEventListener('DOMContentLoaded', function() {
             // 스트리밍 메시지 업데이트
             streamingResult.innerHTML = '<h3 class="text-lg font-semibold mb-4">🤖 AI가 상세 해석을 작성하고 있습니다...</h3><pre class="whitespace-pre-wrap text-sm" id="streaming-text"></pre>';
             
-            // ✨ [2단계] 해석 API 호출 - 스트리밍
-            console.log("📊 2단계: 사주 해석 API 호출 시작...");
-            dom.btnText.innerHTML = '🔮 AI 해석 중...';
-
-            const response = await fetch(`${API_BASE_URL}/api/saju/interpret`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    name,
-                    gender: sajuData.gender,
-                    birth_time: sajuData.birth_time,
-                    solar_birth_date: sajuData.solar_birth_date,
-                    saju_pillars: sajuData.saju_pillars,
-                    daewoon_flow: sajuData.daewoon_flow
-                })
-            });
+            // ✨ [임시] 2단계 해석 API는 나중에 구현하고 1단계만 완료
+            console.log("📊 2단계: 사주 해석 API는 준비 중입니다...");
+            dom.btnText.innerHTML = '✅ 계산 완료';
+            
+            // 임시로 성공 메시지 표시
+            const successMessage = document.createElement('div');
+            successMessage.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
+            successMessage.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-xl mr-2">✅</span>
+                    <div>
+                        <p class="font-bold">사주 계산 완료!</p>
+                        <p class="text-sm">사주팔자 테이블이 정상적으로 표시되었습니다.</p>
+                        <p class="text-xs text-green-600">AI 해석 기능은 곧 업데이트됩니다.</p>
+                    </div>
+                </div>
+            `;
+            
+            // 성공 메시지를 결과 대시보드 앞에 삽입
+            const resultContainer = document.querySelector('main');
+            if (resultContainer) {
+                resultContainer.insertBefore(successMessage, resultContainer.firstChild);
+            }
+            
+            // 임시로 2단계 호출 대신 성공 처리
+            const response = { ok: true }; // 임시 성공 응답
 
             if (!response.ok) {
                 const errorData = await response.json();
