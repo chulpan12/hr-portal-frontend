@@ -340,8 +340,31 @@ document.addEventListener('DOMContentLoaded', function() {
             // 스트림이 끝나면, 완성된 전체 JSON 텍스트를 파싱하여 최종 처리
             console.log('최종 완성된 JSON:', fullResponseText);
             let data;
+            
+            // 추가 정리: 마크다운 코드 블록 제거
+            let cleanedText = fullResponseText;
+            if (cleanedText.includes("```json")) {
+                const startIdx = cleanedText.indexOf("```json");
+                const endIdx = cleanedText.lastIndexOf("```");
+                if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+                    const jsonStart = cleanedText.indexOf("\n", startIdx);
+                    if (jsonStart !== -1) {
+                        cleanedText = cleanedText.substring(jsonStart + 1, endIdx).trim();
+                    }
+                }
+            } else if (cleanedText.includes("```")) {
+                const startIdx = cleanedText.indexOf("```");
+                const endIdx = cleanedText.lastIndexOf("```");
+                if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+                    const jsonStart = cleanedText.indexOf("\n", startIdx);
+                    if (jsonStart !== -1) {
+                        cleanedText = cleanedText.substring(jsonStart + 1, endIdx).trim();
+                    }
+                }
+            }
+            
             try {
-                data = JSON.parse(fullResponseText);
+                data = JSON.parse(cleanedText);
                 // 여기서부터는 완성된 JSON(data)을 가지고 결과를 렌더링
                 lastAnalysisData = data;
                 renderDashboard(data);
