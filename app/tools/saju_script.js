@@ -724,10 +724,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 5. 잠재력 대시보드 (Charts)
             console.log('5. 잠재력 대시보드 렌더링 시도...');
-            if (data.saju_data && data.saju_data && data.potential_dashboard) {
+            console.log('차트 인스턴스 확인:', { fiveElementsChartInstance, coreCompetenciesChartInstance });
+            console.log('데이터 구조 확인:', { 
+                saju_data: data.saju_data, 
+                potential_dashboard: data.potential_dashboard,
+                oheng_counts: data.oheng_counts 
+            });
+            
+            if (data.saju_data && data.potential_dashboard) {
                 try {
                     // 오행 분포 차트 데이터 업데이트 (데이터 순서 보장)
-                    let fiveElementsData = null; if (data.saju_data.five_elements && data.saju_data.five_elements.counts) { fiveElementsData = data.saju_data.five_elements.counts; } else if (data.oheng_counts) { fiveElementsData = data.oheng_counts; }
+                    let fiveElementsData = null; 
+                    if (data.saju_data.five_elements && data.saju_data.five_elements.counts) { 
+                        fiveElementsData = data.saju_data.five_elements.counts; 
+                        console.log('five_elements.counts에서 데이터 가져옴:', fiveElementsData);
+                    } else if (data.oheng_counts) { 
+                        fiveElementsData = data.oheng_counts; 
+                        console.log('oheng_counts에서 데이터 가져옴:', fiveElementsData);
+                    }
+                    
+                    console.log('최종 fiveElementsData:', fiveElementsData);
+                    console.log('fiveElementsChartInstance 존재 여부:', !!fiveElementsChartInstance);
+                    
                     if (fiveElementsData && fiveElementsChartInstance) {
                         const orderedFiveElements = [
                             fiveElementsData['木'] || 0,
@@ -736,6 +754,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             fiveElementsData['金'] || 0,
                             fiveElementsData['水'] || 0
                         ];
+                        console.log('정렬된 오행 데이터:', orderedFiveElements);
                         fiveElementsChartInstance.data.datasets[0].data = orderedFiveElements;
                         // ✨ [추가] 차트 색상 설정 업데이트
                         updateChartDefaults();
@@ -743,6 +762,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('✅ 오행 차트 업데이트 완료:', orderedFiveElements);
                     } else {
                         console.warn('오행 데이터 누락:', fiveElementsData);
+                        console.warn('차트 인스턴스 누락:', !fiveElementsChartInstance);
                     }
                     
                     // 핵심 역량 차트 데이터 업데이트
