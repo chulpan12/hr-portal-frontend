@@ -483,7 +483,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     saju_pillars: sajuData.saju_pillars,
                     sipsin: sajuData.sipsin,
                     jijanggan: sajuData.jijanggan,
-                    daewoon_flow: sajuData.daewoon_flow
+                    daewoon_flow: sajuData.daewoon_flow,
+                    saju_strength: sajuData.saju_strength,
+                    yongsin: sajuData.yongsin,
+                    oheng_counts: sajuData.oheng_counts
                 })
             });
 
