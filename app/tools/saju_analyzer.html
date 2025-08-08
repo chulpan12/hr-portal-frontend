@@ -78,22 +78,7 @@
         html.light .talent-card-blue { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); }
         html.light .talent-card-green { background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05)); }
         
-        /* 입력 폼 섹션 구분 스타일 */
-        .form-section {
-            position: relative;
-            padding: 1rem 0;
-        }
-        
-        .form-section:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(156, 163, 175, 0.3), transparent);
-        }
+
         
         /* 라디오 버튼과 체크박스 개선 */
         .radio-group {
@@ -163,32 +148,42 @@
 
         <!-- 입력 폼 -->
         <div id="input-section" class="card p-8 rounded-2xl mb-12">
-            <!-- 이름 입력 -->
-            <div class="form-section">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="koreanName" class="block text-sm font-semibold mb-2 text-gray-300">
-                            👤 한글 이름
-                        </label>
-                        <input type="text" id="koreanName" name="korean_name" class="input-field w-full p-3 rounded-lg" placeholder="예: 홍길동" value="홍길동" required>
-                    </div>
-                    <div>
-                        <label for="chineseName" class="block text-sm font-semibold mb-2 text-gray-300">
-                            🈲 한자 이름 <span class="text-xs text-gray-500 font-normal">(선택)</span>
-                        </label>
-                        <input type="text" id="chineseName" name="chinese_name" class="input-field w-full p-3 rounded-lg" placeholder="예: 洪吉童" value="洪吉童">
-                    </div>
+            <!-- 첫 번째 줄: 이름, 생년월일, 시간 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div>
+                    <label for="koreanName" class="block text-sm font-semibold mb-2 text-gray-300">
+                        👤 한글 이름
+                    </label>
+                    <input type="text" id="koreanName" name="korean_name" class="input-field w-full p-3 rounded-lg" placeholder="예: 홍길동" value="홍길동" required>
+                </div>
+                <div>
+                    <label for="chineseName" class="block text-sm font-semibold mb-2 text-gray-300">
+                        🈲 한자 이름 <span class="text-xs text-gray-500 font-normal">(선택)</span>
+                    </label>
+                    <input type="text" id="chineseName" name="chinese_name" class="input-field w-full p-3 rounded-lg" placeholder="예: 洪吉童" value="洪吉童">
+                </div>
+                <div>
+                    <label for="birthDate" class="block text-sm font-semibold mb-2 text-gray-300">
+                        📅 생년월일
+                    </label>
+                    <input type="date" id="birthDate" name="birth_date" class="input-field w-full p-3 rounded-lg" value="1990-03-15">
+                </div>
+                <div>
+                    <label for="birthTime" class="block text-sm font-semibold mb-2 text-gray-300">
+                        🕐 태어난 시간
+                    </label>
+                    <input type="time" id="birthTime" name="birth_time" class="input-field w-full p-3 rounded-lg" value="14:30">
                 </div>
             </div>
             
-            <!-- 생년월일 및 달력 타입 -->
-            <div class="form-section">
-                <label for="birthDate" class="block text-sm font-semibold mb-3 text-gray-300">
-                    📅 생년월일
-                </label>
-                <div class="space-y-4">
-                    <input type="date" id="birthDate" name="birth_date" class="input-field w-full p-3 rounded-lg" value="1990-03-15">
-                    <div class="flex items-center justify-center">
+            <!-- 두 번째 줄: 달력 타입, 성별, 분석 버튼 -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <!-- 달력 타입 선택 -->
+                <div class="md:col-span-5">
+                    <label class="block text-sm font-semibold mb-2 text-gray-300">
+                        📅 달력 종류
+                    </label>
+                    <div class="flex items-center">
                         <div class="radio-group">
                             <div class="radio-option">
                                 <input type="radio" id="solar" name="calendarType" value="solar" class="sr-only" checked>
@@ -199,54 +194,46 @@
                                 <label for="lunar" class="text-sm font-medium cursor-pointer px-3 py-2 rounded-md transition-all">🌙 음력</label>
                             </div>
                         </div>
-                        <div class="ml-4 flex items-center" id="leapMonthContainer" style="display: none;">
+                        <div class="ml-3 flex items-center" id="leapMonthContainer" style="display: none;">
                             <input type="checkbox" id="isLeapMonth" name="isLeapMonth" class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
                             <label for="isLeapMonth" class="ml-2 text-sm font-medium text-yellow-400">✨ 윤달</label>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- 시간과 성별 -->
-            <div class="form-section">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="birthTime" class="block text-sm font-semibold mb-2 text-gray-300">
-                            🕐 태어난 시간
-                        </label>
-                        <input type="time" id="birthTime" name="birth_time" class="input-field w-full p-3 rounded-lg" value="14:30">
-                    </div>
-                    <div>
-                        <label for="gender" class="block text-sm font-semibold mb-2 text-gray-300">
-                            ⚧️ 성별
-                        </label>
-                        <select id="gender" name="gender" class="input-field w-full p-3 rounded-lg">
-                            <option value="남자">👨 남자</option>
-                            <option value="여자">👩 여자</option>
-                        </select>
-                    </div>
+                
+                <!-- 성별 선택 -->
+                <div class="md:col-span-2">
+                    <label for="gender" class="block text-sm font-semibold mb-2 text-gray-300">
+                        ⚧️ 성별
+                    </label>
+                    <select id="gender" name="gender" class="input-field w-full p-3 rounded-lg">
+                        <option value="남자">👨 남자</option>
+                        <option value="여자">👩 여자</option>
+                    </select>
+                </div>
+                
+                <!-- 분석 버튼 -->
+                <div class="md:col-span-5">
+                    <button id="analyzeBtn" class="btn-primary w-full py-3 text-lg font-bold rounded-xl transition-all hover:scale-105 transform hover:shadow-2xl">
+                        <span id="btnText" class="flex items-center justify-center gap-2">
+                            <span class="text-xl">🔮</span>
+                            <span>내 인생 보고서 분석하기</span>
+                        </span>
+                        <span id="loader" class="hidden flex items-center justify-center gap-2">
+                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>AI 분석 중...</span>
+                        </span>
+                    </button>
                 </div>
             </div>
             
-            <!-- 분석 버튼 -->
-            <div class="pt-6 border-t border-gray-700/30">
-                <button id="analyzeBtn" class="btn-primary w-full py-4 text-lg font-bold rounded-xl transition-all hover:scale-105 transform hover:shadow-2xl">
-                    <span id="btnText" class="flex items-center justify-center gap-2">
-                        <span class="text-2xl">🔮</span>
-                        <span>내 인생 보고서 분석하기</span>
-                    </span>
-                    <span id="loader" class="hidden flex items-center justify-center gap-2">
-                        <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>AI가 분석 중입니다...</span>
-                    </span>
-                </button>
-                <p class="text-center text-xs text-gray-500 mt-3">
-                    🤖 최신 AI 기술로 정확하고 상세한 명리학 분석을 제공합니다
-                </p>
-            </div>
+            <!-- 안내 문구 -->
+            <p class="text-center text-xs text-gray-500 mt-4">
+                🤖 최신 AI 기술로 정확하고 상세한 명리학 분석을 제공합니다
+            </p>
         </div>
 
         <!-- 결과 대시보드 (초기에는 숨김) -->
@@ -430,6 +417,6 @@
         모든 자바스크립트 로직은 아래 script.js 파일로 통합합니다.
         캐시 문제를 방지하기 위해 타임스탬프를 쿼리 문자열로 추가합니다.
     -->
-    <script src="saju_script.js?v=1.31"></script>
+    <script src="saju_script.js?v=1.32"></script>
 </body>
 </html> 
