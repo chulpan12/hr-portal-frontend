@@ -481,6 +481,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     birth_time: sajuData.birth_time,
                     solar_birth_date: sajuData.solar_birth_date,
                     saju_pillars: sajuData.saju_pillars,
+                    sipsin: sajuData.sipsin,
+                    jijanggan: sajuData.jijanggan,
                     daewoon_flow: sajuData.daewoon_flow
                 })
             });
