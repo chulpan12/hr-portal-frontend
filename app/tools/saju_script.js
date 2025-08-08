@@ -269,6 +269,9 @@ document.addEventListener('DOMContentLoaded', function() {
             streamingResult.classList.remove('hidden');
         }
 
+        // ✨ [수정 1] 최종 결과를 담을 변수 선언
+        let finalAnalysisData = null;
+
         try {
             const token = sessionStorage.getItem('ai-tool-token');
             if (!token) {
@@ -289,21 +292,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorData.error || '분석에 실패했습니다.');
             }
 
-            // 스트림을 읽기 위한 reader와 디코더 준비
             const reader = response.body.getReader();
             const decoder = new TextDecoder('utf-8');
-            let fullResponseText = '';
+            let accumulatedText = ''; // 스트리밍 텍스트를 보여주기 위한 변수
             const streamingTextElement = document.getElementById('streaming-text');
 
-            // 스트림이 끝날 때까지 계속해서 데이터 조각을 읽어옴
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) {
-                    break; // 스트림 종료
-                }
+                if (done) break;
 
                 const chunkText = decoder.decode(value);
-                // SSE는 메시지가 여러 개 뭉쳐서 올 수 있으므로 분리해서 처리
                 const lines = chunkText.split('\n\n').filter(line => line.trim() !== '');
 
                 for (const line of lines) {
@@ -312,67 +310,46 @@ document.addEventListener('DOMContentLoaded', function() {
                         try {
                             const parsedData = JSON.parse(jsonData);
 
-                            // 스트림의 끝을 알리는 신호를 받으면 루프 종료
                             if (parsedData.event === 'done') {
-                                console.log("스트리밍 완료!");
-                                reader.cancel(); // 리더를 명시적으로 종료
+                                console.log("스트리밍 완료 신호 수신!");
                                 break; 
                             }
                             
-                            if (parsedData.chunk) {
-                                // 전체 응답을 변수에 누적하고, 화면에도 실시간으로 표시
-                                fullResponseText += parsedData.chunk;
-                                streamingTextElement.textContent = fullResponseText;
+                            // ✨ [수정 2] final_json을 받으면 바로 최종 데이터로 확정
+                            if (parsedData.final_json) {
+                                console.log("최종 정리된 JSON 데이터 수신!");
+                                // 백엔드가 보내준 깨끗한 JSON 문자열을 객체로 파싱
+                                finalAnalysisData = JSON.parse(parsedData.final_json);
+                                accumulatedText = "AI가 분석 결과를 정리하고 있습니다...";
                             }
                             
-                            // 정리된 최종 JSON이 있으면 저장
-                            if (parsedData.final_json) {
-                                fullResponseText = parsedData.final_json;
-                                streamingTextElement.textContent = "JSON 정리 완료...";
+                            // 'chunk' 데이터는 화면 표시용으로만 사용
+                            else if (parsedData.chunk) {
+                                accumulatedText += parsedData.chunk;
                             }
+
+                            // 실시간으로 화면에 텍스트 업데이트
+                            if (streamingTextElement) {
+                                streamingTextElement.textContent = accumulatedText;
+                            }
+
                         } catch (e) {
-                            console.error('JSON 파싱 오류:', jsonData, e);
+                            console.error('스트리밍 중 JSON 파싱 오류:', jsonData, e);
                         }
                     }
                 }
             }
             
-            // 스트림이 끝나면, 완성된 전체 JSON 텍스트를 파싱하여 최종 처리
-            console.log('최종 완성된 JSON:', fullResponseText);
-            let data;
-            
-            // 추가 정리: 마크다운 코드 블록 제거
-            let cleanedText = fullResponseText;
-            if (cleanedText.includes("```json")) {
-                const startIdx = cleanedText.indexOf("```json");
-                const endIdx = cleanedText.lastIndexOf("```");
-                if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-                    const jsonStart = cleanedText.indexOf("\n", startIdx);
-                    if (jsonStart !== -1) {
-                        cleanedText = cleanedText.substring(jsonStart + 1, endIdx).trim();
-                    }
-                }
-            } else if (cleanedText.includes("```")) {
-                const startIdx = cleanedText.indexOf("```");
-                const endIdx = cleanedText.lastIndexOf("```");
-                if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-                    const jsonStart = cleanedText.indexOf("\n", startIdx);
-                    if (jsonStart !== -1) {
-                        cleanedText = cleanedText.substring(jsonStart + 1, endIdx).trim();
-                    }
-                }
-            }
-            
-            try {
-                data = JSON.parse(cleanedText);
-                // 여기서부터는 완성된 JSON(data)을 가지고 결과를 렌더링
-                lastAnalysisData = data;
-                renderDashboard(data);
+            // ✨ [수정 3] 스트림이 끝나면, 불필요한 후처리 없이 바로 렌더링
+            console.log('최종 데이터로 렌더링 시작:', finalAnalysisData);
+            if (finalAnalysisData) {
+                lastAnalysisData = finalAnalysisData; // 다운로드 기능을 위해 저장
+                renderDashboard(finalAnalysisData);
                 dom.resultDashboard.classList.remove('hidden');
                 dom.downloadBtn.classList.remove('hidden');
-            } catch (e) {
-                streamingTextElement.textContent = '결과를 처리하는 중 오류가 발생했습니다.\n\n' + fullResponseText;
-                console.error('최종 JSON 파싱 오류:', e);
+            } else {
+                // final_json을 받지 못한 예외적인 경우
+                throw new Error("최종 분석 데이터를 받지 못했습니다. 다시 시도해주세요.");
             }
             
         } catch (error) {
