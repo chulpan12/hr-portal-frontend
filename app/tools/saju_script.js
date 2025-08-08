@@ -467,16 +467,96 @@ document.addEventListener('DOMContentLoaded', function() {
                 resultContainer.insertBefore(successMessage, resultContainer.firstChild);
             }
             
-            // ✨ [임시] 2단계 해석 API는 나중에 구현하고 1단계만 완료
-            console.log("📊 2단계: 사주 해석 API는 준비 중입니다...");
-            
-            // 임시로 성공 처리 (스트리밍 없이)
-            console.log("✅ 1단계 계산 완료 - 사주 테이블이 정상적으로 표시되었습니다.");
-            
-            // 스트리밍 결과 영역 제거
-            const streamingResult = document.getElementById('streaming-result');
-            if (streamingResult) {
-                streamingResult.remove();
+            // ✨ [2단계] 해석 API 호출 - 스트리밍
+            console.log("📊 2단계: 사주 해석 API 호출 시작...");
+            dom.btnText.innerHTML = '🔮 AI 해석 중...';
+
+            const response = await fetch(`${API_BASE_URL}/api/saju/interpret`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name,
+                    gender: sajuData.gender,
+                    birth_time: sajuData.birth_time,
+                    solar_birth_date: sajuData.solar_birth_date,
+                    saju_pillars: sajuData.saju_pillars,
+                    daewoon_flow: sajuData.daewoon_flow
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || '분석에 실패했습니다.');
+            }
+
+            // ✨ [스트리밍 처리] - 오류 처리 개선
+            try {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let accumulatedText = '';
+                const streamingTextElement = document.getElementById('streaming-text');
+                let buffer = '';
+                let finalAnalysisData = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    while (true) {
+                        const eolIndex = buffer.indexOf('\n\n');
+                        if (eolIndex < 0) break;
+
+                        const message = buffer.substring(0, eolIndex);
+                        buffer = buffer.substring(eolIndex + 2);
+
+                        if (message.startsWith('data:')) {
+                            const jsonData = message.substring(5).trim();
+                            try {
+                                const parsedData = JSON.parse(jsonData);
+
+                                if (parsedData.event === 'done') {
+                                    console.log("스트리밍 완료 신호 수신!");
+                                    break;
+                                }
+                                
+                                if (parsedData.final_json) {
+                                    console.log("최종 정리된 JSON 데이터 수신!");
+                                    finalAnalysisData = JSON.parse(parsedData.final_json);
+                                    accumulatedText = "AI가 분석 결과를 정리하고 있습니다...";
+                                }
+                                else if (parsedData.chunk) {
+                                    accumulatedText += parsedData.chunk;
+                                }
+
+                                if (streamingTextElement) {
+                                    streamingTextElement.textContent = accumulatedText;
+                                }
+                            } catch (e) {
+                                console.error('스트리밍 중 JSON 파싱 오류:', jsonData, e);
+                            }
+                        }
+                    }
+                }
+                
+                // 최종 렌더링
+                console.log('최종 데이터로 렌더링 시작:', finalAnalysisData);
+                if (finalAnalysisData) {
+                    lastAnalysisData = finalAnalysisData;
+                    renderDashboard(finalAnalysisData);
+                    dom.resultDashboard.classList.remove('hidden');
+                    dom.downloadBtn.classList.remove('hidden');
+                } else {
+                    throw new Error("최종 분석 데이터를 받지 못했습니다.");
+                }
+                
+            } catch (streamingError) {
+                console.error('스트리밍 처리 중 오류:', streamingError);
+                throw new Error(`스트리밍 처리 실패: ${streamingError.message}`);
             }
             
         } catch (error) {
