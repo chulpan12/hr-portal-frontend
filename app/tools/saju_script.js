@@ -389,11 +389,22 @@ document.addEventListener('DOMContentLoaded', function() {
         dom.resultDashboard.classList.add('hidden');
         dom.downloadBtn.classList.add('hidden');
         
-        // 스트리밍 결과를 표시할 임시 영역 생성
+        // 스트리밍 결과를 표시할 임시 영역 생성 (개선된 디자인)
         const streamingResult = document.createElement('div');
         streamingResult.id = 'streaming-result';
-        streamingResult.className = 'bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg mb-6';
-        streamingResult.innerHTML = '<h3 class="text-lg font-semibold mb-4">AI가 분석 중입니다...</h3><pre class="whitespace-pre-wrap text-sm" id="streaming-text"></pre>';
+        streamingResult.className = 'bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-6 shadow-lg mb-6 text-white';
+        streamingResult.innerHTML = `
+            <div class="flex items-center mb-4">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                <h3 class="text-lg font-semibold">AI 인생 분석 진행 중</h3>
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm opacity-90" id="streaming-text">🤖 AI가 상세한 인생 분석을 작성하고 있습니다...</p>
+                <div class="w-full bg-white bg-opacity-20 rounded-full h-2">
+                    <div class="bg-white h-2 rounded-full animate-pulse" style="width: 60%"></div>
+                </div>
+            </div>
+        `;
         
         // 기존 결과 영역 앞에 삽입 (main 태그를 찾아서 사용)
         const resultContainer = document.querySelector('main');
@@ -527,13 +538,19 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (parsedData.final_json) {
                                     console.log("최종 정리된 JSON 데이터 수신!");
                                     finalAnalysisData = JSON.parse(parsedData.final_json);
-                                    accumulatedText = "AI가 분석 결과를 정리하고 있습니다...";
+                                    // 사용자에게는 친화적인 메시지만 표시
+                                    accumulatedText = "🎉 AI 분석 완료! 결과를 정리하고 있습니다...";
                                 }
                                 else if (parsedData.chunk) {
-                                    accumulatedText += parsedData.chunk;
+                                    // chunk 데이터는 스트리밍 중에 표시하지 않음
+                                    // 대신 진행 상황을 표시
+                                    if (!accumulatedText.includes("분석 중")) {
+                                        accumulatedText = "🤖 AI가 상세한 인생 분석을 작성하고 있습니다...";
+                                    }
                                 }
 
                                 if (streamingTextElement) {
+                                    // 사용자 친화적인 메시지만 표시
                                     streamingTextElement.textContent = accumulatedText;
                                 }
                             } catch (e) {
