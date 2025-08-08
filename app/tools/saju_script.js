@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     // 핵심 역량 차트 데이터 업데이트
-                    const competenciesData = data.potential_dashboard.core_competencies;
+                    const competenciesData = data.potential_dashboard?.core_competencies;
                     if (competenciesData && coreCompetenciesChartInstance) {
                         const competenciesValues = [
                             parseInt(competenciesData.leadership) || 0,
@@ -568,7 +568,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         coreCompetenciesChartInstance.update();
                         console.log('✅ 역량 차트 업데이트 완료:', competenciesValues);
                     } else {
-                        console.warn('역량 데이터 누락:', competenciesData);
+                        // 기본값으로 차트 업데이트
+                        const defaultValues = [5, 5, 5, 5, 5];
+                        if (coreCompetenciesChartInstance) {
+                            coreCompetenciesChartInstance.data.datasets[0].data = defaultValues;
+                            coreCompetenciesChartInstance.update();
+                        }
+                        console.warn('역량 데이터 누락, 기본값 사용:', competenciesData);
                     }
                     console.log('✅ 차트 렌더링 완료');
                 } catch (e) { 
@@ -655,12 +661,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     dom.currentYearTitle.textContent = `${currentYear}년 올해의 운세`;
                     dom.currentYearSummary.innerHTML = `<p>${currentFortuneData.summary || '분석 중...'}</p>`;
-                    dom.currentMonthlyFortuneContainer.innerHTML = currentFortuneData.monthly_fortune.map(m => `
-                        <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
-                            <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
-                            <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
-                        </div>
-                    `).join('');
+                    
+                    // monthly_fortune 배열 안전 처리
+                    const monthlyFortune = currentFortuneData.monthly_fortune || [];
+                    if (Array.isArray(monthlyFortune) && monthlyFortune.length > 0) {
+                        dom.currentMonthlyFortuneContainer.innerHTML = monthlyFortune.map(m => `
+                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
+                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
+                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
+                            </div>
+                        `).join('');
+                    } else {
+                        // 기본 월별 운세 생성
+                        const defaultMonthlyFortune = Array.from({length: 12}, (_, i) => ({
+                            month: i + 1,
+                            fortune: `${i + 1}월 운세 분석 중...`
+                        }));
+                        dom.currentMonthlyFortuneContainer.innerHTML = defaultMonthlyFortune.map(m => `
+                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
+                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
+                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
+                            </div>
+                        `).join('');
+                    }
                     console.log(`✅ ${currentYear}년 운세 렌더링 완료`);
                 } catch (e) {
                     console.error(`❌ ${currentYear}년 운세 렌더링 오류:`, e);
@@ -673,12 +696,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     dom.nextYearTitle.textContent = `${nextYear}년 내년 운세`;
                     dom.nextYearSummary.innerHTML = `<p>${nextFortuneData.summary || '분석 중...'}</p>`;
-                    dom.nextMonthlyFortuneContainer.innerHTML = nextFortuneData.monthly_fortune.map(m => `
-                        <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
-                            <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
-                            <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
-                        </div>
-                    `).join('');
+                    
+                    // monthly_fortune 배열 안전 처리
+                    const monthlyFortune = nextFortuneData.monthly_fortune || [];
+                    if (Array.isArray(monthlyFortune) && monthlyFortune.length > 0) {
+                        dom.nextMonthlyFortuneContainer.innerHTML = monthlyFortune.map(m => `
+                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
+                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
+                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
+                            </div>
+                        `).join('');
+                    } else {
+                        // 기본 월별 운세 생성
+                        const defaultMonthlyFortune = Array.from({length: 12}, (_, i) => ({
+                            month: i + 1,
+                            fortune: `${i + 1}월 운세 분석 중...`
+                        }));
+                        dom.nextMonthlyFortuneContainer.innerHTML = defaultMonthlyFortune.map(m => `
+                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
+                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
+                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
+                            </div>
+                        `).join('');
+                    }
                     console.log(`✅ ${nextYear}년 운세 렌더링 완료`);
                 } catch (e) {
                     console.error(`❌ ${nextYear}년 운세 렌더링 오류:`, e);
