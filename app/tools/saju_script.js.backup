@@ -594,10 +594,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 5. 잠재력 대시보드 (Charts)
             console.log('5. 잠재력 대시보드 렌더링 시도...');
-            if (data.saju_data && data.saju_data && data.potential_dashboard) {
+            if (data.saju_data && data.saju_data.five_elements && data.potential_dashboard) {
                 try {
                     // 오행 분포 차트 데이터 업데이트 (데이터 순서 보장)
-                    let fiveElementsData = null; if (data.saju_data.five_elements && data.saju_data.five_elements.counts) { fiveElementsData = data.saju_data.five_elements.counts; } else if (data.oheng_counts) { fiveElementsData = data.oheng_counts; }
+                    const fiveElementsData = data.saju_data.five_elements.counts;
                     if (fiveElementsData && fiveElementsChartInstance) {
                         const orderedFiveElements = [
                             fiveElementsData['木'] || 0,
@@ -1033,8 +1033,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     function createChartsInDownloadedFile(data) {
                         // 오행 분포 차트 생성
                         const fiveElementsCanvas = document.getElementById('fiveElementsChart');
-                        if (fiveElementsCanvas && data.saju_data) {
-                            let fiveElementsData = null; if (data.saju_data.five_elements && data.saju_data.five_elements.counts) { fiveElementsData = data.saju_data.five_elements.counts; } else if (data.oheng_counts) { fiveElementsData = data.oheng_counts; }
+                        if (fiveElementsCanvas && data.saju_data && data.saju_data.five_elements && data.saju_data.five_elements.counts) {
+                            const fiveElementsData = data.saju_data.five_elements.counts;
                             const fiveElementsValues = [
                                 parseInt(fiveElementsData['木']) || 0,
                                 parseInt(fiveElementsData['火']) || 0,
