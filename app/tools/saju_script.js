@@ -288,6 +288,59 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('차트 초기화 완료.');
     }
     initializeCharts();
+    
+    // ✨ [추가] 사주 테이블만 먼저 렌더링하는 함수
+    function renderSajuTableOnly(sajuData) {
+        console.log("🔮 사주 테이블 즉시 렌더링 시작:", sajuData);
+        
+        if (sajuData.saju_pillars && dom.sajuTableBody) {
+            try {
+                const pillars = sajuData.saju_pillars;
+                
+                // 사주팔자 테이블 렌더링
+                const tableHtml = `
+                    <tr class="saju-table">
+                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">구분</th>
+                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">년주</th>
+                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">월주</th>
+                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">일주</th>
+                        <th class="p-3 text-center font-bold saju-table-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">시주</th>
+                    </tr>
+                    <tr class="saju-table">
+                        <td class="p-3 text-center font-semibold">천간</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.year?.[0] || '계산중'}</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.month?.[0] || '계산중'}</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.day?.[0] || '계산중'}</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.hour?.[0] || '계산중'}</td>
+                    </tr>
+                    <tr class="saju-table">
+                        <td class="p-3 text-center font-semibold">지지</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.year?.[1] || '계산중'}</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.month?.[1] || '계산중'}</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.day?.[1] || '계산중'}</td>
+                        <td class="p-3 text-center text-lg font-bold">${pillars.hour?.[1] || '계산중'}</td>
+                    </tr>
+                `;
+                
+                dom.sajuTableBody.innerHTML = tableHtml;
+                
+                // 사주 구조 분석 영역에 임시 메시지 표시
+                if (dom.sajuStructureSummary) {
+                    dom.sajuStructureSummary.innerHTML = '<p class="text-gray-400">🤖 AI가 사주 구조를 분석하고 있습니다...</p>';
+                }
+                if (dom.yongsinAnalysis) {
+                    dom.yongsinAnalysis.innerHTML = '<p class="text-gray-400">🔮 용신 분석 중입니다...</p>';
+                }
+                
+                console.log("✅ 사주 테이블 즉시 렌더링 완료!");
+                
+            } catch (e) {
+                console.error("❌ 사주 테이블 렌더링 오류:", e);
+            }
+        } else {
+            console.warn("사주 데이터 또는 테이블 DOM 요소 누락");
+        }
+    }
     // ==========================================================
 
     dom.analyzeBtn.addEventListener('click', async () => {
@@ -352,13 +405,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('로그인이 필요합니다.');
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/saju/analyze`, {
+            // ✨ [1단계] 계산 API 호출 - 즉시 반환
+            console.log("🔮 1단계: 사주 계산 API 호출 시작...");
+            dom.btnText.innerHTML = '🧮 사주 계산 중...';
+            
+            const calcResponse = await fetch(`${API_BASE_URL}/api/saju/calculate`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ name, birthDate, birthTime, gender, calendarType, isLeapMonth })
+                body: JSON.stringify({ birthDate, birthTime, gender, calendarType, isLeapMonth })
+            });
+
+            if (!calcResponse.ok) {
+                const errorData = await calcResponse.json();
+                throw new Error(errorData.error || '사주 계산에 실패했습니다.');
+            }
+
+            const sajuData = await calcResponse.json();
+            console.log("✅ 1단계 완료! 계산된 사주 데이터:", sajuData);
+
+            // ✨ [즉시 피드백] 계산 결과를 바로 사주 테이블로 렌더링
+            renderSajuTableOnly(sajuData);
+            dom.resultDashboard.classList.remove('hidden'); // 결과 대시보드를 미리 보여줌
+            
+            // 스트리밍 메시지 업데이트
+            streamingResult.innerHTML = '<h3 class="text-lg font-semibold mb-4">🤖 AI가 상세 해석을 작성하고 있습니다...</h3><pre class="whitespace-pre-wrap text-sm" id="streaming-text"></pre>';
+            
+            // ✨ [2단계] 해석 API 호출 - 스트리밍
+            console.log("📊 2단계: 사주 해석 API 호출 시작...");
+            dom.btnText.innerHTML = '🔮 AI 해석 중...';
+
+            const response = await fetch(`${API_BASE_URL}/api/saju/interpret`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name,
+                    gender: sajuData.gender,
+                    birth_time: sajuData.birth_time,
+                    solar_birth_date: sajuData.solar_birth_date,
+                    saju_pillars: sajuData.saju_pillars,
+                    daewoon_flow: sajuData.daewoon_flow
+                })
             });
 
             if (!response.ok) {
