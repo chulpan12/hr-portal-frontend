@@ -78,6 +78,22 @@
         html.light .talent-card-blue { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); }
         html.light .talent-card-green { background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05)); }
         
+        /* ✨ [추가] 라이트 테마에서 차트 레이블과 재능 소제목 가독성 개선 */
+        html.light .chart-legend-text { color: #1f2937 !important; font-weight: 600; }
+        html.light .talent-title { color: #1f2937 !important; font-weight: 700; }
+        html.light .talent-description { color: #374151 !important; }
+        
+        /* 차트 내부 텍스트 색상 개선 */
+        html.light canvas { 
+            filter: none;
+        }
+        
+        /* Chart.js 레이블 색상 개선을 위한 전역 스타일 */
+        html.light .chart-container { 
+            --chart-text-color: #1f2937;
+            --chart-grid-color: #d1d5db;
+        }
+        
 
         
         /* 라디오 버튼과 체크박스 개선 */
@@ -421,6 +437,6 @@
         모든 자바스크립트 로직은 아래 script.js 파일로 통합합니다.
         캐시 문제를 방지하기 위해 타임스탬프를 쿼리 문자열로 추가합니다.
     -->
-    <script src="saju_script.js?v=1.32"></script>
+    <script src="saju_script.js?v=1.33"></script>
 </body>
 </html> 

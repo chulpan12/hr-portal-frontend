@@ -104,9 +104,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Chart.js 기본 설정
-    Chart.defaults.color = '#9CA3AF';
-    Chart.defaults.borderColor = '#374151';
+    // Chart.js 기본 설정 - 라이트/다크 테마에 따라 동적 변경
+    function updateChartDefaults() {
+        const isLightTheme = document.documentElement.classList.contains('light');
+        if (isLightTheme) {
+            Chart.defaults.color = '#1f2937'; // 라이트 테마: 진한 회색
+            Chart.defaults.borderColor = '#d1d5db'; // 라이트 테마: 연한 회색 테두리
+        } else {
+            Chart.defaults.color = '#9CA3AF'; // 다크 테마: 기존 색상
+            Chart.defaults.borderColor = '#374151'; // 다크 테마: 기존 색상
+        }
+    }
+    
+    // 초기 차트 기본값 설정
+    updateChartDefaults();
 
     // DOM 요소 검증 함수
     function validateDOMElements() {
@@ -489,10 +500,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('2. 이름 분석 렌더링 시도...');
             if (data.name_analysis && dom.nameAnalysis) {
                 try {
-                    const name = document.getElementById('name').value;
-                    const nameParts = name.split(' ');
-                    const koreanName = nameParts[0] || '';
-                    const chineseName = nameParts.length > 1 ? nameParts[1] : '';
+                    // ✨ [수정] 분리된 입력 필드에서 이름 가져오기
+                    const koreanName = document.getElementById('koreanName')?.value || '';
+                    const chineseName = document.getElementById('chineseName')?.value || '';
                     
                     let nameTableHtml = `
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -597,6 +607,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             fiveElementsData['水'] || 0
                         ];
                         fiveElementsChartInstance.data.datasets[0].data = orderedFiveElements;
+                        // ✨ [추가] 차트 색상 설정 업데이트
+                        updateChartDefaults();
                         fiveElementsChartInstance.update();
                         console.log('✅ 오행 차트 업데이트 완료:', orderedFiveElements);
                     } else {
@@ -614,6 +626,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             parseInt(competenciesData.execution) || 0
                         ];
                         coreCompetenciesChartInstance.data.datasets[0].data = competenciesValues;
+                        // ✨ [추가] 차트 색상 설정 업데이트
+                        updateChartDefaults();
                         coreCompetenciesChartInstance.update();
                         console.log('✅ 역량 차트 업데이트 완료:', competenciesValues);
                     } else {
@@ -653,8 +667,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         return `
                             <div class="mb-4 p-4 rounded-lg bg-gradient-to-br ${colorClass}">
-                                <h4 class="font-bold text-lg">${talentName}</h4>
-                                <p class="mt-2 text-gray-300">${description}</p>
+                                <h4 class="font-bold text-lg talent-title">${talentName}</h4>
+                                <p class="mt-2 text-gray-300 talent-description">${description}</p>
                             </div>
                         `;
                     }).join('');
