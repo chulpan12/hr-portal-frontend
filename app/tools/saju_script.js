@@ -248,7 +248,21 @@ document.addEventListener('DOMContentLoaded', function() {
         dom.loader.classList.remove('hidden');
         dom.analyzeBtn.disabled = true;
 
-        let data; // 데이터 변수를 try 블록 외부로 이동
+        // 결과 표시 영역 초기화
+        dom.resultDashboard.classList.add('hidden');
+        dom.downloadBtn.classList.add('hidden');
+        
+        // 스트리밍 결과를 표시할 임시 영역 생성
+        const streamingResult = document.createElement('div');
+        streamingResult.id = 'streaming-result';
+        streamingResult.className = 'bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg mb-6';
+        streamingResult.innerHTML = '<h3 class="text-lg font-semibold mb-4">AI가 분석 중입니다...</h3><pre class="whitespace-pre-wrap text-sm" id="streaming-text"></pre>';
+        
+        // 기존 결과 영역 앞에 삽입
+        const resultContainer = document.querySelector('.result-container');
+        resultContainer.insertBefore(streamingResult, resultContainer.firstChild);
+        streamingResult.classList.remove('hidden');
+
         try {
             const token = sessionStorage.getItem('ai-tool-token');
             if (!token) {
@@ -269,8 +283,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorData.error || '분석에 실패했습니다.');
             }
 
-            data = await response.json();
-            console.log('API 응답 데이터:', data); // 전체 응답 데이터 로깅
+            // 스트림을 읽기 위한 reader와 디코더 준비
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let fullResponseText = '';
+            const streamingTextElement = document.getElementById('streaming-text');
+
+            // 스트림이 끝날 때까지 계속해서 데이터 조각을 읽어옴
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break; // 스트림 종료
+                }
+
+                const chunkText = decoder.decode(value);
+                // SSE는 메시지가 여러 개 뭉쳐서 올 수 있으므로 분리해서 처리
+                const lines = chunkText.split('\n\n').filter(line => line.trim() !== '');
+
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        const jsonData = line.substring(5).trim();
+                        try {
+                            const parsedData = JSON.parse(jsonData);
+
+                            // 스트림의 끝을 알리는 신호를 받으면 루프 종료
+                            if (parsedData.event === 'done') {
+                                console.log("스트리밍 완료!");
+                                reader.cancel(); // 리더를 명시적으로 종료
+                                break; 
+                            }
+                            
+                            if (parsedData.chunk) {
+                                // 전체 응답을 변수에 누적하고, 화면에도 실시간으로 표시
+                                fullResponseText += parsedData.chunk;
+                                streamingTextElement.textContent = fullResponseText;
+                            }
+                        } catch (e) {
+                            console.error('JSON 파싱 오류:', jsonData, e);
+                        }
+                    }
+                }
+            }
+            
+            // 스트림이 끝나면, 완성된 전체 JSON 텍스트를 파싱하여 최종 처리
+            console.log('최종 완성된 JSON:', fullResponseText);
+            let data;
+            try {
+                data = JSON.parse(fullResponseText);
+                // 여기서부터는 완성된 JSON(data)을 가지고 결과를 렌더링
+                lastAnalysisData = data;
+                renderDashboard(data);
+                dom.resultDashboard.classList.remove('hidden');
+                dom.downloadBtn.classList.remove('hidden');
+            } catch (e) {
+                streamingTextElement.textContent = '결과를 처리하는 중 오류가 발생했습니다.\n\n' + fullResponseText;
+                console.error('최종 JSON 파싱 오류:', e);
+            }
             
         } catch (error) {
             console.error('API 호출 또는 데이터 처리 오류:', error);
@@ -281,23 +349,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 dom.loginModal.classList.add('flex');
             }
             
+            // 스트리밍 결과 영역에 오류 메시지 표시
+            const streamingTextElement = document.getElementById('streaming-text');
+            if (streamingTextElement) {
+                streamingTextElement.textContent = `오류가 발생했습니다: ${error.message}`;
+            }
+        } finally {
             // 로딩 상태 복구
             dom.btnText.classList.remove('hidden');
             dom.loader.classList.add('hidden');
             dom.analyzeBtn.disabled = false;
-            return; // 오류 발생 시 여기서 함수 종료
+            
+            // 임시 스트리밍 결과 영역 제거
+            const streamingResult = document.getElementById('streaming-result');
+            if (streamingResult) {
+                streamingResult.remove();
+            }
         }
-
-        // fetch가 성공적으로 완료된 후에만 렌더링 실행
-        if (data) {
-            lastAnalysisData = data; // ✨ [추가] 분석 데이터 저장
-            renderDashboard(data);
-            dom.resultDashboard.classList.remove('hidden');
-            // ✨ [추가] 분석 완료 시 다운로드 버튼 표시
-            dom.downloadBtn.classList.remove('hidden');
-        }
-
-        // finally 블록을 제거하고, 성공 흐름의 끝에 로딩 상태 복구
         dom.btnText.classList.remove('hidden');
         dom.loader.classList.add('hidden');
         dom.analyzeBtn.disabled = false;
