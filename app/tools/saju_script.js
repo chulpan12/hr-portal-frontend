@@ -458,25 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("📊 2단계: 사주 해석 API는 준비 중입니다...");
             dom.btnText.innerHTML = '✅ 계산 완료';
             
-            // 임시로 성공 메시지 표시
-            const successMessage = document.createElement('div');
-            successMessage.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
-            successMessage.innerHTML = `
-                <div class="flex items-center">
-                    <span class="text-xl mr-2">✅</span>
-                    <div>
-                        <p class="font-bold">사주 계산 완료!</p>
-                        <p class="text-sm">사주팔자 테이블이 정상적으로 표시되었습니다.</p>
-                        <p class="text-xs text-green-600">AI 해석 기능은 곧 업데이트됩니다.</p>
-                    </div>
-                </div>
-            `;
-            
-            // 성공 메시지를 결과 대시보드 앞에 삽입
-            const resultContainer = document.querySelector('main');
-            if (resultContainer) {
-                resultContainer.insertBefore(successMessage, resultContainer.firstChild);
-            }
+            // 성공 메시지 제거 - 분석이 완료되었으므로 더 이상 필요하지 않음
             
             // ✨ [2단계] 해석 API 호출 - 스트리밍
             console.log("📊 2단계: 사주 해석 API 호출 시작...");
