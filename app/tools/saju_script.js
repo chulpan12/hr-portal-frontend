@@ -64,11 +64,15 @@ document.addEventListener('DOMContentLoaded', function() {
         dom.loginModal.classList.add('hidden');
     }
     
-    // ✨ [추가] 음력/양력 선택에 따른 윤달 옵션 표시/숨김
+    // ✨ [추가] 음력/양력 선택에 따른 윤달 옵션 표시/숨김 및 스타일링
     if (dom.lunarRadio && dom.solarRadio && dom.leapMonthContainer) {
+        // 초기 스타일링 적용
+        updateRadioStyles();
+        
         dom.lunarRadio.addEventListener('change', function() {
             if (this.checked) {
                 dom.leapMonthContainer.style.display = 'flex';
+                updateRadioStyles();
             }
         });
         
@@ -76,6 +80,26 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.checked) {
                 dom.leapMonthContainer.style.display = 'none';
                 dom.isLeapMonth.checked = false;
+                updateRadioStyles();
+            }
+        });
+    }
+    
+    // 라디오 버튼 스타일 업데이트 함수
+    function updateRadioStyles() {
+        const radioOptions = document.querySelectorAll('.radio-option');
+        radioOptions.forEach(option => {
+            const input = option.querySelector('input[type="radio"]');
+            const label = option.querySelector('label');
+            
+            if (input && input.checked) {
+                label.style.background = 'rgba(99, 102, 241, 0.8)';
+                label.style.color = 'white';
+                label.style.fontWeight = '600';
+            } else {
+                label.style.background = 'transparent';
+                label.style.color = '';
+                label.style.fontWeight = '500';
             }
         });
     }
