@@ -463,6 +463,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // ✨ [2단계] 해석 API 호출 - 스트리밍
             console.log("📊 2단계: 사주 해석 API 호출 시작...");
             dom.btnText.innerHTML = '🔮 AI 해석 중...';
+            
+            // 버튼 텍스트를 원래 상태로 복원
+            setTimeout(() => {
+                dom.btnText.innerHTML = '<span class="text-xl">🔮</span><span>내 인생 보고서 분석하기</span>';
+            }, 1000);
 
             const response = await fetch(`${API_BASE_URL}/api/saju/interpret`, {
                 method: 'POST',
@@ -578,15 +583,15 @@ document.addEventListener('DOMContentLoaded', function() {
             dom.loader.classList.add('hidden');
             dom.analyzeBtn.disabled = false;
             
+            // 버튼 텍스트를 원래 상태로 복원
+            dom.btnText.innerHTML = '<span class="text-xl">🔮</span><span>내 인생 보고서 분석하기</span>';
+            
             // 임시 스트리밍 결과 영역 제거
             const streamingResult = document.getElementById('streaming-result');
             if (streamingResult) {
                 streamingResult.remove();
             }
         }
-        dom.btnText.classList.remove('hidden');
-        dom.loader.classList.add('hidden');
-        dom.analyzeBtn.disabled = false;
     });
 
     // ✨ [추가] 테마 토글 이벤트 리스너
