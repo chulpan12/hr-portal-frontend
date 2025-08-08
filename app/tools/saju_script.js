@@ -324,6 +324,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 fullResponseText += parsedData.chunk;
                                 streamingTextElement.textContent = fullResponseText;
                             }
+                            
+                            // 정리된 최종 JSON이 있으면 저장
+                            if (parsedData.final_json) {
+                                fullResponseText = parsedData.final_json;
+                                streamingTextElement.textContent = "JSON 정리 완료...";
+                            }
                         } catch (e) {
                             console.error('JSON 파싱 오류:', jsonData, e);
                         }
