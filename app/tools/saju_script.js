@@ -1212,14 +1212,27 @@ document.addEventListener('DOMContentLoaded', function() {
                             ];
                             
                             new Chart(fiveElementsCanvas, {
-                                type: 'doughnut',
+                                type: 'bar',
                                 data: {
-                                    labels: ['木 (나무)', '火 (불)', '土 (흙)', '金 (금)', '水 (물)'],
+                                    labels: ['木 (목)', '火 (화)', '土 (토)', '金 (금)', '水 (수)'],
                                     datasets: [{
+                                        label: '오행 분포',
                                         data: fiveElementsValues,
-                                        backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#6b7280', '#3b82f6'],
-                                        borderWidth: 2,
-                                        borderColor: '#1f2937'
+                                        backgroundColor: [
+                                            'rgba(34, 197, 94, 0.8)',
+                                            'rgba(239, 68, 68, 0.8)',
+                                            'rgba(245, 158, 11, 0.8)',
+                                            'rgba(59, 130, 246, 0.8)',
+                                            'rgba(147, 51, 234, 0.8)'
+                                        ],
+                                        borderColor: [
+                                            'rgba(34, 197, 94, 1)',
+                                            'rgba(239, 68, 68, 1)',
+                                            'rgba(245, 158, 11, 1)',
+                                            'rgba(59, 130, 246, 1)',
+                                            'rgba(147, 51, 234, 1)'
+                                        ],
+                                        borderWidth: 2
                                     }]
                                 },
                                 options: {
@@ -1227,11 +1240,25 @@ document.addEventListener('DOMContentLoaded', function() {
                                     maintainAspectRatio: false,
                                     plugins: {
                                         legend: {
-                                            position: 'bottom',
-                                            labels: {
-                                                color: '#E5E7EB',
-                                                font: { size: 12 },
-                                                padding: 15
+                                            display: false
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                color: '#9CA3AF'
+                                            },
+                                            grid: {
+                                                color: '#374151'
+                                            }
+                                        },
+                                        x: {
+                                            ticks: {
+                                                color: '#9CA3AF'
+                                            },
+                                            grid: {
+                                                color: '#374151'
                                             }
                                         }
                                     }
