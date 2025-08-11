@@ -535,14 +535,21 @@ function generateReportHTML(data, chartImage) {
             line-height: 1.6; 
             color: var(--text-primary); 
             background-color: var(--bg-primary);
-            max-width: 1440px; 
+            max-width: 1584px; 
             margin: 0 auto; 
             padding: 20px; 
         }
         .container {
-            max-width: 1440px;
+            max-width: 1584px;
             margin: 0 auto;
             padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .space-y-8 {
+            width: 100%;
+            max-width: 1584px;
         }
         @media (min-width: 768px) {
             .container {
@@ -773,7 +780,7 @@ function generateReportHTML(data, chartImage) {
                 <i class="fas fa-chart-radar text-sky-400"></i>
                 조직문화 프로파일
             </h3>
-            <div class="h-[28rem] flex items-center justify-center">
+            <div class="h-[32.2rem] flex items-center justify-center">
                 <img src="${chartImage}" alt="조직문화 프로파일 차트" class="max-w-full h-auto">
             </div>
         </div>
