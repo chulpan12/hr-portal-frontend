@@ -485,7 +485,7 @@ function generateReportHTML(data, chartImage) {
     const recommendationsHTML = recommendations.map((rec, index) => `
         <div style="background-color: #374151; border: 1px solid #4b5563; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
             <div style="display: flex; align-items: flex-start; gap: 12px;">
-                <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background-color: #0EA5E9; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+                <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background-color: #0EA5E9; display: flex; align-items: center; justify-center; color: white; font-weight: bold; font-size: 14px;">
                     ${index + 1}
                 </div>
                 <div style="flex: 1;">
@@ -589,12 +589,10 @@ function generateReportHTML(data, chartImage) {
             gap: 8px;
             color: #0EA5E9;
         }
-        .dynamics-box {
-            background-color: #374151;
-            padding: 16px;
-            border-radius: 8px;
-            color: #d1d5db;
+        .dynamics-text {
+            color: #9ca3af;
             font-size: 14px;
+            line-height: 1.6;
         }
         .footer { 
             text-align: center; 
@@ -673,7 +671,7 @@ function generateReportHTML(data, chartImage) {
                 <h4 class="sub-section-title">
                     🔍 문화적 역학 관계 분석
                 </h4>
-                <div class="dynamics-box">${dynamics}</div>
+                <p class="dynamics-text">${dynamics}</p>
             </div>
             <div class="sub-section">
                 <h4 class="sub-section-title">
