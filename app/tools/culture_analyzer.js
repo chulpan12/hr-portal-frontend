@@ -535,12 +535,12 @@ function generateReportHTML(data, chartImage) {
             line-height: 1.6; 
             color: var(--text-primary); 
             background-color: var(--bg-primary);
-            max-width: 1200px; 
+            max-width: 1440px; 
             margin: 0 auto; 
             padding: 20px; 
         }
         .container {
-            max-width: 1200px;
+            max-width: 1440px;
             margin: 0 auto;
             padding: 0 1rem;
         }
@@ -666,6 +666,13 @@ function generateReportHTML(data, chartImage) {
             border-top: 1px solid var(--input-border); 
             color: var(--text-secondary); 
             font-size: 14px; 
+        }
+        .footer a {
+            color: #818cf8;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
         .issue-card {
             background-color: var(--input-bg);
@@ -814,7 +821,8 @@ function generateReportHTML(data, chartImage) {
         <div class="footer">
             <p>본 보고서는 AI가 직원 의견을 기반으로 생성한 참고 자료입니다.</p>
             <p>실제 조직문화 개선을 위해서는 전문가와의 상담을 권장합니다.</p>
-            <p>© Seyoong Jang, https://dreamofenc.com</p>
+            <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
+            <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
         </div>
     </div>
 </body>
