@@ -547,10 +547,10 @@ function generateReportHTML(data, chartImage) {
                                 // 더 정확한 차트 컨테이너 찾기
                                 let chartContainer = null;
                                 
-                                // 1. 먼저 기존 차트 컨테이너 찾기
+                                // 1. 먼저 기존 차트 컨테이너 찾기 (안전한 선택자 사용)
                                 chartContainer = document.querySelector('.chart-container') || 
-                                               document.querySelector('.h-\\[32\\.2rem\\]') ||
-                                               document.querySelector('.h-\\[28rem\\]');
+                                               document.querySelector('[class*="h-[32"]') ||
+                                               document.querySelector('[class*="h-[28"]');
                                 
                                 // 2. 차트 컨테이너가 없으면 적절한 div 찾기
                                 if (!chartContainer) {
@@ -583,9 +583,23 @@ function generateReportHTML(data, chartImage) {
                             
                             if (dom.cultureProfileChart) {
                                 console.log('차트 canvas 요소 준비 완료');
+                                console.log('lastAnalysisData:', lastAnalysisData);
                                 renderDashboard(lastAnalysisData);
                             } else {
                                 console.error('차트 canvas 요소를 생성할 수 없습니다.');
+                                // 마지막 시도: 직접 canvas 생성
+                                const body = document.body;
+                                const canvas = document.createElement('canvas');
+                                canvas.id = 'radarChart';
+                                canvas.style.width = '400px';
+                                canvas.style.height = '400px';
+                                canvas.style.display = 'block';
+                                canvas.style.margin = '20px auto';
+                                canvas.style.border = '1px solid #ccc';
+                                body.appendChild(canvas);
+                                dom.cultureProfileChart = canvas;
+                                console.log('긴급 canvas 생성 완료');
+                                renderDashboard(lastAnalysisData);
                             }
                         } else {
                             console.log('Chart.js 로드 대기 중...');
