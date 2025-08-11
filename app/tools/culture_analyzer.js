@@ -562,7 +562,7 @@ function generateReportHTML(data, chartImage) {
                                             const titleHtml = title.outerHTML;
                                             card.innerHTML = titleHtml + 
                                                 '<div class="chart-container" style="height: 400px; position: relative; margin-top: 1rem;">' +
-                                                '<canvas id="radarChart" style="width: 100%; height: 100%; display: block;"></canvas>' +
+                                                '<canvas id="cultureProfileChart" style="width: 100%; height: 100%; display: block;"></canvas>' +
                                                 '</div>';
                                             chartContainer = card.querySelector('.chart-container');
                                             break;
@@ -578,8 +578,8 @@ function generateReportHTML(data, chartImage) {
                                 }
                             }
                             
-                            // DOM 객체 업데이트
-                            dom.cultureProfileChart = document.getElementById('radarChart');
+                            // DOM 객체 업데이트 - 올바른 ID 사용
+                            dom.cultureProfileChart = document.getElementById('cultureProfileChart');
                             
                             if (dom.cultureProfileChart) {
                                 console.log('차트 canvas 요소 준비 완료');
