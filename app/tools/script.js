@@ -454,14 +454,16 @@ function updateFinancialView(analysis, companyId) {
 
     const financialInfoContent = document.getElementById(`financial-info-content-${companyId}`);
     if (financialInfoContent) {
-        financialInfoContent.innerHTML = `
-            ${renderDataRow('매출액', formatNumber(financialInfo['매출액'], '억'))}
-            ${renderDataRow('영업이익', formatNumber(financialInfo['영업이익'], '억'))}
-            ${renderDataRow('당기순이익', formatNumber(financialInfo['당기순이익'], '억'))}
-            ${renderDataRow('영업이익률', financialInfo['영업이익률'] || 'N/A')}
-            ${renderDataRow('자산총계', formatNumber(financialInfo['자산총계'], '억'))}
-            ${renderDataRow('부채비율', formatNumber(financialInfo['부채비율'], '%'))}
-        `;
+                            financialInfoContent.innerHTML = `
+                        ${renderDataRow('매출액', formatNumber(financialInfo['매출액'], '억'))}
+                        ${renderDataRow('영업이익', formatNumber(financialInfo['영업이익'], '억'))}
+                        ${renderDataRow('당기순이익', formatNumber(financialInfo['당기순이익'], '억'))}
+                        ${renderDataRow('영업이익률', financialInfo['영업이익률'] || 'N/A')}
+                        ${renderDataRow('자산총계', formatNumber(financialInfo['자산총계'], '억'))}
+                        ${renderDataRow('부채비율', formatNumber(financialInfo['부채비율'], '%'))}
+                        <div class="space-y-3"></div>
+                        <div class="space-y-3"></div>
+                    `;
     }
 
     renderFinancialTrendChart(financialTrends, displayFsType);
