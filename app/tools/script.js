@@ -311,7 +311,7 @@ function renderCompanyContent(analysis, companyName) {
                     ${renderEmployeeRatio(hrInfo)}
                     ${renderDataRow('평균 근속 연수', formatNumber(hrInfo['평균 근속 연수'], '년'))}
                     ${renderDataRow('1인 평균 급여액', formatNumber(hrInfo['1인 평균 급여액'], '백만원'), hrInfo['급여정보_부분공개'] ? '급여 비공개 부문 제외' : null)}
-                    ${renderDataRow('인당 매출액', formatNumber(hrInfo['인당 매출액'], '백만원'), '단독매출/인원')}
+                    ${renderDataRow('인당 매출액', formatNumber(hrInfo['인당 매출액'], '억원'), '단독매출/인원')}
                     ${renderYoYEmployeeChange(hrInfo['직원 수 증감'])}
                 </div>
             </div>
@@ -1066,8 +1066,10 @@ function formatNumber(num, unit) {
     let finalUnit = unit;
     if (unit === '억') {
         value = Math.round(num / 100000000);
+    } else if (unit === '억원') {
+        value = num; // 억원 단위는 이미 억원 단위로 계산되어 옴
     } else if (unit === '백만원') {
-        value = Math.round(num / 1000000);
+        value = Math.round(num); // 백만원 단위는 이미 백만원 단위로 계산되어 옴
     } else {
         value = num;
     }
