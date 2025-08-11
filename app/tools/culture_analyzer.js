@@ -534,6 +534,16 @@ function generateReportHTML(data, chartImage) {
             margin: 0 auto; 
             padding: 20px; 
         }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        @media (min-width: 768px) {
+            .container {
+                padding: 0 2rem;
+            }
+        }
         .header { 
             text-align: center; 
             margin-bottom: 40px; 
@@ -546,6 +556,24 @@ function generateReportHTML(data, chartImage) {
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 32px;
+        }
+        .p-6 {
+            padding: 1.5rem;
+        }
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+        .space-y-8 > * + * {
+            margin-top: 2rem;
+        }
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+        .space-y-3 > * + * {
+            margin-top: 0.75rem;
         }
         .section-title { 
             font-weight: bold; 
@@ -561,6 +589,17 @@ function generateReportHTML(data, chartImage) {
             grid-template-columns: 1fr 1.5fr;
             gap: 32px;
             margin-bottom: 32px;
+        }
+        .grid-5-cols {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        @media (min-width: 1024px) {
+            .grid-5-cols {
+                grid-template-columns: 2fr 3fr;
+            }
         }
         .chart-container { 
             text-align: center; 
@@ -683,14 +722,17 @@ function generateReportHTML(data, chartImage) {
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1 style="color: #0EA5E9; font-size: 2.5em; margin-bottom: 10px;">AI 조직문화 진단 보고서</h1>
-        <p style="color: var(--text-secondary); font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
-        <p style="color: #6b7280; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
-    </div>
+    <div class="container">
+        <div class="header">
+            <h1 style="color: #0EA5E9; font-size: 2.5em; margin-bottom: 10px;">AI 조직문화 진단 보고서</h1>
+            <p style="color: var(--text-secondary); font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
+            <p style="color: #6b7280; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
+        </div>
+
+        <div class="space-y-8">
 
     <!-- 1. 종합 진단 브리핑 -->
-    <div class="result-card">
+    <div class="result-card p-6 rounded-xl">
         <h3 class="section-title">
             <i class="fas fa-chart-line"></i>
             종합 진단 브리핑 (Executive Summary)
@@ -712,9 +754,9 @@ function generateReportHTML(data, chartImage) {
     </div>
 
     <!-- 2. 레이더 차트와 핵심 이슈 (그리드 레이아웃) -->
-    <div class="grid-layout">
+    <div class="grid-5-cols">
         <!-- 문화 프로파일 (차트) -->
-        <div class="result-card">
+        <div class="result-card p-6 rounded-xl">
             <h3 class="section-title">
                 <i class="fas fa-chart-radar"></i>
                 조직문화 프로파일
@@ -725,7 +767,7 @@ function generateReportHTML(data, chartImage) {
         </div>
         
         <!-- 핵심 이슈 요약 -->
-        <div class="result-card">
+        <div class="result-card p-6 rounded-xl">
             <h3 class="section-title">
                 <i class="fas fa-exclamation-triangle"></i>
                 문화 유형별 핵심 이슈
@@ -737,12 +779,12 @@ function generateReportHTML(data, chartImage) {
     </div>
 
     <!-- 3. 상세 분석 및 제언 -->
-    <div class="result-card">
+    <div class="result-card p-6 rounded-xl">
         <h3 class="section-title">
             <i class="fas fa-lightbulb"></i>
             상세 분석 및 제언
         </h3>
-        <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div class="space-y-6">
             <div class="sub-section">
                 <h4 class="sub-section-title">
                     <i class="fas fa-sitemap"></i>
@@ -755,17 +797,20 @@ function generateReportHTML(data, chartImage) {
                     <i class="fas fa-tasks"></i>
                     실행 가능한 제언 (Action Plan)
                 </h4>
-                <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="space-y-4">
                     ${recommendationsHTML}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        <p>본 보고서는 AI가 직원 의견을 기반으로 생성한 참고 자료입니다.</p>
-        <p>실제 조직문화 개선을 위해서는 전문가와의 상담을 권장합니다.</p>
-        <p>© Seyoong Jang, https://dreamofenc.com</p>
+        </div>
+
+        <div class="footer">
+            <p>본 보고서는 AI가 직원 의견을 기반으로 생성한 참고 자료입니다.</p>
+            <p>실제 조직문화 개선을 위해서는 전문가와의 상담을 권장합니다.</p>
+            <p>© Seyoong Jang, https://dreamofenc.com</p>
+        </div>
     </div>
 </body>
 </html>
