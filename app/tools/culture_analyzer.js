@@ -448,397 +448,89 @@ function handleDownloadReport() {
 }
 
 function generateReportHTML(data, chartImage) {
-    const profile = data.profile || {};
-    const issues = data.key_issues || {};
-    const summary = data.overall_summary || {};
-    const dynamics = data.cultural_dynamics || '';
-    const recommendations = data.actionable_recommendations || [];
+    // script.js 방식 참고: 현재 페이지의 head 내용을 가져오기
+    const pageHead = document.head.innerHTML;
     
-    const cultureMap = {
-        clan: { title: '관계지향 (Clan)', color: '#10B981', icon: 'fas fa-heart' },
-        adhocracy: { title: '혁신지향 (Adhocracy)', color: '#3B82F6', icon: 'fas fa-lightbulb' },
-        market: { title: '과업지향 (Market)', color: '#EF4444', icon: 'fas fa-chart-line' },
-        hierarchy: { title: '위계지향 (Hierarchy)', color: '#8B5CF6', icon: 'fas fa-sitemap' }
-    };
+    // 현재 결과 대시보드의 내용을 복제
+    const reportContainer = document.getElementById('resultDashboard').cloneNode(true);
     
-    const issuesHTML = Object.entries(issues).map(([key, value]) => {
-        const config = cultureMap[key];
-        const percentage = profile[key] || 'N/A';
-        const keywordsHtml = (keywords, type) => {
-            if (!keywords || !Array.isArray(keywords) || keywords.length === 0) return '';
-            const color = type === 'positive' ? 'green' : 'red';
-            return keywords.map(kw => 
-                `<span class="keyword-tag keyword-${type}">#${kw}</span>`
-            ).join('');
-        };
-        
-        return `
-            <div class="p-3 rounded-lg" style="background-color: var(--input-bg);">
-                <h5 class="font-bold text-md mb-2 flex items-center gap-2" style="color: ${config.color};">
-                    <i class="${config.icon}"></i>
-                    ${config.title} (${percentage}%)
-                </h5>
-                <div class="mb-3">
-                    ${keywordsHtml(value.positive_keywords, 'positive')} 
-                    ${keywordsHtml(value.negative_keywords, 'negative')}
-                </div>
-                <div class="space-y-2">
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-thumbs-up text-green-400 mt-1 text-xs"></i>
-                        <p class="text-xs italic" style="color: var(--text-secondary);">
-                            "${value.positive_voice || '긍정적 의견 없음'}"
-                        </p>
-                    </div>
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-thumbs-down text-red-400 mt-1 text-xs"></i>
-                        <p class="text-xs italic" style="color: var(--text-secondary);">
-                            "${value.negative_voice || '부정적 의견 없음'}"
-                        </p>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
+    // 다운로드 버튼 제거 (다운로드된 HTML에서는 불필요)
+    const downloadBtnInReport = reportContainer.querySelector('#downloadBtn');
+    if (downloadBtnInReport) {
+        downloadBtnInReport.remove();
+    }
     
-    const recommendationsHTML = recommendations.map((rec, index) => `
-        <div class="p-4 rounded-lg border" style="border-color: var(--input-border);">
-            <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center text-white font-bold text-sm">
-                    ${index + 1}
-                </div>
-                <div class="flex-1">
-                    <h5 class="font-semibold text-lg mb-2 text-sky-400">${rec.title}</h5>
-                    <p class="text-sm" style="color: var(--text-secondary);">${rec.description}</p>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    const reportBody = reportContainer.innerHTML;
     
-    return `
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>조직문화 진단 보고서</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #111827; --bg-secondary: #1f2937; --bg-panel: #1f293780;
-            --border-color: #37415180; --text-primary: #f3f4f6; --text-secondary: #9ca3af;
-            --input-bg: #374151; --input-border: #4b5563;
-        }
-        body { 
-            font-family: 'Noto Sans KR', Arial, sans-serif; 
-            line-height: 1.6; 
-            color: var(--text-primary); 
-            background-color: var(--bg-primary);
-            max-width: 1584px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
-        .container {
-            max-width: 1584px !important;
-            margin: 0 auto !important;
-            padding: 0 1rem !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            width: 100% !important;
-        }
-        .space-y-8 {
-            width: 100% !important;
-            max-width: 1584px !important;
-            margin: 0 auto !important;
-        }
-        .result-card {
-            width: 100% !important;
-            max-width: 1584px !important;
-        }
-        @media (min-width: 768px) {
-            .container {
-                padding: 0 2rem;
-            }
-        }
-        .header { 
-            text-align: center; 
-            margin-bottom: 40px; 
-            border-bottom: 2px solid #0EA5E9; 
-            padding-bottom: 20px; 
-        }
-        .result-card { 
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--input-border); 
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 32px;
-        }
-        .p-6 {
-            padding: 1.5rem;
-        }
-        .rounded-xl {
-            border-radius: 0.75rem;
-        }
-        .space-y-8 > * + * {
-            margin-top: 2rem;
-        }
-        .space-y-6 > * + * {
-            margin-top: 1.5rem;
-        }
-        .space-y-4 > * + * {
-            margin-top: 1rem;
-        }
-        .space-y-3 > * + * {
-            margin-top: 0.75rem;
-        }
-        .section-title { 
-            font-weight: bold; 
-            font-size: 20px; 
-            margin-bottom: 16px; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            color: #0EA5E9;
-        }
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 32px;
-            margin-bottom: 32px;
-        }
-        .grid-5-cols {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 32px;
-            margin-bottom: 32px;
-        }
-        @media (min-width: 1024px) {
-            .grid-5-cols {
-                grid-template-columns: 2fr 3fr;
-            }
-        }
-        .chart-container { 
-            text-align: center; 
-            height: 28rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .chart-container img { 
-            max-width: 100%; 
-            height: auto; 
-        }
-        .summary-list { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-        }
-        .summary-item { 
-            display: flex; 
-            align-items: flex-start; 
-            gap: 12px; 
-            padding: 12px; 
-            background-color: var(--input-bg); 
-            border-radius: 8px; 
-        }
-        .summary-item i { 
-            margin-top: 2px; 
-            font-size: 14px; 
-        }
-        .summary-item p { 
-            margin: 0; 
-            color: var(--text-secondary); 
-            font-size: 14px;
-        }
-        .summary-item strong { 
-            color: var(--text-primary); 
-        }
-        .sub-section {
-            margin-bottom: 24px;
-        }
-        .sub-section-title {
-            font-weight: 600;
-            font-size: 18px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #0EA5E9;
-        }
-        .dynamics-text {
-            color: var(--text-secondary);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        .footer { 
-            text-align: center; 
-            margin-top: 40px; 
-            padding-top: 20px; 
-            border-top: 1px solid var(--input-border); 
-            color: var(--text-secondary); 
-            font-size: 14px; 
-        }
-        .footer a {
-            color: #818cf8;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-        .issue-card {
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-        .issue-title {
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .keyword-tag {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 11px;
-            margin-right: 4px;
-            margin-bottom: 4px;
-        }
-        .keyword-positive {
-            background-color: #10B98120;
-            color: #10B981;
-        }
-        .keyword-negative {
-            background-color: #EF444420;
-            color: #EF4444;
-        }
-        .recommendation-card {
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .recommendation-number {
-            flex-shrink: 0;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: #0EA5E9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        @media (max-width: 768px) {
-            .grid-layout {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container" style="max-width: 1584px; margin: 0 auto; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; width: 100%;">
-        <div class="header">
-            <h1 style="color: #0EA5E9; font-size: 2.5em; margin-bottom: 10px;">AI 조직문화 진단 보고서</h1>
-            <p style="color: var(--text-secondary); font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
-            <p style="color: #6b7280; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
-        </div>
-
-        <div class="space-y-8" style="width: 100%; max-width: 1584px; margin: 0 auto;">
-
-    <!-- 1. 종합 진단 브리핑 -->
-    <div class="result-card p-6 rounded-xl">
-        <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
-            <i class="fas fa-chart-line text-sky-400"></i>
-            종합 진단 브리핑 (Executive Summary)
-        </h3>
-        <div class="space-y-3 text-sm" style="color: var(--text-secondary);">
-            <div class="flex items-start gap-3">
-                <i class="fas fa-flag text-sky-400 mt-1"></i>
-                <p><strong>핵심 특징:</strong> ${summary.characteristics || '분석 중...'}</p>
-            </div>
-            <div class="flex items-start gap-3">
-                <i class="fas fa-thumbs-up text-green-400 mt-1"></i>
-                <p><strong>긍정적 측면:</strong> ${summary.strengths || '분석 중...'}</p>
-            </div>
-            <div class="flex items-start gap-3">
-                <i class="fas fa-exclamation-triangle text-yellow-400 mt-1"></i>
-                <p><strong>개선 필요 영역:</strong> ${summary.challenges || '분석 중...'}</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. 레이더 차트와 핵심 이슈 (그리드 레이아웃) -->
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <!-- 문화 프로파일 (차트) -->
-        <div class="lg:col-span-2 result-card p-6 rounded-xl">
-            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
-                <i class="fas fa-chart-radar text-sky-400"></i>
-                조직문화 프로파일
-            </h3>
-            <div class="h-[32.2rem] flex items-center justify-center">
-                <img src="${chartImage}" alt="조직문화 프로파일 차트" class="max-w-full h-auto">
-            </div>
-        </div>
-        
-        <!-- 핵심 이슈 요약 -->
-        <div class="lg:col-span-3 result-card p-6 rounded-xl">
-            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle text-sky-400"></i>
-                문화 유형별 핵심 이슈
-            </h3>
-            <div class="space-y-3">
-                ${issuesHTML}
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. 상세 분석 및 제언 -->
-    <div class="result-card p-6 rounded-xl">
-        <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
-            <i class="fas fa-lightbulb text-sky-400"></i>
-            상세 분석 및 제언
-        </h3>
-        <div class="space-y-6">
-            <div>
-                <h4 class="font-semibold text-lg mb-2 text-sky-400 flex items-center gap-2">
-                    <i class="fas fa-sitemap"></i>
-                    문화적 역학 관계 분석
-                </h4>
-                <p class="text-sm" style="color: var(--text-secondary);">${dynamics}</p>
-            </div>
-            <div>
-                <h4 class="font-semibold text-lg mb-2 text-sky-400 flex items-center gap-2">
-                    <i class="fas fa-tasks"></i>
-                    실행 가능한 제언 (Action Plan)
-                </h4>
-                <div class="space-y-4">
-                    ${recommendationsHTML}
-                </div>
-            </div>
-        </div>
-    </div>
-
-        </div>
-
-        <div class="footer">
+    // 날짜 포맷
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    
+    // 헤더 HTML
+    const reportHeader = `
+        <header class="text-center mb-10 relative">
+            <h1 class="text-4xl md:text-5xl font-extrabold" style="color: var(--text-primary);">AI 조직문화 진단 보고서</h1>
+            <p class="text-lg mt-3" style="color: var(--text-secondary);">경쟁가치모형(CVF) 기반 분석 결과</p>
+            <p class="text-sm mt-2" style="color: var(--text-secondary);">생성일: ${dateString}</p>
+        </header>`;
+    
+    // 푸터 HTML
+    const footerHtml = `
+        <footer class="text-center mt-10 pt-6 border-t" style="border-color: var(--input-border); color: var(--text-secondary); font-size: 14px;">
             <p>본 보고서는 AI가 직원 의견을 기반으로 생성한 참고 자료입니다.</p>
             <p>실제 조직문화 개선을 위해서는 전문가와의 상담을 권장합니다.</p>
             <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
             <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
-        </div>
-    </div>
-</body>
-</html>
-    `;
+        </footer>`;
+
+    // 본문 구조 (script.js 방식과 동일)
+    const bodyStructure = `
+        <div class="container mx-auto p-4 md:p-8" style="max-width: 1584px;">
+            ${reportHeader}
+            <main id="resultDashboard" class="space-y-8">${reportBody}</main>
+            ${footerHtml}
+        </div>`;
+
+    // 필수 함수들 (script.js에서 가져온 방식)
+    const essentialFunctions = [
+        renderDashboard, renderProfileChart, renderOverallSummary, renderKeyIssues, 
+        renderCulturalDynamics, renderRecommendations, toggleTheme, updateThemeIcon
+    ].map(fn => fn.toString()).join('\n\n');
+
+    // 최종 HTML 생성 (script.js 방식과 동일)
+    const finalHtml = `
+        <!DOCTYPE html>
+        <html lang="ko" class="${document.documentElement.className}">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>AI 조직문화 진단 보고서 - ${dateString}</title>
+            ${pageHead}
+        </head>
+        <body>
+            ${bodyStructure}
+            <script>
+                // <![CDATA[
+                let lastAnalysisData = ${JSON.stringify(lastAnalysisData)};
+                let radarChartInstance = null;
+
+                const dom = {
+                    resultDashboard: document.getElementById('resultDashboard'),
+                    themeIconSun: document.getElementById('themeIconSun'),
+                    themeIconMoon: document.getElementById('themeIconMoon')
+                };
+                
+                ${essentialFunctions}
+                
+                document.addEventListener('DOMContentLoaded', () => {
+                    updateThemeIcon();
+                    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                    renderDashboard(lastAnalysisData);
+                });
+                // ]]>
+            <\/script>
+        </body>
+        </html>`;
+    
+    return finalHtml;
 } 
