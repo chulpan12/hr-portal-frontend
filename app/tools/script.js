@@ -24,8 +24,8 @@ const dom = {
     companyTabs: document.getElementById('companyTabs'),
     companyContent: document.getElementById('companyContent'),
     themeToggle: document.getElementById('themeToggle'),
-    themeIconMoon: document.getElementById('themeIconMoon'), // ✨ [아이콘 복원]
-    themeIconSun: document.getElementById('themeIconSun'),   // ✨ [아이콘 복원]
+    themeIconMoon: document.getElementById('themeIconMoon'),
+    themeIconSun: document.getElementById('themeIconSun'),
     downloadBtn: document.getElementById('downloadBtn'),
     downloadBtnText: document.getElementById('downloadBtnText'),
     archiveBtn: document.getElementById('archive-btn'),
@@ -35,7 +35,7 @@ const dom = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const token = sessionStorage.getItem('ai-tool-token'); // ✨ [수정] 토큰 키 통일
+    const token = sessionStorage.getItem('ai-tool-token');
     if (!token) {
         dom.mainContent.classList.add('hidden');
         dom.loginModal.classList.remove('hidden');
@@ -58,18 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.analyzeBtn.addEventListener('click', handleAnalysis);
     dom.themeToggle.addEventListener('click', toggleTheme);
     dom.downloadBtn.addEventListener('click', handleDownloadHtml);
-    dom.loginForm.addEventListener('submit', handleLogin); // ✨ [추가] 로그인 이벤트 리스너
+    dom.loginForm.addEventListener('submit', handleLogin);
     dom.selectAll.addEventListener('click', () => {
         const isChecked = dom.selectAll.checked;
         dom.companySelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = isChecked);
     });
 
-    // ✨ [추가] 아카이브 모달 이벤트 리스너
     dom.archiveBtn.addEventListener('click', showArchiveModal);
     dom.closeArchiveModalBtn.addEventListener('click', () => dom.archiveModal.classList.add('hidden'));
 });
 
-// ✨ [추가] handleLogin 함수 전체 복원
 async function handleLogin(e) {
     e.preventDefault();
     const username = dom.loginForm.username.value;
@@ -89,7 +87,7 @@ async function handleLogin(e) {
             throw new Error(errorData.error || '로그인에 실패했습니다.');
         }
         const data = await response.json();
-        sessionStorage.setItem('ai-tool-token', data.token); // ✨ [수정] 토큰 키 통일
+        sessionStorage.setItem('ai-tool-token', data.token);
         dom.loginModal.classList.add('hidden');
         dom.mainContent.classList.remove('hidden');
         dom.loginForm.reset();
@@ -120,7 +118,11 @@ async function handleAnalysis() {
         for (const [index, company] of selectedCompanies.entries()) {
             dom.loaderText.textContent = `AI가 ${company} 관련 데이터를 분석 중입니다... (${index + 1}/${selectedCompanies.length})`;
             const result = await callCompanyAnalysisAPI(company, keyword);
-            if (result) companyAnalyses[company] = result;
+            if (result) {
+                // 백엔드에서 받은 회사 이름을 키로 사용 (일관성 유지)
+                const companyName = result.company_name || company;
+                companyAnalyses[companyName] = result;
+            }
         }
 
         dom.loaderText.textContent = `종합 분석 보고서를 생성 중입니다...`;
@@ -134,7 +136,6 @@ async function handleAnalysis() {
         lastAnalysisData = finalData;
         renderDashboard(finalData);
 
-        // ✨ [추가] 분석 성공 시 자동으로 아카이브에 저장
         await saveResultToArchive();
 
     } catch (error) {
@@ -151,48 +152,48 @@ async function handleAnalysis() {
 }
 
 async function callCompanyAnalysisAPI(company, keyword) {
-     const apiUrl = `${API_BASE_URL}/api/market/analyze-company`;
-     const token = sessionStorage.getItem('ai-tool-token'); // ✨ [수정] 토큰 키 통일
-     if (!token) { // ✨ [추가] 토큰 부재 시 에러 처리
-         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-         sessionStorage.removeItem('ai-tool-token');
-         window.location.reload();
-         throw new Error('로그인 토큰이 없습니다.');
-     }
-     const response = await fetch(apiUrl, {
-         method: 'POST',
-         headers: { 
-             'Content-Type': 'application/json',
-             'Authorization': `Bearer ${token}` // ✨ [수정] 헤더에 토큰 추가
-         },
-         body: JSON.stringify({ company, keyword })
-     });
-     if (!response.ok) {
-         const errorText = await response.text();
-         try {
-             const errorData = JSON.parse(errorText);
-             throw new Error(errorData.error || `[${company}] 분석 중 서버 응답 오류: ${response.status}`);
-         } catch {
-             throw new Error(`[${company}] 분석 중 서버 응답 오류: ${response.status} - ${errorText}`);
-         }
-     }
-     return await response.json();
-}
-
-async function callOverallAnalysisAPI(analyses) {
-    const apiUrl = `${API_BASE_URL}/api/market/analyze-overall`;
-    const token = sessionStorage.getItem('ai-tool-token'); // ✨ [수정] 토큰 키 통일
-     if (!token) { // ✨ [추가] 토큰 부재 시 에러 처리
-         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-         sessionStorage.removeItem('ai-tool-token');
-         window.location.reload();
-         throw new Error('로그인 토큰이 없습니다.');
-     }
+    const apiUrl = `${API_BASE_URL}/api/market/analyze-company`;
+    const token = sessionStorage.getItem('ai-tool-token');
+    if (!token) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        sessionStorage.removeItem('ai-tool-token');
+        window.location.reload();
+        throw new Error('로그인 토큰이 없습니다.');
+    }
     const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // ✨ [수정] 헤더에 토큰 추가
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ company, keyword })
+    });
+    if (!response.ok) {
+        const errorText = await response.text();
+        try {
+            const errorData = JSON.parse(errorText);
+            throw new Error(errorData.error || `[${company}] 분석 중 서버 응답 오류: ${response.status}`);
+        } catch {
+            throw new Error(`[${company}] 분석 중 서버 응답 오류: ${response.status} - ${errorText}`);
+        }
+    }
+    return await response.json();
+}
+
+async function callOverallAnalysisAPI(analyses) {
+    const apiUrl = `${API_BASE_URL}/api/market/analyze-overall`;
+    const token = sessionStorage.getItem('ai-tool-token');
+    if (!token) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        sessionStorage.removeItem('ai-tool-token');
+        window.location.reload();
+        throw new Error('로그인 토큰이 없습니다.');
+    }
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ analyses })
     });
@@ -241,37 +242,37 @@ function renderDashboard(data) {
     
     dom.companyTabs.innerHTML = '';
     dom.companyContent.innerHTML = '';
-    companyKeys.forEach((company, index) => {
+    
+    companyKeys.forEach((companyName, index) => {
         const tab = document.createElement('button');
         tab.className = `py-2 px-4 text-sm font-medium border-b-2 tab-btn ${index === 0 ? 'active' : 'border-transparent'}`;
-        tab.textContent = company;
+        tab.textContent = companyName;
         tab.onclick = () => {
             document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            renderCompanyContent(data.companies[company]);
+            renderCompanyContent(data.companies[companyName], companyName);
         };
         dom.companyTabs.appendChild(tab);
     });
+
     const firstCompany = companyKeys[0];
     if (firstCompany) {
-        renderCompanyContent(data.companies[firstCompany]);
+        renderCompanyContent(data.companies[firstCompany], firstCompany);
         dom.companyTabs.querySelector('.tab-btn').classList.add('active');
     }
 }
 
-function renderCompanyContent(analysis) {
+function renderCompanyContent(analysis, companyName) {
     const swot = analysis.swot || {strengths:[], weaknesses:[], opportunities:[], threats:[]};
     const overallAssessment = analysis.overall_assessment || "종합 평가 정보가 없습니다.";
     const dynamicAssessment = analysis.dynamic_assessment || {dimensions: {}, summary: "동적 평가 정보가 없습니다."};
     const keywordAnalysis = analysis.keyword_analysis;
     const keyArticles = analysis.key_articles || [];
     const sourceArticles = analysis.source_articles || [];
-    const financialInfo = analysis.financial_info || {};
-    const hrInfo = analysis.hr_info || {};
-    const financialTrends = analysis.financial_trends || {};
+    const hrInfo = analysis.latest_hr_info || {};
     const disclosures = analysis.disclosures || [];
+    const companyId = companyName.replace(/[^a-zA-Z0-9]/g, '') || Date.now();
 
-    // ✨ [추가] 직원수 증감 렌더링 함수
     const renderYoYEmployeeChange = (change) => {
         if (change === 'N/A' || change === undefined) {
             return renderDataRow('전년 대비 직원 수', 'N/A');
@@ -280,37 +281,44 @@ function renderCompanyContent(analysis) {
         const color = changeValue > 0 ? 'text-blue-400' : (changeValue < 0 ? 'text-red-400' : 'text-gray-400');
         const icon = changeValue > 0 ? '▲' : (changeValue < 0 ? '▼' : '▬');
         const formattedChange = `${icon} ${new Intl.NumberFormat().format(Math.abs(changeValue))}명`;
-        
-        // ✨ [수정] 다른 항목과 자연스럽게 어울리도록 스타일 변경
         return renderDataRow('전년 대비 직원 수', formattedChange, null, color);
     };
 
+    const financialToggleHtml = `
+        <div class="absolute top-4 right-4 flex items-center text-xs">
+            <label for="fs-toggle-${companyId}" class="mr-2 font-medium text-gray-400">단독</label>
+            <div class="fs-toggle-label-container">
+                <input type="checkbox" name="fs-toggle" id="fs-toggle-${companyId}" class="fs-toggle-checkbox" checked/>
+                <label for="fs-toggle-${companyId}" class="fs-toggle-label"></label>
+            </div>
+            <label for="fs-toggle-${companyId}" class="ml-2 font-medium text-indigo-400">연결</label>
+        </div>
+    `;
+
     const finHrTrendHtml = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            <div class="result-card p-6 rounded-xl flex flex-col">
-                <h4 class="font-bold text-lg mb-4">주요 재무 지표 (연결-전년도 기준)</h4>
-                <div class="space-y-3 flex-grow">
-                    ${renderDataRow('매출액', formatNumber(financialInfo['매출액'], '억'))}
-                    ${renderDataRow('영업이익', formatNumber(financialInfo['영업이익'], '억'))}
-                    ${renderDataRow('당기순이익', formatNumber(financialInfo['당기순이익'], '억'))}
-                    ${renderDataRow('영업이익률', financialInfo['영업이익률'] || 'N/A')}
-                    ${renderDataRow('자산총계', formatNumber(financialInfo['자산총계'], '억'))}
-                    ${renderDataRow('부채비율', formatNumber(financialInfo['부채비율'], '%'))}
+            <div id="financial-info-card-${companyId}" class="result-card p-6 rounded-xl flex flex-col relative">
+                ${financialToggleHtml}
+                <h4 class="font-bold text-lg mb-4">주요 재무 지표 (전년도 기준)</h4>
+                <div id="financial-info-content-${companyId}" class="space-y-3 flex-grow">
+                    <!-- 내용은 updateFinancialView 함수가 채웁니다. -->
                 </div>
             </div>
             <div class="result-card p-6 rounded-xl flex flex-col">
                 <h4 class="font-bold text-lg mb-4">임직원 현황 (단독-전년도 기준)</h4>
-                <div class="space-y-4 flex-grow">
+                <div class="space-y-3 flex-grow">
                     ${renderDataRow('총 임직원 수', formatNumber(hrInfo['총 임직원 수'], '명'))}
                     ${renderEmployeeRatio(hrInfo)}
                     ${renderDataRow('평균 근속 연수', formatNumber(hrInfo['평균 근속 연수'], '년'))}
                     ${renderDataRow('1인 평균 급여액', formatNumber(hrInfo['1인 평균 급여액'], '백만원'), hrInfo['급여정보_부분공개'] ? '급여 비공개 부문 제외' : null)}
+                    ${renderDataRow('인당 매출액', formatNumber(hrInfo['인당 매출액'], '백만원'), '단독매출/인원')}
                     ${renderYoYEmployeeChange(hrInfo['직원 수 증감'])}
                 </div>
             </div>
-            <div class="result-card p-6 rounded-xl">
+            <div class="result-card p-6 rounded-xl relative">
+                 ${financialToggleHtml.replace(/fs-toggle/g, `fs-toggle-chart`)}
                 <h4 class="font-bold text-lg mb-4">3개년 재무 추이</h4>
-                 <div class="h-64"><canvas id="financialTrendChart"></canvas></div>
+                <div class="h-64"><canvas id="financialTrendChart"></canvas></div>
             </div>
         </div>
     `;
@@ -339,7 +347,7 @@ function renderCompanyContent(analysis) {
                 <div class="space-y-3">
                     ${disclosures.map(d => `
                         <div class="border-l-2 pl-3" style="border-color: var(--input-border);">
-                             <a href="${d.url}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${d.title}</a>
+                            <a href="${d.url}" target="_blank" class="font-semibold text-sm text-indigo-400 hover:underline">${d.title}</a>
                         </div>
                     `).join('')}
                 </div>
@@ -395,8 +403,21 @@ function renderCompanyContent(analysis) {
             ${disclosuresHtml}
         </div>`;
     
+    updateFinancialView(analysis, companyId);
     renderDynamicChart(dynamicAssessment.dimensions);
-    renderFinancialTrendChart(financialTrends); // ✨ [2단계] 재무 추이 차트 렌더링 함수 호출
+
+    const mainToggle = document.getElementById(`fs-toggle-${companyId}`);
+    const chartToggle = document.getElementById(`fs-toggle-chart-${companyId}`);
+    
+    const syncAndUpdate = (sourceToggle) => {
+        const isChecked = sourceToggle.checked;
+        mainToggle.checked = isChecked;
+        chartToggle.checked = isChecked;
+        updateFinancialView(analysis, companyId);
+    };
+
+    mainToggle.addEventListener('change', () => syncAndUpdate(mainToggle));
+    chartToggle.addEventListener('change', () => syncAndUpdate(chartToggle));
 
     const showMoreBtn = document.getElementById('show-more-btn');
     if (showMoreBtn) {
@@ -405,6 +426,45 @@ function renderCompanyContent(analysis) {
             showMoreBtn.style.display = 'none';
         });
     }
+}
+
+function updateFinancialView(analysis, companyId) {
+    const financialTrends = analysis.financial_trends || {};
+    const toggle = document.getElementById(`fs-toggle-${companyId}`);
+    const fsType = toggle && toggle.checked ? 'CFS' : 'OFS';
+
+    const sortedYears = Object.keys(financialTrends).sort().reverse();
+    if (sortedYears.length === 0) return;
+    const latestYear = sortedYears[0];
+
+    let displayFsType = fsType;
+    if (!financialTrends[latestYear] || !financialTrends[latestYear][fsType]) {
+        displayFsType = fsType === 'CFS' ? 'OFS' : 'CFS';
+        if (!financialTrends[latestYear] || !financialTrends[latestYear][displayFsType]) {
+            document.getElementById(`financial-info-content-${companyId}`).innerHTML = '<p class="text-gray-400">재무 정보가 없습니다.</p>';
+            renderFinancialTrendChart({}, 'CFS');
+            return;
+        }
+        const isCfs = displayFsType === 'CFS';
+        document.getElementById(`fs-toggle-${companyId}`).checked = isCfs;
+        document.getElementById(`fs-toggle-chart-${companyId}`).checked = isCfs;
+    }
+    
+    const financialInfo = financialTrends[latestYear][displayFsType] || {};
+
+    const financialInfoContent = document.getElementById(`financial-info-content-${companyId}`);
+    if (financialInfoContent) {
+        financialInfoContent.innerHTML = `
+            ${renderDataRow('매출액', formatNumber(financialInfo['매출액'], '억'))}
+            ${renderDataRow('영업이익', formatNumber(financialInfo['영업이익'], '억'))}
+            ${renderDataRow('당기순이익', formatNumber(financialInfo['당기순이익'], '억'))}
+            ${renderDataRow('영업이익률', financialInfo['영업이익률'] || 'N/A')}
+            ${renderDataRow('자산총계', formatNumber(financialInfo['자산총계'], '억'))}
+            ${renderDataRow('부채비율', formatNumber(financialInfo['부채비율'], '%'))}
+        `;
+    }
+
+    renderFinancialTrendChart(financialTrends, displayFsType);
 }
 
 function renderDynamicChart(dimensions) {
@@ -454,7 +514,6 @@ function renderDynamicChart(dimensions) {
 }
 
 let financialTrendChartInstance = null;
-// ✨ [추가] 범례와 차트 영역 사이에 여백을 추가하는 커스텀 플러그인
 const legendMarginPlugin = {
     id: 'legendMargin',
     beforeInit: function (chart) {
@@ -464,42 +523,48 @@ const legendMarginPlugin = {
         const originalFit = chart.legend.fit;
         chart.legend.fit = function () {
             originalFit.bind(chart.legend)();
-            this.height += 20; // 범례 아래에 20px의 여백을 추가합니다.
+            this.height += 20;
         }
     }
 };
 
-function renderFinancialTrendChart(trends) {
+function renderFinancialTrendChart(trends, fsType) {
     if (financialTrendChartInstance) {
         financialTrendChartInstance.destroy();
     }
     const chartCanvas = document.getElementById('financialTrendChart');
-    if (!chartCanvas || !trends || Object.keys(trends).length === 0) return;
+    if (!chartCanvas || !trends || Object.keys(trends).length === 0) {
+        if(chartCanvas) chartCanvas.getContext('2d').clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+        return;
+    }
 
     const sortedYears = Object.keys(trends).sort();
     const isLight = document.documentElement.classList.contains('light');
     const textColor = isLight ? '#1f2937' : '#f3f4f6';
     const gridColor = isLight ? '#e5e7eb' : '#374151';
 
-    const revenueData = sortedYears.map(year => Math.round(trends[year]['매출액'] / 100000000));
-    const operatingProfitData = sortedYears.map(year => Math.round(trends[year]['영업이익'] / 100000000));
-    const profitMarginData = sortedYears.map(year => {
-        const revenue = trends[year]['매출액'];
-        const op = trends[year]['영업이익'];
-        const margin = revenue > 0 ? ((op / revenue) * 100) : 0;
-        return parseFloat(margin.toFixed(2)); // ✨ [수정] 숫자로 변환
+    const extractData = (key) => sortedYears.map(year => {
+        const dataForYear = trends[year][fsType] || trends[year][fsType === 'CFS' ? 'OFS' : 'CFS'] || {};
+        return dataForYear[key] || 0;
     });
 
-    // ✨ [추가] yLine 축 범위 동적 계산
+    const revenueData = extractData('매출액').map(v => Math.round(v / 100000000));
+    const operatingProfitData = extractData('영업이익').map(v => Math.round(v / 100000000));
+    const profitMarginData = sortedYears.map(year => {
+        const dataForYear = trends[year][fsType] || trends[year][fsType === 'CFS' ? 'OFS' : 'CFS'] || {};
+        const revenue = dataForYear['매출액'] || 0;
+        const op = dataForYear['영업이익'] || 0;
+        return revenue > 0 ? parseFloat(((op / revenue) * 100).toFixed(2)) : 0;
+    });
+
     const maxMargin = Math.max(...profitMarginData, 0);
     const minMargin = Math.min(...profitMarginData, 0);
-
-    const suggestedMax = Math.max(Math.ceil(maxMargin * 1.8), 5); // 최소 5%는 보이도록, 1.8배로 여유분 확보
-    const suggestedMin = minMargin < 0 ? Math.floor(minMargin * 1.2) : 0; // 음수일 경우 아래 여유분 확보
+    const suggestedMax = Math.max(Math.ceil(maxMargin * 1.8), 5);
+    const suggestedMin = minMargin < 0 ? Math.floor(minMargin * 1.2) : 0;
 
     financialTrendChartInstance = new Chart(chartCanvas, {
         type: 'bar',
-        plugins: [ChartDataLabels, legendMarginPlugin], // ✨ [수정] 커스텀 플러그인 추가
+        plugins: [ChartDataLabels, legendMarginPlugin],
         data: {
             labels: sortedYears,
             datasets: [
@@ -509,7 +574,7 @@ function renderFinancialTrendChart(trends) {
                     backgroundColor: 'rgba(99, 102, 241, 0.6)',
                     borderColor: 'rgba(99, 102, 241, 1)',
                     yAxisID: 'yBar',
-                    order: 1 // ✨ [수정] 렌더링 순서 지정
+                    order: 1
                 },
                 {
                     label: '영업이익 (억 원)',
@@ -517,7 +582,7 @@ function renderFinancialTrendChart(trends) {
                     backgroundColor: 'rgba(239, 68, 68, 0.6)',
                     borderColor: 'rgba(239, 68, 68, 1)',
                     yAxisID: 'yBar',
-                    order: 2 // ✨ [수정] 렌더링 순서 지정
+                    order: 2
                 },
                 {
                     label: '영업이익률 (%)',
@@ -528,13 +593,12 @@ function renderFinancialTrendChart(trends) {
                     fill: false,
                     yAxisID: 'yLine',
                     tension: 0.1,
-                    order: 0 // ✨ [수정] 렌더링 순서 지정 (가장 위)
+                    order: 0
                 }
             ]
         },
         options: {
             maintainAspectRatio: false,
-            // ✨ [수정] layout padding 제거, 플러그인으로 간격 제어
             plugins: {
                 legend: { 
                     position: 'top',
@@ -569,15 +633,12 @@ function renderFinancialTrendChart(trends) {
                     formatter: function(value, context) {
                         const datasetLabel = context.dataset.label;
                         if (datasetLabel.includes('%')) {
-                            // ✨ [수정] 꺾은선 그래프 레이블 스타일링
                             return value + '%';
                         }
-                        // 억 단위로 포맷팅
                         return new Intl.NumberFormat('ko-KR').format(value);
                     },
                     font: function(context) {
                         if (context.dataset.type === 'line') return { weight: 'bold', size: 12 };
-                        // ✨ [수정] 막대그래프 레이블 폰트 크기 증가
                         return { size: 11, weight: '500' };
                     },
                     color: function(context) {
@@ -602,20 +663,19 @@ function renderFinancialTrendChart(trends) {
                     ticks: { color: textColor, callback: (value) => `${value}%` },
                     grid: { display: false },
                     title: { display: true, text: '영업이익률 (%)', color: textColor },
-                    suggestedMax: suggestedMax, // ✨ [추가] 계산된 최대값 제안
-                    suggestedMin: suggestedMin, // ✨ [추가] 계산된 최소값 제안
+                    suggestedMax: suggestedMax,
+                    suggestedMin: suggestedMin,
                 }
             }
         }
     });
 }
 
-
 function renderSwotCard(title, items, bgColor) { return `<div class="result-card p-4 rounded-lg ${bgColor}"><h5 class="font-bold mb-2">${title}</h5><ul class="list-disc list-inside text-xs space-y-1" style="color: var(--text-secondary);">${(items || []).map(i => `<li>${i}</li>`).join('')}</ul></div>`; }
 
 function renderDataRow(label, value, note = null, valueColor = null) {
     const noteHtml = note ? `<span class="text-xs text-yellow-400/80 ml-2">(${note})</span>` : '';
-    const valueClass = valueColor ? `class="${valueColor}"` : ''; // ✨ [추가] 값에 색상 적용
+    const valueClass = valueColor ? `class="${valueColor}"` : '';
     return `
         <div class="flex justify-between items-baseline">
             <span class="text-sm font-medium" style="color: var(--text-secondary);">${label}${noteHtml}</span>
@@ -651,14 +711,12 @@ function renderEmployeeRatio(hrInfo) {
     `;
 }
 
-
-// ✨ [추가] 아카이브 관련 함수들
 async function saveResultToArchive() {
     if (!lastAnalysisData) return;
 
     console.log("분석 결과 자동 저장을 시작합니다...");
     try {
-        const htmlContent = await generateReportHtml(); // handleDownloadHtml 로직 재활용
+        const htmlContent = await generateReportHtml();
         
         const today = new Date();
         const dateString = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
@@ -684,7 +742,6 @@ async function saveResultToArchive() {
 
     } catch (error) {
         console.error("아카이브 저장 중 오류:", error);
-        // 사용자에게 오류를 알리지 않고 콘솔에만 기록 (백그라운드 작업이므로)
     }
 }
 
@@ -715,7 +772,6 @@ async function showArchiveModal() {
             const companyAndKeyword = parts.slice(1).join('-');
             const formattedDate = `${date.substring(0,4)}-${date.substring(4,6)}-${date.substring(6,8)}`;
 
-            // ✨ [수정] 다운로드 링크를 JS 함수 호출 버튼으로 변경
             return `
                 <div class="flex justify-between items-center p-3 rounded-lg hover:bg-gray-700/50 transition-colors duration-200">
                     <a href="${API_BASE_URL}/api/market/archives/${file}" target="_blank" class="flex-grow" title="새 탭에서 보기">
@@ -736,12 +792,11 @@ async function showArchiveModal() {
     }
 }
 
-// ✨ [추가] Blob을 이용한 아카이브 파일 다운로드 핸들러
 async function handleArchiveDownload(buttonElement, filename) {
     const icon = buttonElement.querySelector('i');
     const originalIconClass = icon.className;
     
-    icon.className = 'fas fa-spinner fa-spin'; // 로딩 아이콘으로 변경
+    icon.className = 'fas fa-spinner fa-spin';
     buttonElement.disabled = true;
 
     try {
@@ -770,20 +825,16 @@ async function handleArchiveDownload(buttonElement, filename) {
         console.error('다운로드 오류:', error);
         alert(error.message);
     } finally {
-        icon.className = originalIconClass; // 원래 아이콘으로 복원
+        icon.className = originalIconClass;
         buttonElement.disabled = false;
     }
 }
 
-
-// `handleDownloadHtml` 함수를 `generateReportHtml` 헬퍼 함수로 분리하여 재활용
 async function generateReportHtml() {
-    // 기존 handleDownloadHtml 함수의 HTML 생성 로직을 그대로 가져옵니다.
     const pageHead = document.head.innerHTML;
     const today = new Date();
     const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    // 1. 보고서 본문 구성: 현재 대시보드를 복제한 후 다운로드 버튼만 제거
     const reportContainer = document.getElementById('resultDashboard').cloneNode(true);
     const downloadBtnInReport = reportContainer.querySelector('#downloadBtn');
     if (downloadBtnInReport) {
@@ -791,9 +842,6 @@ async function generateReportHtml() {
     }
     const reportBody = reportContainer.innerHTML;
 
-
-    // 2. 보고서 전체 구조 생성
-    // ✨ [수정] 보고서 헤더에 테마 토글 버튼 추가
     const reportHeader = `
         <header class="text-center mb-10 relative">
             <h1 class="text-4xl md:text-5xl font-extrabold" style="color: var(--text-primary);">경쟁사 동향 분석 보고서</h1>
@@ -815,13 +863,10 @@ async function generateReportHtml() {
             ${footerHtml}
         </div>`;
 
-    // 3. 실행에 필요한 모든 JS 함수와 플러그인을 문자열로 추출
-    const legendMarginPluginString = legendMarginPlugin.toString();
-
     const essentialFunctions = [
         renderDashboard, renderCompanyContent, renderKeywordBarChart, renderDynamicChart, 
-        renderFinancialTrendChart, renderSwotCard, createArticleHtml, formatNumber,
-        renderEmployeeRatio, renderDataRow, toggleTheme, updateThemeIcon // ✨ [추가] 테마 변경 함수
+        renderFinancialTrendChart, updateFinancialView, renderSwotCard, createArticleHtml, 
+        formatNumber, renderEmployeeRatio, renderDataRow, toggleTheme, updateThemeIcon
     ].map(fn => fn.toString()).join('\n\n');
 
     const finalHtml = `
@@ -842,7 +887,6 @@ async function generateReportHtml() {
                 let keywordBarChartInstance = null;
                 let financialTrendChartInstance = null;
 
-                // ✨ [수정] 다운로드된 파일에 legendMarginPlugin 정의 추가
                 const legendMarginPlugin = {
                     id: 'legendMargin',
                     beforeInit: function (chart) {
@@ -855,7 +899,6 @@ async function generateReportHtml() {
                     }
                 };
 
-                // ✨ [수정] 보고서 내에서 사용할 dom 객체 확장
                 const dom = {
                     marketSummary: document.getElementById('marketSummary'),
                     keywordBarChart: document.getElementById('keywordBarChart'),
@@ -870,22 +913,38 @@ async function generateReportHtml() {
                 ${essentialFunctions}
                 
                 document.addEventListener('DOMContentLoaded', () => {
-                    // 테마 설정 및 아이콘 초기화
                     updateThemeIcon();
-                    
-                    // 테마 토글 버튼 이벤트 연결
                     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-
-                    // 대시보드 렌더링
                     renderDashboard(lastAnalysisData);
                     
-                    // 탭 클릭 이벤트 재연결
+                    document.getElementById('companyContent').addEventListener('change', function(event) {
+                        // ✨ [오류 수정] 이스케이프 문제 해결: 백슬래시 제거
+                        if (event.target.matches('input[name="fs-toggle"]')) {
+                            const toggle = event.target;
+                            const companyId = toggle.id.split('-').pop();
+                            const mainToggle = document.getElementById(\`fs-toggle-\${companyId}\`);
+                            const chartToggle = document.getElementById(\`fs-toggle-chart-\${companyId}\`);
+
+                            if(mainToggle && chartToggle) {
+                                const isChecked = toggle.checked;
+                                mainToggle.checked = isChecked;
+                                chartToggle.checked = isChecked;
+                            }
+
+                            const activeTab = document.querySelector('.tab-btn.active');
+                            if (activeTab) {
+                                const companyName = activeTab.textContent;
+                                updateFinancialView(lastAnalysisData.companies[companyName], companyId);
+                            }
+                        }
+                    });
+                    
                     document.querySelectorAll('.tab-btn').forEach(tab => {
                         tab.addEventListener('click', () => {
                             document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
                             tab.classList.add('active');
                             const companyName = tab.textContent;
-                            renderCompanyContent(lastAnalysisData.companies[companyName]);
+                            renderCompanyContent(lastAnalysisData.companies[companyName], companyName);
                         });
                     });
                 });
@@ -935,7 +994,6 @@ function renderKeywordBarChart(keywords, textColor, isLight) {
     }
     const chartCanvas = dom.keywordBarChart;
     if (!chartCanvas || !keywords || keywords.length === 0) {
-        // 차트가 없을 경우 캔버스를 숨길 수 있습니다.
         chartCanvas.style.display = 'none';
         return;
     }
@@ -965,18 +1023,18 @@ function renderKeywordBarChart(keywords, textColor, isLight) {
                     position: 'top',
                     align: 'end',
                     labels: {
-                        color: textColor // 범례 텍스트 색상
+                        color: textColor
                     }
                 }
             },
             scales: {
                 x: {
                     grid: { color: gridColor },
-                    ticks: { color: textColor } // X축 눈금 색상
+                    ticks: { color: textColor }
                 },
                 y: {
                     grid: { color: 'transparent' },
-                    ticks: { color: textColor } // Y축 레이블(키워드) 색상
+                    ticks: { color: textColor }
                 }
             }
         }
@@ -1044,4 +1102,4 @@ function createArticleHtml(article, isKeyArticle) {
             </div>
             <p class="text-xs mt-1" style="color: var(--text-secondary);">${content}</p>
         </div>`;
-} 
+}

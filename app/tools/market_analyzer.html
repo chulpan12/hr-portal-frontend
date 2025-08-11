@@ -69,6 +69,47 @@
         .show-more-btn:hover {
             background-color: var(--input-border);
         }
+
+        /* ✨ [추가] 연결/단독 토글 스위치 스타일 */
+        .fs-toggle-checkbox {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: #fff;
+            border-radius: 9999px;
+            border-width: 4px;
+            border-color: #9ca3af; /* gray-400 */
+            cursor: pointer;
+            height: 1.5rem;
+            width: 1.5rem;
+            position: absolute;
+            transition: all 0.2s ease-in-out;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .fs-toggle-checkbox:checked {
+            right: 0;
+            border-color: #4f46e5; /* indigo-600 */
+        }
+        .fs-toggle-label-container {
+            position: relative;
+            display: inline-block;
+            width: 2.5rem;
+            height: 1.5rem;
+            vertical-align: middle;
+        }
+        .fs-toggle-label {
+            display: block;
+            overflow: hidden;
+            height: 1.5rem;
+            border-radius: 9999px;
+            background-color: #9ca3af; /* gray-400 */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .fs-toggle-checkbox:checked + .fs-toggle-label {
+            background-color: #4f46e5; /* indigo-600 */
+        }
     </style>
 </head>
 <body>
