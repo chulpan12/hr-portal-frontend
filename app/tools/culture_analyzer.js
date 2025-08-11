@@ -544,20 +544,27 @@ function generateReportHTML(data, chartImage) {
                             if (!radarChartCanvas) {
                                 console.log('radarChart canvas 요소를 찾을 수 없어 생성합니다.');
                                 
-                                // 다양한 차트 컨테이너 선택자 시도
-                                let chartContainer = document.querySelector('.chart-container') || 
-                                                   document.querySelector('[id*="chart"]') ||
-                                                   document.querySelector('[class*="chart"]') ||
-                                                   document.querySelector('.h-\\[32\\.2rem\\]') ||
-                                                   document.querySelector('.h-\\[28rem\\]');
+                                // 더 정확한 차트 컨테이너 찾기
+                                let chartContainer = null;
                                 
+                                // 1. 먼저 기존 차트 컨테이너 찾기
+                                chartContainer = document.querySelector('.chart-container') || 
+                                               document.querySelector('.h-\\[32\\.2rem\\]') ||
+                                               document.querySelector('.h-\\[28rem\\]');
+                                
+                                // 2. 차트 컨테이너가 없으면 적절한 div 찾기
                                 if (!chartContainer) {
-                                    // 차트 컨테이너를 찾을 수 없으면 적절한 위치에 생성
                                     const resultCards = document.querySelectorAll('.result-card');
                                     for (const card of resultCards) {
                                         const title = card.querySelector('h3');
                                         if (title && title.textContent.includes('조직문화 프로파일')) {
-                                            chartContainer = card;
+                                            // 제목은 유지하고 그 아래에 차트 컨테이너 생성
+                                            const titleHtml = title.outerHTML;
+                                            card.innerHTML = titleHtml + 
+                                                '<div class="chart-container" style="height: 400px; position: relative; margin-top: 1rem;">' +
+                                                '<canvas id="radarChart" style="width: 100%; height: 100%; display: block;"></canvas>' +
+                                                '</div>';
+                                            chartContainer = card.querySelector('.chart-container');
                                             break;
                                         }
                                     }
@@ -565,25 +572,7 @@ function generateReportHTML(data, chartImage) {
                                 
                                 if (chartContainer) {
                                     console.log('차트 컨테이너를 찾았습니다:', chartContainer);
-                                    
-                                    // 차트 컨테이너에 높이 제한 설정
-                                    chartContainer.style.height = '400px';
-                                    chartContainer.style.overflow = 'hidden';
-                                    chartContainer.style.position = 'relative';
-                                    
-                                    radarChartCanvas = document.createElement('canvas');
-                                    radarChartCanvas.id = 'radarChart';
-                                    radarChartCanvas.style.width = '100%';
-                                    radarChartCanvas.style.height = '100%';
-                                    radarChartCanvas.style.display = 'block';
-                                    radarChartCanvas.style.margin = '0 auto';
-                                    radarChartCanvas.style.position = 'absolute';
-                                    radarChartCanvas.style.top = '0';
-                                    radarChartCanvas.style.left = '0';
-                                    
-                                    // 기존 내용을 지우고 canvas 추가
-                                    chartContainer.innerHTML = '';
-                                    chartContainer.appendChild(radarChartCanvas);
+                                    radarChartCanvas = document.getElementById('radarChart');
                                 } else {
                                     console.error('차트 컨테이너를 찾을 수 없습니다.');
                                 }
