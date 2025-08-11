@@ -512,10 +512,11 @@ function generateReportHTML(data, chartImage) {
             <script>
                 // <![CDATA[
                 let lastAnalysisData = ${JSON.stringify(lastAnalysisData)};
-                let radarChartInstance = null;
+                let cultureChartInstance = null;
 
                 const dom = {
                     resultDashboard: document.getElementById('resultDashboard'),
+                    cultureProfileChart: document.getElementById('radarChart'),
                     themeIconSun: document.getElementById('themeIconSun'),
                     themeIconMoon: document.getElementById('themeIconMoon')
                 };
@@ -526,10 +527,18 @@ function generateReportHTML(data, chartImage) {
                     updateThemeIcon();
                     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
                     
-                    // 차트가 렌더링되도록 약간의 지연 후 실행
-                    setTimeout(() => {
-                        renderDashboard(lastAnalysisData);
-                    }, 100);
+                    // Chart.js가 로드될 때까지 대기
+                    const waitForChartJS = () => {
+                        if (typeof Chart !== 'undefined') {
+                            console.log('Chart.js 로드됨, 차트 렌더링 시작');
+                            renderDashboard(lastAnalysisData);
+                        } else {
+                            console.log('Chart.js 로드 대기 중...');
+                            setTimeout(waitForChartJS, 50);
+                        }
+                    };
+                    
+                    waitForChartJS();
                 });
                 // ]]>
             <\/script>
