@@ -410,8 +410,10 @@ function toggleTheme() {
 
 function updateThemeIcon() {
     const isLight = document.documentElement.classList.contains('light');
-    dom.themeIconSun.classList.toggle('hidden', !isLight);
-    dom.themeIconMoon.classList.toggle('hidden', isLight);
+    if (dom.themeIconSun && dom.themeIconMoon) {
+        dom.themeIconSun.classList.toggle('hidden', !isLight);
+        dom.themeIconMoon.classList.toggle('hidden', isLight);
+    }
 }
 
 function handleBackToInput() {
@@ -524,14 +526,41 @@ function generateReportHTML(data, chartImage) {
                 ${essentialFunctions}
                 
                 document.addEventListener('DOMContentLoaded', () => {
-                    updateThemeIcon();
-                    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                    // 테마 토글 버튼이 있는 경우에만 이벤트 리스너 추가
+                    const themeToggle = document.getElementById('themeToggle');
+                    if (themeToggle) {
+                        updateThemeIcon();
+                        themeToggle.addEventListener('click', toggleTheme);
+                    }
                     
                     // Chart.js가 로드될 때까지 대기
                     const waitForChartJS = () => {
                         if (typeof Chart !== 'undefined') {
                             console.log('Chart.js 로드됨, 차트 렌더링 시작');
-                            renderDashboard(lastAnalysisData);
+                            
+                            // radarChart canvas 요소가 있는지 확인하고 없으면 생성
+                            let radarChartCanvas = document.getElementById('radarChart');
+                            if (!radarChartCanvas) {
+                                console.log('radarChart canvas 요소를 찾을 수 없어 생성합니다.');
+                                const chartContainer = document.querySelector('.chart-container');
+                                if (chartContainer) {
+                                    radarChartCanvas = document.createElement('canvas');
+                                    radarChartCanvas.id = 'radarChart';
+                                    radarChartCanvas.style.width = '100%';
+                                    radarChartCanvas.style.height = '100%';
+                                    chartContainer.appendChild(radarChartCanvas);
+                                }
+                            }
+                            
+                            // DOM 객체 업데이트
+                            dom.cultureProfileChart = document.getElementById('radarChart');
+                            
+                            if (dom.cultureProfileChart) {
+                                console.log('차트 canvas 요소 준비 완료');
+                                renderDashboard(lastAnalysisData);
+                            } else {
+                                console.error('차트 canvas 요소를 생성할 수 없습니다.');
+                            }
                         } else {
                             console.log('Chart.js 로드 대기 중...');
                             setTimeout(waitForChartJS, 50);
