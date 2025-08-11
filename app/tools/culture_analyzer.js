@@ -525,7 +525,11 @@ function generateReportHTML(data, chartImage) {
                 document.addEventListener('DOMContentLoaded', () => {
                     updateThemeIcon();
                     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-                    renderDashboard(lastAnalysisData);
+                    
+                    // 차트가 렌더링되도록 약간의 지연 후 실행
+                    setTimeout(() => {
+                        renderDashboard(lastAnalysisData);
+                    }, 100);
                 });
                 // ]]>
             <\/script>
