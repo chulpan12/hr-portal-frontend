@@ -540,16 +540,22 @@ function generateReportHTML(data, chartImage) {
             padding: 20px; 
         }
         .container {
-            max-width: 1584px;
-            margin: 0 auto;
-            padding: 0 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 1584px !important;
+            margin: 0 auto !important;
+            padding: 0 1rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            width: 100% !important;
         }
         .space-y-8 {
-            width: 100%;
-            max-width: 1584px;
+            width: 100% !important;
+            max-width: 1584px !important;
+            margin: 0 auto !important;
+        }
+        .result-card {
+            width: 100% !important;
+            max-width: 1584px !important;
         }
         @media (min-width: 768px) {
             .container {
@@ -741,14 +747,14 @@ function generateReportHTML(data, chartImage) {
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" style="max-width: 1584px; margin: 0 auto; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; width: 100%;">
         <div class="header">
             <h1 style="color: #0EA5E9; font-size: 2.5em; margin-bottom: 10px;">AI 조직문화 진단 보고서</h1>
             <p style="color: var(--text-secondary); font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
             <p style="color: #6b7280; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
         </div>
 
-        <div class="space-y-8">
+        <div class="space-y-8" style="width: 100%; max-width: 1584px; margin: 0 auto;">
 
     <!-- 1. 종합 진단 브리핑 -->
     <div class="result-card p-6 rounded-xl">
