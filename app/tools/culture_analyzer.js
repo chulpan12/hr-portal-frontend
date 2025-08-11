@@ -473,23 +473,27 @@ function generateReportHTML(data, chartImage) {
         };
         
         return `
-            <div class="issue-card">
-                <h5 class="issue-title" style="color: ${config.color};">
+            <div class="p-3 rounded-lg" style="background-color: var(--input-bg);">
+                <h5 class="font-bold text-md mb-2 flex items-center gap-2" style="color: ${config.color};">
                     <i class="${config.icon}"></i>
                     ${config.title} (${percentage}%)
                 </h5>
-                <div style="margin-bottom: 8px;">
+                <div class="mb-3">
                     ${keywordsHtml(value.positive_keywords, 'positive')} 
                     ${keywordsHtml(value.negative_keywords, 'negative')}
                 </div>
-                <div style="font-size: 12px; color: var(--text-secondary);">
-                    <div style="margin-bottom: 4px;">
-                        <i class="fas fa-thumbs-up" style="color: #10B981;"></i> 
-                        "${value.positive_voice || '긍정적 의견 없음'}"
+                <div class="space-y-2">
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-thumbs-up text-green-400 mt-1 text-xs"></i>
+                        <p class="text-xs italic" style="color: var(--text-secondary);">
+                            "${value.positive_voice || '긍정적 의견 없음'}"
+                        </p>
                     </div>
-                    <div>
-                        <i class="fas fa-thumbs-down" style="color: #EF4444;"></i> 
-                        "${value.negative_voice || '부정적 의견 없음'}"
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-thumbs-down text-red-400 mt-1 text-xs"></i>
+                        <p class="text-xs italic" style="color: var(--text-secondary);">
+                            "${value.negative_voice || '부정적 의견 없음'}"
+                        </p>
                     </div>
                 </div>
             </div>
@@ -497,14 +501,14 @@ function generateReportHTML(data, chartImage) {
     }).join('');
     
     const recommendationsHTML = recommendations.map((rec, index) => `
-        <div class="recommendation-card">
-            <div style="display: flex; align-items: flex-start; gap: 12px;">
-                <div class="recommendation-number">
+        <div class="p-4 rounded-lg border" style="border-color: var(--input-border);">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center text-white font-bold text-sm">
                     ${index + 1}
                 </div>
-                <div style="flex: 1;">
-                    <h5 style="font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #0EA5E9;">${rec.title}</h5>
-                    <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">${rec.description}</p>
+                <div class="flex-1">
+                    <h5 class="font-semibold text-lg mb-2 text-sky-400">${rec.title}</h5>
+                    <p class="text-sm" style="color: var(--text-secondary);">${rec.description}</p>
                 </div>
             </div>
         </div>
@@ -517,6 +521,7 @@ function generateReportHTML(data, chartImage) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>조직문화 진단 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -733,46 +738,46 @@ function generateReportHTML(data, chartImage) {
 
     <!-- 1. 종합 진단 브리핑 -->
     <div class="result-card p-6 rounded-xl">
-        <h3 class="section-title">
-            <i class="fas fa-chart-line"></i>
+        <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+            <i class="fas fa-chart-line text-sky-400"></i>
             종합 진단 브리핑 (Executive Summary)
         </h3>
-        <div class="summary-list">
-            <div class="summary-item">
-                <i class="fas fa-flag" style="color: #0EA5E9;"></i>
+        <div class="space-y-3 text-sm" style="color: var(--text-secondary);">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-flag text-sky-400 mt-1"></i>
                 <p><strong>핵심 특징:</strong> ${summary.characteristics || '분석 중...'}</p>
             </div>
-            <div class="summary-item">
-                <i class="fas fa-thumbs-up" style="color: #10B981;"></i>
+            <div class="flex items-start gap-3">
+                <i class="fas fa-thumbs-up text-green-400 mt-1"></i>
                 <p><strong>긍정적 측면:</strong> ${summary.strengths || '분석 중...'}</p>
             </div>
-            <div class="summary-item">
-                <i class="fas fa-exclamation-triangle" style="color: #F59E0B;"></i>
+            <div class="flex items-start gap-3">
+                <i class="fas fa-exclamation-triangle text-yellow-400 mt-1"></i>
                 <p><strong>개선 필요 영역:</strong> ${summary.challenges || '분석 중...'}</p>
             </div>
         </div>
     </div>
 
     <!-- 2. 레이더 차트와 핵심 이슈 (그리드 레이아웃) -->
-    <div class="grid-5-cols">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <!-- 문화 프로파일 (차트) -->
-        <div class="result-card p-6 rounded-xl">
-            <h3 class="section-title">
-                <i class="fas fa-chart-radar"></i>
+        <div class="lg:col-span-2 result-card p-6 rounded-xl">
+            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-radar text-sky-400"></i>
                 조직문화 프로파일
             </h3>
-            <div class="chart-container">
-                <img src="${chartImage}" alt="조직문화 프로파일 차트">
+            <div class="h-[28rem] flex items-center justify-center">
+                <img src="${chartImage}" alt="조직문화 프로파일 차트" class="max-w-full h-auto">
             </div>
         </div>
         
         <!-- 핵심 이슈 요약 -->
-        <div class="result-card p-6 rounded-xl">
-            <h3 class="section-title">
-                <i class="fas fa-exclamation-triangle"></i>
+        <div class="lg:col-span-3 result-card p-6 rounded-xl">
+            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle text-sky-400"></i>
                 문화 유형별 핵심 이슈
             </h3>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="space-y-3">
                 ${issuesHTML}
             </div>
         </div>
@@ -780,20 +785,20 @@ function generateReportHTML(data, chartImage) {
 
     <!-- 3. 상세 분석 및 제언 -->
     <div class="result-card p-6 rounded-xl">
-        <h3 class="section-title">
-            <i class="fas fa-lightbulb"></i>
+        <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+            <i class="fas fa-lightbulb text-sky-400"></i>
             상세 분석 및 제언
         </h3>
         <div class="space-y-6">
-            <div class="sub-section">
-                <h4 class="sub-section-title">
+            <div>
+                <h4 class="font-semibold text-lg mb-2 text-sky-400 flex items-center gap-2">
                     <i class="fas fa-sitemap"></i>
                     문화적 역학 관계 분석
                 </h4>
-                <p class="dynamics-text">${dynamics}</p>
+                <p class="text-sm" style="color: var(--text-secondary);">${dynamics}</p>
             </div>
-            <div class="sub-section">
-                <h4 class="sub-section-title">
+            <div>
+                <h4 class="font-semibold text-lg mb-2 text-sky-400 flex items-center gap-2">
                     <i class="fas fa-tasks"></i>
                     실행 가능한 제언 (Action Plan)
                 </h4>
