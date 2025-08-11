@@ -198,24 +198,27 @@
         </div>
         
         <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
-                <h2 class="text-2xl font-bold mb-6 text-center">로그인</h2>
-                <form id="login-form" class="space-y-4">
-                    <div>
-                        <label for="username" class="block text-sm font-medium mb-2">사용자명</label>
-                        <input type="text" id="username" name="username" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-sky-500">
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
+                <h2 class="text-2xl font-bold text-white text-center mb-6">AI 기능 로그인</h2>
+                <p class="text-center text-sm text-gray-400 mb-6">이 기능을 사용하려면 DokuWiki 계정으로 로그인해야 합니다.</p>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-400 text-sm font-bold mb-2">아이디</label>
+                        <input type="text" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline" required>
                     </div>
-                    <div>
-                        <label for="password" class="block text-sm font-medium mb-2">비밀번호</label>
-                        <input type="password" id="password" name="password" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-sky-500">
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-400 text-sm font-bold mb-2">비밀번호</label>
+                        <input type="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 mb-3 text-white leading-tight focus:outline-none focus:shadow-outline" required>
                     </div>
-                    <button type="submit" id="login-submit-btn" class="w-full bg-sky-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-sky-700 transition">
-                        로그인
-                    </button>
+                    <div class="flex items-center justify-center">
+                        <button type="submit" id="login-submit-btn" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                            로그인
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
-    <script src="culture_analyzer.js?v=2.0" defer></script>
+    <script src="culture_analyzer.js?v=2.1" defer></script>
 </body>
 </html> 

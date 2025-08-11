@@ -167,132 +167,207 @@ function renderDashboard(data) {
 }
 
 function renderProfileChart(profileData) {
+    // ✨ [추가] Chart.js 로드 확인
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js가 로드되지 않았습니다.');
+        return;
+    }
+    
+    // ✨ [추가] canvas 요소 확인
+    if (!dom.cultureProfileChart) {
+        console.error('차트 canvas 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
     if (cultureChartInstance) {
         cultureChartInstance.destroy();
     }
     
+    // profileData가 없거나 빈 객체인 경우 기본 데이터 사용
+    const safeProfileData = profileData || {};
+    
     const labels = ['관계지향 (Clan)', '혁신지향 (Adhocracy)', '과업지향 (Market)', '위계지향 (Hierarchy)'];
     const data = [
-        profileData.clan,
-        profileData.adhocracy,
-        profileData.market,
-        profileData.hierarchy
+        safeProfileData.clan || 0,
+        safeProfileData.adhocracy || 0,
+        safeProfileData.market || 0,
+        safeProfileData.hierarchy || 0
     ];
 
     const isLight = document.documentElement.classList.contains('light');
     const textColor = isLight ? '#1f2937' : '#f3f4f6';
     const gridColor = isLight ? '#e5e7eb' : '#374151';
 
-    cultureChartInstance = new Chart(dom.cultureProfileChart, {
-        type: 'radar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '조직문화 유형 분포 (%)',
-                data: data,
-                backgroundColor: 'rgba(14, 165, 233, 0.2)',
-                borderColor: 'rgba(14, 165, 233, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(14, 165, 233, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(14, 165, 233, 1)'
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
+    // 데이터가 모두 0인 경우 기본값 설정
+    const maxValue = Math.max(...data, 25); // 최소 25%로 설정
+
+    try {
+        cultureChartInstance = new Chart(dom.cultureProfileChart, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '조직문화 유형 분포 (%)',
+                    data: data,
+                    backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                    borderColor: 'rgba(14, 165, 233, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(14, 165, 233, 1)'
+                }]
             },
-            scales: {
-                r: {
-                    angleLines: { color: gridColor },
-                    grid: { color: gridColor },
-                    pointLabels: { color: textColor, font: { size: 14 } },
-                    ticks: { 
-                        backdropColor: 'transparent', 
-                        color: textColor, 
-                        stepSize: 10,
-                        callback: function(value) {
-                            return value + '%';
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: gridColor },
+                        grid: { color: gridColor },
+                        pointLabels: { 
+                            color: textColor, 
+                            font: { size: 14 },
+                            padding: 35,
+                            callback: function(value) {
+                                // ✨ [추가] 라벨 줄바꿈 처리
+                                if (value === '관계지향 (Clan)') return ['관계지향', '(Clan)'];
+                                if (value === '혁신지향 (Adhocracy)') return ['혁신지향', '(Adhocracy)'];
+                                if (value === '과업지향 (Market)') return ['과업지향', '(Market)'];
+                                if (value === '위계지향 (Hierarchy)') return ['위계지향', '(Hierarchy)'];
+                                return value;
+                            }
+                        },
+                        ticks: { 
+                            backdropColor: 'transparent', 
+                            color: textColor, 
+                            stepSize: 10,
+                            padding: 20,
+                            font: { size: 12 },
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: maxValue + 10,
+                        center: {
+                            x: 0.5,
+                            y: 0.5
                         }
-                    },
-                    suggestedMin: 0,
-                    suggestedMax: Math.max(...data, 40) + 10
+                    }
+                },
+                layout: {  // ✨ [수정] 레이아웃 패딩 감소로 차트 크기 10% 증가
+                    padding: {
+                        top: 25,
+                        bottom: 25,
+                        left: 25,
+                        right: 25
+                    }
                 }
             }
-        }
-    });
+        });
+        console.log('✅ 차트 렌더링 완료');
+    } catch (error) {
+        console.error('차트 렌더링 오류:', error);
+    }
 }
 
 function renderOverallSummary(summary) {
+    if (!dom.overallSummaryContainer) {
+        console.error('종합 진단 컨테이너를 찾을 수 없습니다.');
+        return;
+    }
+    
+    if (!summary || typeof summary !== 'object') {
+        console.error('종합 진단 데이터가 유효하지 않습니다:', summary);
+        dom.overallSummaryContainer.innerHTML = '<p class="text-red-500">종합 진단 데이터를 불러올 수 없습니다.</p>';
+        return;
+    }
+    
     dom.overallSummaryContainer.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 rounded-lg" style="background-color: var(--input-bg);">
-                <h4 class="font-semibold text-sky-400 mb-2">문화적 특징</h4>
-                <p class="text-sm">${summary.characteristics}</p>
-            </div>
-            <div class="p-4 rounded-lg" style="background-color: var(--input-bg);">
-                <h4 class="font-semibold text-green-400 mb-2">문화적 강점</h4>
-                <p class="text-sm">${summary.strengths}</p>
-            </div>
-            <div class="p-4 rounded-lg" style="background-color: var(--input-bg);">
-                <h4 class="font-semibold text-orange-400 mb-2">개선 과제</h4>
-                <p class="text-sm">${summary.challenges}</p>
-            </div>
+        <div class="flex items-start gap-3">
+            <i class="fas fa-flag text-sky-400 mt-1"></i>
+            <p><strong>핵심 특징:</strong> ${summary.characteristics || '분석 중...'}</p>
+        </div>
+        <div class="flex items-start gap-3">
+            <i class="fas fa-thumbs-up text-green-400 mt-1"></i>
+            <p><strong>긍정적 측면:</strong> ${summary.strengths || '분석 중...'}</p>
+        </div>
+        <div class="flex items-start gap-3">
+            <i class="fas fa-exclamation-triangle text-yellow-400 mt-1"></i>
+            <p><strong>개선 필요 영역:</strong> ${summary.challenges || '분석 중...'}</p>
         </div>
     `;
 }
 
 function renderKeyIssues(issuesData, profileData) {
+    // ✨ [추가] DOM 요소 확인
+    if (!dom.keyIssuesContainer) {
+        console.error('키 이슈 컨테이너를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // ✨ [추가] 데이터 유효성 검사
+    if (!issuesData || typeof issuesData !== 'object') {
+        console.error('키 이슈 데이터가 유효하지 않습니다:', issuesData);
+        dom.keyIssuesContainer.innerHTML = '<p class="text-red-500">키 이슈 데이터를 불러올 수 없습니다.</p>';
+        return;
+    }
+    
     const cultureMap = {
         clan: { title: '관계지향 (Clan)', color: 'green', icon: 'fas fa-heart' },
         adhocracy: { title: '혁신지향 (Adhocracy)', color: 'blue', icon: 'fas fa-lightbulb' },
-        market: { title: '과업지향 (Market)', color: 'orange', icon: 'fas fa-chart-line' },
-        hierarchy: { title: '위계지향 (Hierarchy)', color: 'gray', icon: 'fas fa-sitemap' }
+        market: { title: '과업지향 (Market)', color: 'red', icon: 'fas fa-chart-line' },
+        hierarchy: { title: '위계지향 (Hierarchy)', color: 'purple', icon: 'fas fa-sitemap' }
     };
 
     dom.keyIssuesContainer.innerHTML = '';
-
+    
     for (const [key, value] of Object.entries(issuesData)) {
         const config = cultureMap[key];
-        const percentage = profileData ? profileData[key] || 0 : 0;
+        if (!config) continue;
+        
+        // ✨ [추가] 퍼센트 정보 가져오기
+        const percentage = profileData && profileData[key] ? profileData[key] : 'N/A';
         
         const keywordsHtml = (keywords, type) => {
-            if (!keywords || keywords.length === 0) return '';
-            const colorClass = type === 'positive' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300';
-            return keywords.map(kw => `<span class="inline-block rounded-full px-2 py-1 text-xs font-semibold mr-2 mb-2 ${colorClass}">#${kw}</span>`).join('');
+            if (!keywords || !Array.isArray(keywords) || keywords.length === 0) return '';
+            const color = type === 'positive' ? 'green' : 'red';
+            return keywords.map(kw => 
+                `<span class="inline-block bg-${color}-500/20 text-${color}-300 rounded-full px-2 py-1 text-xs font-semibold mr-1 mb-1">#${kw}</span>`
+            ).join('');
         };
-
+        
         const cardHtml = `
-            <div class="p-4 rounded-lg border" style="border-color: var(--input-border);">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center">
-                        <i class="${config.icon} text-${config.color}-400 mr-2"></i>
-                        <h4 class="font-bold text-lg text-${config.color}-400">${config.title}</h4>
-                    </div>
-                    <div class="text-sm font-semibold text-sky-400">${percentage}%</div>
-                </div>
+            <div class="p-3 rounded-lg" style="background-color: var(--input-bg);">
+                <h5 class="font-bold text-md text-${config.color}-400 mb-2 flex items-center gap-2">
+                    <i class="${config.icon}"></i>
+                    ${config.title} (${percentage}%)
+                </h5>
                 <div class="mb-3">
-                    ${keywordsHtml(value.positive_keywords, 'positive')}
+                    ${keywordsHtml(value.positive_keywords, 'positive')} 
                     ${keywordsHtml(value.negative_keywords, 'negative')}
                 </div>
                 <div class="space-y-2">
-                    ${value.positive_voice ? `
-                        <div class="p-2 rounded" style="background-color: var(--input-bg);">
-                            <p class="text-sm italic text-green-400">"${value.positive_voice}"</p>
-                        </div>
-                    ` : ''}
-                    ${value.negative_voice ? `
-                        <div class="p-2 rounded" style="background-color: var(--input-bg);">
-                            <p class="text-sm italic text-red-400">"${value.negative_voice}"</p>
-                        </div>
-                    ` : ''}
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-thumbs-up text-green-400 mt-1 text-xs"></i>
+                        <p class="text-xs italic" style="color: var(--text-secondary);">
+                            "${value.positive_voice || '긍정적 의견 없음'}"
+                        </p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-thumbs-down text-red-400 mt-1 text-xs"></i>
+                        <p class="text-xs italic" style="color: var(--text-secondary);">
+                            "${value.negative_voice || '부정적 의견 없음'}"
+                        </p>
+                    </div>
                 </div>
-            </div>
-        `;
+            </div>`;
         dom.keyIssuesContainer.innerHTML += cardHtml;
     }
 }
@@ -373,103 +448,117 @@ function handleDownloadReport() {
 }
 
 function generateReportHTML(data, chartImage) {
-    const cultureNames = {
-        clan: '관계지향 (Clan)',
-        adhocracy: '혁신지향 (Adhocracy)',
-        market: '과업지향 (Market)',
-        hierarchy: '위계지향 (Hierarchy)'
+    const profile = data.profile || {};
+    const issues = data.key_issues || {};
+    const summary = data.overall_summary || {};
+    const dynamics = data.cultural_dynamics || '';
+    const recommendations = data.actionable_recommendations || [];
+    
+    const cultureMap = {
+        clan: { title: '관계지향 (Clan)', color: '#10B981' },
+        adhocracy: { title: '혁신지향 (Adhocracy)', color: '#3B82F6' },
+        market: { title: '과업지향 (Market)', color: '#EF4444' },
+        hierarchy: { title: '위계지향 (Hierarchy)', color: '#8B5CF6' }
     };
-
+    
+    const issuesHTML = Object.entries(issues).map(([key, value]) => {
+        const config = cultureMap[key];
+        const percentage = profile[key] || 'N/A';
+        return `
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                <h4 style="color: ${config.color}; font-weight: bold; margin-bottom: 8px;">
+                    ${config.title} (${percentage}%)
+                </h4>
+                <div style="margin-bottom: 12px;">
+                    ${(value.positive_keywords || []).map(kw => `<span style="background-color: #10B98120; color: #10B981; padding: 4px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">#${kw}</span>`).join('')}
+                    ${(value.negative_keywords || []).map(kw => `<span style="background-color: #EF444420; color: #EF4444; padding: 4px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">#${kw}</span>`).join('')}
+                </div>
+                <div style="font-size: 14px; color: #6b7280;">
+                    <div style="margin-bottom: 8px;">👍 "${value.positive_voice || '긍정적 의견 없음'}"</div>
+                    <div>👎 "${value.negative_voice || '부정적 의견 없음'}"</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    const recommendationsHTML = recommendations.map((rec, index) => `
+        <div style="border-left: 4px solid #0EA5E9; background-color: #f8fafc; padding: 16px; margin-bottom: 12px;">
+            <h4 style="color: #0EA5E9; font-weight: bold; margin-bottom: 8px;">${index + 1}. ${rec.title}</h4>
+            <p style="color: #6b7280; font-size: 14px;">${rec.description}</p>
+        </div>
+    `).join('');
+    
     return `
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 조직문화 진단 보고서</title>
+    <title>조직문화 진단 보고서</title>
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; margin: 0; padding: 20px; background: #f9fafb; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #0ea5e9; padding-bottom: 20px; }
-        .header h1 { color: #0ea5e9; font-size: 2.5em; margin: 0; }
-        .header p { color: #6b7280; font-size: 1.1em; margin: 10px 0 0 0; }
-        .section { margin-bottom: 30px; }
-        .section h2 { color: #1f2937; border-left: 4px solid #0ea5e9; padding-left: 15px; margin-bottom: 20px; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .summary-card { background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9; }
-        .summary-card h3 { color: #0ea5e9; margin: 0 0 10px 0; }
-        .chart-container { text-align: center; margin: 30px 0; }
+        body { font-family: 'Noto Sans KR', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #0EA5E9; padding-bottom: 20px; }
+        .section { margin-bottom: 40px; }
+        .section h2 { color: #0EA5E9; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
+        .chart-container { text-align: center; margin: 20px 0; }
         .chart-container img { max-width: 100%; height: auto; }
-        .profile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
-        .profile-item { text-align: center; padding: 15px; background: #f8fafc; border-radius: 8px; }
-        .profile-value { font-size: 2em; font-weight: bold; color: #0ea5e9; }
-        .profile-label { color: #6b7280; font-size: 0.9em; }
-        .recommendation { background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #0ea5e9; }
-        .recommendation h4 { color: #0ea5e9; margin: 0 0 10px 0; }
-        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.9em; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .summary-item { background-color: #f8fafc; padding: 16px; border-radius: 8px; }
+        .summary-item h3 { color: #0EA5E9; margin-bottom: 8px; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>AI 조직문화 진단 보고서</h1>
-            <p>경쟁가치모형(CVF) 기반 분석 결과</p>
-            <p>생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
-        </div>
+    <div class="header">
+        <h1 style="color: #0EA5E9; font-size: 2.5em; margin-bottom: 10px;">AI 조직문화 진단 보고서</h1>
+        <p style="color: #6b7280; font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
+        <p style="color: #9ca3af; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
+    </div>
 
-        <div class="section">
-            <h2>종합 진단 브리핑</h2>
-            <div class="summary-grid">
-                <div class="summary-card">
-                    <h3>문화적 특징</h3>
-                    <p>${data.overall_summary.characteristics}</p>
-                </div>
-                <div class="summary-card">
-                    <h3>문화적 강점</h3>
-                    <p>${data.overall_summary.strengths}</p>
-                </div>
-                <div class="summary-card">
-                    <h3>개선 과제</h3>
-                    <p>${data.overall_summary.challenges}</p>
-                </div>
+    <div class="section">
+        <h2>📊 종합 진단 브리핑</h2>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <h3>핵심 특징</h3>
+                <p>${summary.characteristics || '분석 중...'}</p>
+            </div>
+            <div class="summary-item">
+                <h3>긍정적 측면</h3>
+                <p>${summary.strengths || '분석 중...'}</p>
+            </div>
+            <div class="summary-item">
+                <h3>개선 필요 영역</h3>
+                <p>${summary.challenges || '분석 중...'}</p>
             </div>
         </div>
+    </div>
 
-        <div class="section">
-            <h2>조직문화 프로파일</h2>
-            <div class="chart-container">
-                <img src="${chartImage}" alt="조직문화 프로파일 차트">
-            </div>
-            <div class="profile-grid">
-                ${Object.entries(data.profile).map(([key, value]) => `
-                    <div class="profile-item">
-                        <div class="profile-value">${value}%</div>
-                        <div class="profile-label">${cultureNames[key]}</div>
-                    </div>
-                `).join('')}
-            </div>
+    <div class="section">
+        <h2>📈 조직문화 프로파일</h2>
+        <div class="chart-container">
+            <img src="${chartImage}" alt="조직문화 프로파일 차트">
         </div>
+    </div>
 
-        <div class="section">
-            <h2>문화적 역학 관계 분석</h2>
-            <p>${data.cultural_dynamics}</p>
-        </div>
+    <div class="section">
+        <h2>⚠️ 문화 유형별 핵심 이슈</h2>
+        ${issuesHTML}
+    </div>
 
-        <div class="section">
-            <h2>실행 가능한 제언</h2>
-            ${data.actionable_recommendations.map((rec, index) => `
-                <div class="recommendation">
-                    <h4>${index + 1}. ${rec.title}</h4>
-                    <p>${rec.description}</p>
-                </div>
-            `).join('')}
-        </div>
+    <div class="section">
+        <h2>🔍 문화적 역학 관계 분석</h2>
+        <p style="background-color: #f8fafc; padding: 16px; border-radius: 8px;">${dynamics}</p>
+    </div>
 
-        <div class="footer">
-            <p>본 보고서는 AI가 직원 의견을 기반으로 생성한 참고 자료입니다.</p>
-            <p>실제 조직문화 개선을 위해서는 전문가와의 상담을 권장합니다.</p>
-            <p>© 2024 Seyoong Jang. All rights reserved.</p>
-        </div>
+    <div class="section">
+        <h2>💡 실행 가능한 제언</h2>
+        ${recommendationsHTML}
+    </div>
+
+    <div class="footer">
+        <p>본 보고서는 AI가 직원 의견을 기반으로 생성한 참고 자료입니다.</p>
+        <p>실제 조직문화 개선을 위해서는 전문가와의 상담을 권장합니다.</p>
+        <p>© Seyoong Jang, https://dreamofenc.com</p>
     </div>
 </body>
 </html>
