@@ -519,7 +519,7 @@ function generateReportHTML(data, chartImage) {
 
                 const dom = {
                     resultDashboard: document.getElementById('resultDashboard'),
-                    cultureProfileChart: document.getElementById('radarChart'),
+                    cultureProfileChart: document.getElementById('cultureProfileChart'),
                     themeIconSun: document.getElementById('themeIconSun'),
                     themeIconMoon: document.getElementById('themeIconMoon')
                 };
@@ -540,7 +540,7 @@ function generateReportHTML(data, chartImage) {
                             console.log('Chart.js 로드됨, 차트 렌더링 시작');
                             
                             // radarChart canvas 요소가 있는지 확인하고 없으면 생성
-                            let radarChartCanvas = document.getElementById('radarChart');
+                            let radarChartCanvas = document.getElementById('radarChart') || document.getElementById('cultureProfileChart');
                             if (!radarChartCanvas) {
                                 console.log('radarChart canvas 요소를 찾을 수 없어 생성합니다.');
                                 
@@ -572,7 +572,7 @@ function generateReportHTML(data, chartImage) {
                                 
                                 if (chartContainer) {
                                     console.log('차트 컨테이너를 찾았습니다:', chartContainer);
-                                    radarChartCanvas = document.getElementById('radarChart');
+                                    radarChartCanvas = document.getElementById('radarChart') || document.getElementById('cultureProfileChart');
                                 } else {
                                     console.error('차트 컨테이너를 찾을 수 없습니다.');
                                 }
@@ -584,22 +584,47 @@ function generateReportHTML(data, chartImage) {
                             if (dom.cultureProfileChart) {
                                 console.log('차트 canvas 요소 준비 완료');
                                 console.log('lastAnalysisData:', lastAnalysisData);
+                                
+                                // DOM 컨테이너들이 존재하는지 확인하고 없으면 생성
+                                if (!dom.overallSummaryContainer) {
+                                    console.log('종합 진단 컨테이너를 찾을 수 없어 생성합니다.');
+                                    const summarySection = document.querySelector('[id*="summary"]') || 
+                                                          document.querySelector('[class*="summary"]');
+                                    if (summarySection) {
+                                        dom.overallSummaryContainer = summarySection;
+                                    }
+                                }
+                                
+                                if (!dom.keyIssuesContainer) {
+                                    console.log('키 이슈 컨테이너를 찾을 수 없어 생성합니다.');
+                                    const issuesSection = document.querySelector('[id*="issues"]') || 
+                                                        document.querySelector('[class*="issues"]');
+                                    if (issuesSection) {
+                                        dom.keyIssuesContainer = issuesSection;
+                                    }
+                                }
+                                
+                                if (!dom.culturalDynamicsContainer) {
+                                    console.log('문화 역학 컨테이너를 찾을 수 없어 생성합니다.');
+                                    const dynamicsSection = document.querySelector('[id*="dynamics"]') || 
+                                                           document.querySelector('[class*="dynamics"]');
+                                    if (dynamicsSection) {
+                                        dom.culturalDynamicsContainer = dynamicsSection;
+                                    }
+                                }
+                                
+                                if (!dom.recommendationsContainer) {
+                                    console.log('제언 컨테이너를 찾을 수 없어 생성합니다.');
+                                    const recommendationsSection = document.querySelector('[id*="recommendations"]') || 
+                                                                  document.querySelector('[class*="recommendations"]');
+                                    if (recommendationsSection) {
+                                        dom.recommendationsContainer = recommendationsSection;
+                                    }
+                                }
+                                
                                 renderDashboard(lastAnalysisData);
                             } else {
                                 console.error('차트 canvas 요소를 생성할 수 없습니다.');
-                                // 마지막 시도: 직접 canvas 생성
-                                const body = document.body;
-                                const canvas = document.createElement('canvas');
-                                canvas.id = 'radarChart';
-                                canvas.style.width = '400px';
-                                canvas.style.height = '400px';
-                                canvas.style.display = 'block';
-                                canvas.style.margin = '20px auto';
-                                canvas.style.border = '1px solid #ccc';
-                                body.appendChild(canvas);
-                                dom.cultureProfileChart = canvas;
-                                console.log('긴급 canvas 생성 완료');
-                                renderDashboard(lastAnalysisData);
                             }
                         } else {
                             console.log('Chart.js 로드 대기 중...');
