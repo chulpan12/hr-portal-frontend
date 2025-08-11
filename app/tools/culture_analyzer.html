@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 조직문화 진단기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #111827; --bg-secondary: #1f2937; --bg-panel: #1f293780;
+            --border-color: #37415180; --text-primary: #f3f4f6; --text-secondary: #9ca3af;
+            --input-bg: #374151; --input-border: #4b5563;
+        }
+        html.light {
+            --bg-primary: #f9fafb; --bg-secondary: #ffffff; --bg-panel: #ffffffcc;
+            --border-color: #e5e7eb; --text-primary: #1f2937; --text-secondary: #6b7280;
+            --input-bg: #f3f4f6; --input-border: #d1d5db;
+        }
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: var(--bg-primary); 
+            color: var(--text-primary); 
+            transition: background-color 0.3s ease, color 0.3s ease; 
+        }
+        .control-panel label { font-weight: 600; }
+        .control-panel input, .control-panel select, .control-panel textarea { 
+            background-color: var(--input-bg); 
+            border-color: var(--input-border); 
+            color: var(--text-primary); 
+        }
+        .result-card { 
+            background-color: var(--bg-secondary); 
+            border: 1px solid var(--input-border); 
+        }
+        .loader { 
+            border-top-color: #0ea5e9; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+        .custom-checkbox:checked { 
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e"); 
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper" class="container mx-auto p-4 md:p-8">
+        <div id="main-content" class="hidden">
+            <header class="text-center mb-10 relative">
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                    <i class="fas fa-people-roof mr-3 text-sky-400"></i>AI 조직문화 진단기
+                </h1>
+                <p class="text-lg mt-3" style="color: var(--text-secondary);">구성원의 목소리를 경쟁가치모형(CVF)으로 분석합니다.</p>
+                <!-- 홈 버튼 -->
+                <div class="absolute top-0 right-0 flex items-center gap-3">
+                    <a href="https://dreamofenc.com" target="_blank" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="Home">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    </a>
+                    <button id="backBtn" class="p-2 rounded-full transition hidden" style="background-color: var(--input-bg);" aria-label="Back to Input">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    </button>
+                    <button id="downloadBtn" class="p-2 rounded-full transition hidden" style="background-color: var(--input-bg);" aria-label="Download Report">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </button>
+                    <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
+                        <svg id="themeIconSun" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 16.464A1 1 0 106.465 15.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-1.414-2.12a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"></path></svg>
+                        <svg id="themeIconMoon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    </button>
+                </div>
+            </header>
+
+            <main class="space-y-8">
+                <div id="control-panel" class="backdrop-blur-sm border p-6 md:p-8 rounded-2xl shadow-lg" style="background-color: var(--bg-panel); border-color: var(--border-color);">
+                    <div class="space-y-6">
+                        <div>
+                            <label for="textInput" class="text-lg font-semibold" style="color: var(--text-primary);">1. 분석할 직원 의견 데이터 입력</label>
+                            <textarea 
+                                id="textInput" 
+                                class="w-full mt-2 p-3 rounded-lg focus:ring-2 focus:ring-sky-500 min-h-[200px]" 
+                                placeholder="설문조사 주관식 답변이나 간담회 의견을 여기에 붙여넣으세요. (의견별로 줄바꿈 권장)" 
+                                style="background-color: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary);"
+                            >팀원들끼리 서로 돕는 문화가 정말 좋습니다. 다들 친절하고 협력적이에요.
+간단한 보고서 하나 올리는 데 결재 라인이 너무 많아서 시간이 오래 걸립니다.
+새로운 아이디어를 제안하면 다들 좋다고는 하는데, 막상 실행으로 이어지는 경우는 거의 없는 것 같아요.
+우리 회사는 성과를 내는 사람에게 확실하게 보상해줘서 동기부여가 확실히 됩니다.
+부서 간에 보이지 않는 경쟁이 너무 심해서 협업이 어려울 때가 많습니다.
+정해진 절차와 규정이 명확해서 업무할 때 혼선이 적은 점은 장점이라고 생각합니다.
+매니저님이 제 커리어 성장에 대해 진심으로 고민해주고 조언해주셔서 감사합니다.
+시장이 빠르게 변하는데 우리 회사는 너무 안정성만 추구하는 것 같아 답답합니다. 새로운 시도를 좀 더 과감하게 했으면 좋겠어요.
+업무 프로세스보다 사람들과의 관계가 더 중요하게 여겨질 때가 있는 것 같아 아쉽습니다.
+실패에 대한 두려움 없이 새로운 기술을 도입하고 테스트해볼 수 있는 환경이 주어지면 좋겠습니다.
+분기마다 실적 압박이 너무 심해서 번아웃이 올 것 같아요. 장기적인 관점도 필요합니다.
+회사가 안정적이고 예측 가능한 방향으로 운영되어서 고용 안정성은 확실히 보장되는 것 같습니다.
+우리 팀은 회식이나 워크샵을 자주 해서 팀워크는 좋지만, 가끔은 개인 시간이 부족하게 느껴져요.
+명확한 KPI를 기반으로 업무를 하니 제 역할과 목표가 뚜렷해서 좋습니다.
+의사결정이 너무 느리고 수직적입니다. 실무자의 의견이 더 많이 반영되었으면 합니다.</textarea>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm" style="color: var(--text-secondary);">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                경쟁가치모형(CVF) 기반 분석: 관계지향, 혁신지향, 과업지향, 위계지향
+                            </div>
+                            <button id="analyzeBtn" class="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-lg transition-all text-lg">
+                                <span>진단 시작</span>
+                                <i class="fas fa-rocket"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultWrapper">
+                    <div id="loader" class="hidden h-64 w-full flex flex-col justify-center items-center">
+                        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+                        <p id="loader-text" class="mt-4" style="color: var(--text-secondary);">AI가 구성원의 목소리를 분석 중입니다...</p>
+                    </div>
+
+                    <!-- ✨ [강화] 결과 대시보드 구조 리뉴얼 -->
+                    <div id="resultDashboard" class="hidden space-y-8">
+                        <!-- 1. 종합 진단 브리핑 -->
+                        <div class="result-card p-6 rounded-xl">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-sky-400"></i>
+                                종합 진단 브리핑 (Executive Summary)
+                            </h3>
+                            <div id="overallSummaryContainer" class="space-y-3 text-sm" style="color: var(--text-secondary);">
+                                <!-- AI 분석 결과가 여기에 동적으로 채워집니다. -->
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                            <!-- 2. 문화 프로파일 (차트) -->
+                            <div class="lg:col-span-2 result-card p-6 rounded-xl">
+                                <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                                    <i class="fas fa-chart-radar text-sky-400"></i>
+                                    조직문화 프로파일
+                                </h3>
+                                <div class="h-[28rem] flex items-center justify-center"><canvas id="cultureProfileChart"></canvas></div>
+                            </div>
+                            <!-- 3. 핵심 이슈 요약 -->
+                            <div class="lg:col-span-3 result-card p-6 rounded-xl">
+                                <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                                    <i class="fas fa-exclamation-triangle text-sky-400"></i>
+                                    문화 유형별 핵심 이슈
+                                </h3>
+                                <div id="keyIssuesContainer" class="space-y-3">
+                                    <!-- AI 분석 결과가 여기에 동적으로 채워집니다. -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. 상세 분석 및 제언 -->
+                        <div class="result-card p-6 rounded-xl">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                                <i class="fas fa-lightbulb text-sky-400"></i>
+                                상세 분석 및 제언
+                            </h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2 text-sky-400 flex items-center gap-2">
+                                        <i class="fas fa-sitemap"></i>
+                                        문화적 역학 관계 분석
+                                    </h4>
+                                    <p id="culturalDynamicsContainer" class="text-sm" style="color: var(--text-secondary);">
+                                        <!-- 문화적 역학 관계 분석 결과가 여기에 표시됩니다. -->
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2 text-sky-400 flex items-center gap-2">
+                                        <i class="fas fa-tasks"></i>
+                                        실행 가능한 제언 (Action Plan)
+                                    </h4>
+                                    <div id="recommendationsContainer" class="space-y-4">
+                                        <!-- 실행 가능한 제언이 여기에 표시됩니다. -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI 분석 주의 문구 -->
+                    <div id="disclaimer" class="hidden text-center mt-8 p-4 rounded-lg text-xs" style="background-color: var(--input-bg); color: var(--text-secondary);">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        본 분석 결과는 AI가 직원 의견을 기반으로 한 참고 자료입니다. 
+                        실제 조직문화 개선을 위해서는 전문가와의 상담을 권장합니다.
+                    </div>
+                </div>
+            </main>
+            
+            <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
+                <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
+                <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
+            </footer>
+        </div>
+        
+        <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold mb-6 text-center">로그인</h2>
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-sm font-medium mb-2">사용자명</label>
+                        <input type="text" id="username" name="username" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium mb-2">비밀번호</label>
+                        <input type="password" id="password" name="password" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <button type="submit" id="login-submit-btn" class="w-full bg-sky-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-sky-700 transition">
+                        로그인
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="culture_analyzer.js?v=2.0" defer></script>
+</body>
+</html> 
