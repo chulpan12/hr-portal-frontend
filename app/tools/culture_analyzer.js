@@ -221,6 +221,7 @@ function renderProfileChart(profileData) {
             options: {
                 maintainAspectRatio: false,
                 responsive: true,
+                aspectRatio: 1,
                 plugins: {
                     legend: {
                         display: false
@@ -564,12 +565,21 @@ function generateReportHTML(data, chartImage) {
                                 
                                 if (chartContainer) {
                                     console.log('차트 컨테이너를 찾았습니다:', chartContainer);
+                                    
+                                    // 차트 컨테이너에 높이 제한 설정
+                                    chartContainer.style.height = '400px';
+                                    chartContainer.style.overflow = 'hidden';
+                                    chartContainer.style.position = 'relative';
+                                    
                                     radarChartCanvas = document.createElement('canvas');
                                     radarChartCanvas.id = 'radarChart';
                                     radarChartCanvas.style.width = '100%';
-                                    radarChartCanvas.style.height = '400px';
+                                    radarChartCanvas.style.height = '100%';
                                     radarChartCanvas.style.display = 'block';
                                     radarChartCanvas.style.margin = '0 auto';
+                                    radarChartCanvas.style.position = 'absolute';
+                                    radarChartCanvas.style.top = '0';
+                                    radarChartCanvas.style.left = '0';
                                     
                                     // 기존 내용을 지우고 canvas 추가
                                     chartContainer.innerHTML = '';
