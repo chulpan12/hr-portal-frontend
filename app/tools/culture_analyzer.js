@@ -542,13 +542,40 @@ function generateReportHTML(data, chartImage) {
                             let radarChartCanvas = document.getElementById('radarChart');
                             if (!radarChartCanvas) {
                                 console.log('radarChart canvas 요소를 찾을 수 없어 생성합니다.');
-                                const chartContainer = document.querySelector('.chart-container');
+                                
+                                // 다양한 차트 컨테이너 선택자 시도
+                                let chartContainer = document.querySelector('.chart-container') || 
+                                                   document.querySelector('[id*="chart"]') ||
+                                                   document.querySelector('[class*="chart"]') ||
+                                                   document.querySelector('.h-\\[32\\.2rem\\]') ||
+                                                   document.querySelector('.h-\\[28rem\\]');
+                                
+                                if (!chartContainer) {
+                                    // 차트 컨테이너를 찾을 수 없으면 적절한 위치에 생성
+                                    const resultCards = document.querySelectorAll('.result-card');
+                                    for (const card of resultCards) {
+                                        const title = card.querySelector('h3');
+                                        if (title && title.textContent.includes('조직문화 프로파일')) {
+                                            chartContainer = card;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
                                 if (chartContainer) {
+                                    console.log('차트 컨테이너를 찾았습니다:', chartContainer);
                                     radarChartCanvas = document.createElement('canvas');
                                     radarChartCanvas.id = 'radarChart';
                                     radarChartCanvas.style.width = '100%';
-                                    radarChartCanvas.style.height = '100%';
+                                    radarChartCanvas.style.height = '400px';
+                                    radarChartCanvas.style.display = 'block';
+                                    radarChartCanvas.style.margin = '0 auto';
+                                    
+                                    // 기존 내용을 지우고 canvas 추가
+                                    chartContainer.innerHTML = '';
                                     chartContainer.appendChild(radarChartCanvas);
+                                } else {
+                                    console.error('차트 컨테이너를 찾을 수 없습니다.');
                                 }
                             }
                             
