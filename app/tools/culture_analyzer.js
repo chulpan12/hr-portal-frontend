@@ -455,42 +455,56 @@ function generateReportHTML(data, chartImage) {
     const recommendations = data.actionable_recommendations || [];
     
     const cultureMap = {
-        clan: { title: '관계지향 (Clan)', color: '#10B981' },
-        adhocracy: { title: '혁신지향 (Adhocracy)', color: '#3B82F6' },
-        market: { title: '과업지향 (Market)', color: '#EF4444' },
-        hierarchy: { title: '위계지향 (Hierarchy)', color: '#8B5CF6' }
+        clan: { title: '관계지향 (Clan)', color: '#10B981', icon: 'fas fa-heart' },
+        adhocracy: { title: '혁신지향 (Adhocracy)', color: '#3B82F6', icon: 'fas fa-lightbulb' },
+        market: { title: '과업지향 (Market)', color: '#EF4444', icon: 'fas fa-chart-line' },
+        hierarchy: { title: '위계지향 (Hierarchy)', color: '#8B5CF6', icon: 'fas fa-sitemap' }
     };
     
     const issuesHTML = Object.entries(issues).map(([key, value]) => {
         const config = cultureMap[key];
         const percentage = profile[key] || 'N/A';
+        const keywordsHtml = (keywords, type) => {
+            if (!keywords || !Array.isArray(keywords) || keywords.length === 0) return '';
+            const color = type === 'positive' ? 'green' : 'red';
+            return keywords.map(kw => 
+                `<span class="keyword-tag keyword-${type}">#${kw}</span>`
+            ).join('');
+        };
+        
         return `
-            <div style="background-color: #374151; border: 1px solid #4b5563; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-                <h5 style="color: ${config.color}; font-weight: bold; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                    <span>${key === 'clan' ? '❤️' : key === 'adhocracy' ? '💡' : key === 'market' ? '📈' : '👤'}</span>
+            <div class="issue-card">
+                <h5 class="issue-title" style="color: ${config.color};">
+                    <i class="${config.icon}"></i>
                     ${config.title} (${percentage}%)
                 </h5>
                 <div style="margin-bottom: 8px;">
-                    ${(value.positive_keywords || []).map(kw => `<span style="background-color: #10B98120; color: #10B981; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; display: inline-block;">#${kw}</span>`).join('')}
-                    ${(value.negative_keywords || []).map(kw => `<span style="background-color: #EF444420; color: #EF4444; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; display: inline-block;">#${kw}</span>`).join('')}
+                    ${keywordsHtml(value.positive_keywords, 'positive')} 
+                    ${keywordsHtml(value.negative_keywords, 'negative')}
                 </div>
-                <div style="font-size: 12px; color: #9ca3af;">
-                    <div style="margin-bottom: 4px;">👍 "${value.positive_voice || '긍정적 의견 없음'}"</div>
-                    <div>👎 "${value.negative_voice || '부정적 의견 없음'}"</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    <div style="margin-bottom: 4px;">
+                        <i class="fas fa-thumbs-up" style="color: #10B981;"></i> 
+                        "${value.positive_voice || '긍정적 의견 없음'}"
+                    </div>
+                    <div>
+                        <i class="fas fa-thumbs-down" style="color: #EF4444;"></i> 
+                        "${value.negative_voice || '부정적 의견 없음'}"
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
     
     const recommendationsHTML = recommendations.map((rec, index) => `
-        <div style="background-color: #374151; border: 1px solid #4b5563; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+        <div class="recommendation-card">
             <div style="display: flex; align-items: flex-start; gap: 12px;">
-                <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background-color: #0EA5E9; display: flex; align-items: center; justify-center; color: white; font-weight: bold; font-size: 14px;">
+                <div class="recommendation-number">
                     ${index + 1}
                 </div>
                 <div style="flex: 1;">
                     <h5 style="font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #0EA5E9;">${rec.title}</h5>
-                    <p style="font-size: 14px; color: #9ca3af; margin: 0;">${rec.description}</p>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">${rec.description}</p>
                 </div>
             </div>
         </div>
@@ -503,12 +517,19 @@ function generateReportHTML(data, chartImage) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>조직문화 진단 보고서</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #111827; --bg-secondary: #1f2937; --bg-panel: #1f293780;
+            --border-color: #37415180; --text-primary: #f3f4f6; --text-secondary: #9ca3af;
+            --input-bg: #374151; --input-border: #4b5563;
+        }
         body { 
             font-family: 'Noto Sans KR', Arial, sans-serif; 
             line-height: 1.6; 
-            color: #f3f4f6; 
-            background-color: #111827;
+            color: var(--text-primary); 
+            background-color: var(--bg-primary);
             max-width: 1200px; 
             margin: 0 auto; 
             padding: 20px; 
@@ -520,8 +541,8 @@ function generateReportHTML(data, chartImage) {
             padding-bottom: 20px; 
         }
         .result-card { 
-            background-color: #1f2937;
-            border: 1px solid #374151;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--input-border); 
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 32px;
@@ -537,7 +558,7 @@ function generateReportHTML(data, chartImage) {
         }
         .grid-layout {
             display: grid;
-            grid-template-columns: 2fr 3fr;
+            grid-template-columns: 1fr 1.5fr;
             gap: 32px;
             margin-bottom: 32px;
         }
@@ -562,7 +583,7 @@ function generateReportHTML(data, chartImage) {
             align-items: flex-start; 
             gap: 12px; 
             padding: 12px; 
-            background-color: #374151; 
+            background-color: var(--input-bg); 
             border-radius: 8px; 
         }
         .summary-item i { 
@@ -571,11 +592,11 @@ function generateReportHTML(data, chartImage) {
         }
         .summary-item p { 
             margin: 0; 
-            color: #d1d5db; 
+            color: var(--text-secondary); 
             font-size: 14px;
         }
         .summary-item strong { 
-            color: #f3f4f6; 
+            color: var(--text-primary); 
         }
         .sub-section {
             margin-bottom: 24px;
@@ -590,7 +611,7 @@ function generateReportHTML(data, chartImage) {
             color: #0EA5E9;
         }
         .dynamics-text {
-            color: #9ca3af;
+            color: var(--text-secondary);
             font-size: 14px;
             line-height: 1.6;
         }
@@ -598,9 +619,60 @@ function generateReportHTML(data, chartImage) {
             text-align: center; 
             margin-top: 40px; 
             padding-top: 20px; 
-            border-top: 1px solid #374151; 
-            color: #9ca3af; 
+            border-top: 1px solid var(--input-border); 
+            color: var(--text-secondary); 
             font-size: 14px; 
+        }
+        .issue-card {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .issue-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .keyword-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .keyword-positive {
+            background-color: #10B98120;
+            color: #10B981;
+        }
+        .keyword-negative {
+            background-color: #EF444420;
+            color: #EF4444;
+        }
+        .recommendation-card {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .recommendation-number {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #0EA5E9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
         }
         @media (max-width: 768px) {
             .grid-layout {
@@ -613,26 +685,27 @@ function generateReportHTML(data, chartImage) {
 <body>
     <div class="header">
         <h1 style="color: #0EA5E9; font-size: 2.5em; margin-bottom: 10px;">AI 조직문화 진단 보고서</h1>
-        <p style="color: #9ca3af; font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
+        <p style="color: var(--text-secondary); font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
         <p style="color: #6b7280; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
     </div>
 
     <!-- 1. 종합 진단 브리핑 -->
     <div class="result-card">
         <h3 class="section-title">
-            📊 종합 진단 브리핑 (Executive Summary)
+            <i class="fas fa-chart-line"></i>
+            종합 진단 브리핑 (Executive Summary)
         </h3>
         <div class="summary-list">
             <div class="summary-item">
-                <i style="color: #0EA5E9;">🏁</i>
+                <i class="fas fa-flag" style="color: #0EA5E9;"></i>
                 <p><strong>핵심 특징:</strong> ${summary.characteristics || '분석 중...'}</p>
             </div>
             <div class="summary-item">
-                <i style="color: #10B981;">👍</i>
+                <i class="fas fa-thumbs-up" style="color: #10B981;"></i>
                 <p><strong>긍정적 측면:</strong> ${summary.strengths || '분석 중...'}</p>
             </div>
             <div class="summary-item">
-                <i style="color: #F59E0B;">⚠️</i>
+                <i class="fas fa-exclamation-triangle" style="color: #F59E0B;"></i>
                 <p><strong>개선 필요 영역:</strong> ${summary.challenges || '분석 중...'}</p>
             </div>
         </div>
@@ -643,7 +716,8 @@ function generateReportHTML(data, chartImage) {
         <!-- 문화 프로파일 (차트) -->
         <div class="result-card">
             <h3 class="section-title">
-                📈 조직문화 프로파일
+                <i class="fas fa-chart-radar"></i>
+                조직문화 프로파일
             </h3>
             <div class="chart-container">
                 <img src="${chartImage}" alt="조직문화 프로파일 차트">
@@ -653,7 +727,8 @@ function generateReportHTML(data, chartImage) {
         <!-- 핵심 이슈 요약 -->
         <div class="result-card">
             <h3 class="section-title">
-                ⚠️ 문화 유형별 핵심 이슈
+                <i class="fas fa-exclamation-triangle"></i>
+                문화 유형별 핵심 이슈
             </h3>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 ${issuesHTML}
@@ -664,18 +739,21 @@ function generateReportHTML(data, chartImage) {
     <!-- 3. 상세 분석 및 제언 -->
     <div class="result-card">
         <h3 class="section-title">
-            💡 상세 분석 및 제언
+            <i class="fas fa-lightbulb"></i>
+            상세 분석 및 제언
         </h3>
         <div style="display: flex; flex-direction: column; gap: 24px;">
             <div class="sub-section">
                 <h4 class="sub-section-title">
-                    🔍 문화적 역학 관계 분석
+                    <i class="fas fa-sitemap"></i>
+                    문화적 역학 관계 분석
                 </h4>
                 <p class="dynamics-text">${dynamics}</p>
             </div>
             <div class="sub-section">
                 <h4 class="sub-section-title">
-                    📋 실행 가능한 제언 (Action Plan)
+                    <i class="fas fa-tasks"></i>
+                    실행 가능한 제언 (Action Plan)
                 </h4>
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     ${recommendationsHTML}
