@@ -1069,7 +1069,7 @@ function formatNumber(num, unit) {
     } else if (unit === '억원') {
         value = num; // 억원 단위는 이미 억원 단위로 계산되어 옴
     } else if (unit === '백만원') {
-        value = Math.round(num); // 백만원 단위는 이미 백만원 단위로 계산되어 옴
+        value = Math.round(num / 1000000); // 원단위로 넘어오는 값을 백만원으로 나누고 소수점 없이 반올림
     } else {
         value = num;
     }
