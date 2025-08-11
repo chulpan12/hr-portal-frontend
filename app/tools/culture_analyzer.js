@@ -465,16 +465,17 @@ function generateReportHTML(data, chartImage) {
         const config = cultureMap[key];
         const percentage = profile[key] || 'N/A';
         return `
-            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-                <h4 style="color: ${config.color}; font-weight: bold; margin-bottom: 8px;">
+            <div style="background-color: #374151; border: 1px solid #4b5563; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                <h5 style="color: ${config.color}; font-weight: bold; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <span>${key === 'clan' ? '❤️' : key === 'adhocracy' ? '💡' : key === 'market' ? '📈' : '👤'}</span>
                     ${config.title} (${percentage}%)
-                </h4>
-                <div style="margin-bottom: 12px;">
-                    ${(value.positive_keywords || []).map(kw => `<span style="background-color: #10B98120; color: #10B981; padding: 4px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">#${kw}</span>`).join('')}
-                    ${(value.negative_keywords || []).map(kw => `<span style="background-color: #EF444420; color: #EF4444; padding: 4px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">#${kw}</span>`).join('')}
+                </h5>
+                <div style="margin-bottom: 8px;">
+                    ${(value.positive_keywords || []).map(kw => `<span style="background-color: #10B98120; color: #10B981; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; display: inline-block;">#${kw}</span>`).join('')}
+                    ${(value.negative_keywords || []).map(kw => `<span style="background-color: #EF444420; color: #EF4444; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; display: inline-block;">#${kw}</span>`).join('')}
                 </div>
-                <div style="font-size: 14px; color: #6b7280;">
-                    <div style="margin-bottom: 8px;">👍 "${value.positive_voice || '긍정적 의견 없음'}"</div>
+                <div style="font-size: 12px; color: #9ca3af;">
+                    <div style="margin-bottom: 4px;">👍 "${value.positive_voice || '긍정적 의견 없음'}"</div>
                     <div>👎 "${value.negative_voice || '부정적 의견 없음'}"</div>
                 </div>
             </div>
@@ -482,9 +483,16 @@ function generateReportHTML(data, chartImage) {
     }).join('');
     
     const recommendationsHTML = recommendations.map((rec, index) => `
-        <div style="border-left: 4px solid #0EA5E9; background-color: #f8fafc; padding: 16px; margin-bottom: 12px;">
-            <h4 style="color: #0EA5E9; font-weight: bold; margin-bottom: 8px;">${index + 1}. ${rec.title}</h4>
-            <p style="color: #6b7280; font-size: 14px;">${rec.description}</p>
+        <div style="background-color: #374151; border: 1px solid #4b5563; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background-color: #0EA5E9; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+                    ${index + 1}
+                </div>
+                <div style="flex: 1;">
+                    <h5 style="font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #0EA5E9;">${rec.title}</h5>
+                    <p style="font-size: 14px; color: #9ca3af; margin: 0;">${rec.description}</p>
+                </div>
+            </div>
         </div>
     `).join('');
     
@@ -496,63 +504,186 @@ function generateReportHTML(data, chartImage) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>조직문화 진단 보고서</title>
     <style>
-        body { font-family: 'Noto Sans KR', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #0EA5E9; padding-bottom: 20px; }
-        .section { margin-bottom: 40px; }
-        .section h2 { color: #0EA5E9; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
-        .chart-container { text-align: center; margin: 20px 0; }
-        .chart-container img { max-width: 100%; height: auto; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
-        .summary-item { background-color: #f8fafc; padding: 16px; border-radius: 8px; }
-        .summary-item h3 { color: #0EA5E9; margin-bottom: 8px; }
-        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px; }
+        body { 
+            font-family: 'Noto Sans KR', Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #f3f4f6; 
+            background-color: #111827;
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            border-bottom: 2px solid #0EA5E9; 
+            padding-bottom: 20px; 
+        }
+        .result-card { 
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        .section-title { 
+            font-weight: bold; 
+            font-size: 20px; 
+            margin-bottom: 16px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            color: #0EA5E9;
+        }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        .chart-container { 
+            text-align: center; 
+            height: 28rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chart-container img { 
+            max-width: 100%; 
+            height: auto; 
+        }
+        .summary-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+        .summary-item { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 12px; 
+            padding: 12px; 
+            background-color: #374151; 
+            border-radius: 8px; 
+        }
+        .summary-item i { 
+            margin-top: 2px; 
+            font-size: 14px; 
+        }
+        .summary-item p { 
+            margin: 0; 
+            color: #d1d5db; 
+            font-size: 14px;
+        }
+        .summary-item strong { 
+            color: #f3f4f6; 
+        }
+        .sub-section {
+            margin-bottom: 24px;
+        }
+        .sub-section-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0EA5E9;
+        }
+        .dynamics-box {
+            background-color: #374151;
+            padding: 16px;
+            border-radius: 8px;
+            color: #d1d5db;
+            font-size: 14px;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 1px solid #374151; 
+            color: #9ca3af; 
+            font-size: 14px; 
+        }
+        @media (max-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1 style="color: #0EA5E9; font-size: 2.5em; margin-bottom: 10px;">AI 조직문화 진단 보고서</h1>
-        <p style="color: #6b7280; font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
-        <p style="color: #9ca3af; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
+        <p style="color: #9ca3af; font-size: 1.2em;">경쟁가치모형(CVF) 기반 분석 결과</p>
+        <p style="color: #6b7280; font-size: 0.9em;">생성일: ${new Date().toLocaleDateString('ko-KR')}</p>
     </div>
 
-    <div class="section">
-        <h2>📊 종합 진단 브리핑</h2>
-        <div class="summary-grid">
+    <!-- 1. 종합 진단 브리핑 -->
+    <div class="result-card">
+        <h3 class="section-title">
+            📊 종합 진단 브리핑 (Executive Summary)
+        </h3>
+        <div class="summary-list">
             <div class="summary-item">
-                <h3>핵심 특징</h3>
-                <p>${summary.characteristics || '분석 중...'}</p>
+                <i style="color: #0EA5E9;">🏁</i>
+                <p><strong>핵심 특징:</strong> ${summary.characteristics || '분석 중...'}</p>
             </div>
             <div class="summary-item">
-                <h3>긍정적 측면</h3>
-                <p>${summary.strengths || '분석 중...'}</p>
+                <i style="color: #10B981;">👍</i>
+                <p><strong>긍정적 측면:</strong> ${summary.strengths || '분석 중...'}</p>
             </div>
             <div class="summary-item">
-                <h3>개선 필요 영역</h3>
-                <p>${summary.challenges || '분석 중...'}</p>
+                <i style="color: #F59E0B;">⚠️</i>
+                <p><strong>개선 필요 영역:</strong> ${summary.challenges || '분석 중...'}</p>
             </div>
         </div>
     </div>
 
-    <div class="section">
-        <h2>📈 조직문화 프로파일</h2>
-        <div class="chart-container">
-            <img src="${chartImage}" alt="조직문화 프로파일 차트">
+    <!-- 2. 레이더 차트와 핵심 이슈 (그리드 레이아웃) -->
+    <div class="grid-layout">
+        <!-- 문화 프로파일 (차트) -->
+        <div class="result-card">
+            <h3 class="section-title">
+                📈 조직문화 프로파일
+            </h3>
+            <div class="chart-container">
+                <img src="${chartImage}" alt="조직문화 프로파일 차트">
+            </div>
+        </div>
+        
+        <!-- 핵심 이슈 요약 -->
+        <div class="result-card">
+            <h3 class="section-title">
+                ⚠️ 문화 유형별 핵심 이슈
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${issuesHTML}
+            </div>
         </div>
     </div>
 
-    <div class="section">
-        <h2>⚠️ 문화 유형별 핵심 이슈</h2>
-        ${issuesHTML}
-    </div>
-
-    <div class="section">
-        <h2>🔍 문화적 역학 관계 분석</h2>
-        <p style="background-color: #f8fafc; padding: 16px; border-radius: 8px;">${dynamics}</p>
-    </div>
-
-    <div class="section">
-        <h2>💡 실행 가능한 제언</h2>
-        ${recommendationsHTML}
+    <!-- 3. 상세 분석 및 제언 -->
+    <div class="result-card">
+        <h3 class="section-title">
+            💡 상세 분석 및 제언
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="sub-section">
+                <h4 class="sub-section-title">
+                    🔍 문화적 역학 관계 분석
+                </h4>
+                <div class="dynamics-box">${dynamics}</div>
+            </div>
+            <div class="sub-section">
+                <h4 class="sub-section-title">
+                    📋 실행 가능한 제언 (Action Plan)
+                </h4>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    ${recommendationsHTML}
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="footer">
