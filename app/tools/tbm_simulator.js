@@ -145,9 +145,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addCoachFeedback(type, text) {
         const card = document.createElement('div');
-        card.className = `coach-card p-3 rounded-md bg-gray-800/50 ${type === 'good' ? 'coach-good' : 'coach-suggestion'}`;
-        const icon = type === 'good' ? 'fa-thumbs-up text-green-400' : 'fa-lightbulb text-yellow-400';
-        card.innerHTML = `<div class="flex items-start gap-3"><i class="fas ${icon} mt-1"></i><p class="text-sm">${text}</p></div>`;
+        let cardClass, icon, iconClass;
+        
+        if (type === 'good') {
+            cardClass = 'coach-good';
+            icon = 'fa-thumbs-up';
+            iconClass = 'text-green-400';
+        } else if (type === 'mixed') {
+            cardClass = 'coach-mixed';
+            icon = 'fa-check';
+            iconClass = 'text-blue-400';
+        } else {
+            cardClass = 'coach-suggestion';
+            icon = 'fa-lightbulb';
+            iconClass = 'text-yellow-400';
+        }
+        
+        card.className = `coach-card p-3 rounded-md bg-gray-800/50 ${cardClass}`;
+        card.innerHTML = `<div class="flex items-start gap-3"><i class="fas ${icon} ${iconClass} mt-1"></i><p class="text-sm">${text}</p></div>`;
         dom.coachLog.appendChild(card);
         
         // 스크롤을 맨 아래로 이동 (강제)
