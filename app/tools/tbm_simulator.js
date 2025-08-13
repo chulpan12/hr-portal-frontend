@@ -786,6 +786,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.chatContainer.classList.add('hidden');
         dom.chatInputArea.classList.add('hidden');
         dom.startSimulationArea.classList.remove('hidden');
+        // ✨ [추가] 새로운 상황 버튼 숨기기
+        dom.newScenarioBtn.classList.add('hidden');
         
         // ✨ [수정] 턴 수와 시간 초기화 추가
         initializeTurnTime();
@@ -809,6 +811,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.startSimulationArea.classList.add('hidden');
         dom.chatContainer.classList.remove('hidden');
         dom.chatInputArea.classList.remove('hidden');
+        // ✨ [추가] 새로운 상황 버튼 보이기
+        dom.newScenarioBtn.classList.remove('hidden');
         startNewScenario();
         // ✨ 시나리오 로드 완료 후 턴 수와 시간 초기화
         setTimeout(() => {
