@@ -114,176 +114,176 @@
     <!-- 메인 콘텐츠 -->
     <div id="main-content" class="hidden">
         <header class="text-center mb-10 relative">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                <i class="fas fa-comments-dollar mr-3 text-amber-400"></i>AI TBM 실전 코칭 시뮬레이터
-            </h1>
-            <p class="text-lg mt-3 text-gray-400">AI 작업자와 대화하며 안전 리더십을 훈련하세요.</p>
-            <!-- ✨ [추가] 홈 버튼 -->
-            <div class="absolute top-0 right-0 flex items-center gap-3">
-                <a href="/" class="p-2 rounded-full transition hover:bg-gray-600" style="background-color: #374151; color: #f3f4f6;" aria-label="Home">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                </a>
-            </div>
-        </header>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <i class="fas fa-comments-dollar mr-3 text-amber-400"></i>AI TBM 실전 코칭 시뮬레이터
+        </h1>
+        <p class="text-lg mt-3 text-gray-400">AI 작업자와 대화하며 안전 리더십을 훈련하세요.</p>
+        <!-- ✨ [추가] 홈 버튼 -->
+        <div class="absolute top-0 right-0 flex items-center gap-3">
+            <a href="/" class="p-2 rounded-full transition hover:bg-gray-600" style="background-color: #374151; color: #f3f4f6;" aria-label="Home">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            </a>
+        </div>
+    </header>
 
-        <main class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
-            <!-- 1st Column: Scenario -->
-            <div class="lg:col-span-1 h-full">
-                <div class="card p-6 rounded-xl h-full overflow-y-auto">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="font-bold text-xl mb-2"><i class="fas fa-clipboard-list mr-2"></i>TBM 시나리오</h3>
-                            <div class="flex gap-2">
-                                <button id="newScenarioBtn" class="bg-gray-700 hover:bg-gray-600 text-xs font-semibold py-2 px-3 rounded-lg"><i class="fas fa-sync-alt mr-2"></i><span id="newScenarioBtnText">새로운 상황</span></button>
-                                <button id="showGuideBtn" class="bg-teal-600 hover:bg-teal-700 text-xs font-semibold py-2 px-3 rounded-lg"><i class="fas fa-book-open mr-2"></i>운영 가이드</button>
-                            </div>
-                        </div>
-                        <div class="text-center">
-                            <div class="relative w-20 h-20">
-                                <svg class="w-full h-full" viewBox="0 0 100 100">
-                                    <circle class="progress-ring-bg" stroke-width="8" fill="transparent" r="45" cx="50" cy="50"/>
-                                    <circle id="progressRing" class="progress-ring-fg" stroke-width="8" fill="transparent" r="45" cx="50" cy="50"/>
-                                </svg>
-                                <span id="safetyScoreText" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-bold">?</span>
-                            </div>
-                            <p class="text-xs font-bold mt-1">안전도 (결과에서 공개)</p>
-                        </div>
-                    </div>
-                    <div id="scenarioContainer" class="space-y-2 border-t border-gray-700 pt-4">
-                        <!-- JS로 내용이 채워집니다 -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2nd Column: Work Area Diagram -->
-            <div class="lg:col-span-1 h-full">
-                <div class="card p-6 rounded-xl h-full overflow-y-auto">
-                    <h3 class="font-bold text-xl mb-3"><i class="fas fa-drafting-compass mr-2"></i>작업 구역 도면</h3>
-                    <div class="bg-gray-900 rounded-md p-4 border border-gray-700">
-                        <pre id="workAreaDiagram" class="text-gray-300 whitespace-pre-wrap m-0"></pre>
-                    </div>
-                    <div class="mt-3 pt-3 border-t border-gray-700">
-                        <h4 class="text-sm font-semibold text-gray-400 mb-2">범례</h4>
-                        <div id="diagramLegend" class="text-xs text-gray-300">
-                            <!-- 동적으로 생성되는 범례 -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3rd Column: Simulation -->
-            <div class="lg:col-span-1 card rounded-xl flex flex-col h-full max-h-[calc(100vh-200px)] simulation-column">
-                <h3 class="font-bold text-xl p-6 border-b border-gray-700 flex-shrink-0">TBM 대화 시뮬레이션</h3>
-                
-                <!-- ✨ [신규] 턴 수 및 시간 표시 영역 -->
-                <div id="turnTimeInfo" class="flex justify-between items-center text-center p-3 bg-gray-900/50 rounded-lg mx-4 mb-4 hidden flex-shrink-0">
+    <main class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
+        <!-- 1st Column: Scenario -->
+        <div class="lg:col-span-1 h-full">
+            <div class="card p-6 rounded-xl h-full overflow-y-auto">
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <p class="text-xs text-gray-400">경과 시간</p>
-                        <p id="elapsedTimeText" class="font-bold text-lg">00:00</p>
+                        <h3 class="font-bold text-xl mb-2"><i class="fas fa-clipboard-list mr-2"></i>TBM 시나리오</h3>
+                        <div class="flex gap-2">
+                            <button id="newScenarioBtn" class="bg-gray-700 hover:bg-gray-600 text-xs font-semibold py-2 px-3 rounded-lg"><i class="fas fa-sync-alt mr-2"></i><span id="newScenarioBtnText">새로운 상황</span></button>
+                            <button id="showGuideBtn" class="bg-teal-600 hover:bg-teal-700 text-xs font-semibold py-2 px-3 rounded-lg"><i class="fas fa-book-open mr-2"></i>운영 가이드</button>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-400">남은 대화 횟수</p>
-                        <p id="turnsLeftText" class="font-bold text-lg text-amber-400">5</p>
-                    </div>
-                </div>
-                
-                <!-- ✨ [신규] 시뮬레이션 시작 버튼 영역 -->
-                <div id="startSimulationArea" class="flex-grow p-6 flex flex-col items-center justify-center">
-                    <div class="text-center space-y-4">
-                        <i class="fas fa-play-circle text-5xl text-amber-400 mb-4"></i>
-                        <h4 class="text-lg font-bold text-gray-300">TBM 시뮬레이션 시작</h4>
-                        <p class="text-gray-400 mb-4 text-sm">AI 작업자와의 안전 대화 훈련을 시작하세요</p>
-                        <button id="startSimulationBtn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-6 rounded-lg text-base transition-colors">
-                            <i class="fas fa-comments mr-2"></i>시뮬레이션 시작
-                        </button>
+                    <div class="text-center">
+                        <div class="relative w-20 h-20">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="progress-ring-bg" stroke-width="8" fill="transparent" r="45" cx="50" cy="50"/>
+                                <circle id="progressRing" class="progress-ring-fg" stroke-width="8" fill="transparent" r="45" cx="50" cy="50"/>
+                            </svg>
+                            <span id="safetyScoreText" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-bold">?</span>
+                        </div>
+                        <p class="text-xs font-bold mt-1">안전도 (결과에서 공개)</p>
                     </div>
                 </div>
-                
-                <!-- ✨ [수정] 채팅 영역을 flex로 구성하여 안정적인 레이아웃 -->
-                <div id="chatContainer" class="flex-grow flex flex-col hidden max-h-[calc(100vh-300px)]">
-                    <!-- ✨ [신규] 돌발 상황 표시 영역 (고정 높이) -->
-                    <div id="suddenEventArea" class="h-12 bg-red-900 text-center text-white font-bold flex items-center justify-center hidden animate-pulse flex-shrink-0">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        <span id="suddenEventText"></span>
-                    </div>
-                    
-                    <!-- ✨ [수정] 채팅창 (고정 높이, 스크롤 강제) -->
-                    <div id="chatLog" class="flex-1 p-4 space-y-4 overflow-y-auto min-h-0 max-h-full"></div>
+                <div id="scenarioContainer" class="space-y-2 border-t border-gray-700 pt-4">
+                    <!-- JS로 내용이 채워집니다 -->
                 </div>
-                <div id="chatInputArea" class="p-4 border-t border-gray-700 hidden flex-shrink-0">
-                    <div class="flex gap-2">
-                        <input type="text" id="userInput" class="flex-grow p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="작업자에게 할 말을 입력하세요...">
-                        <button id="sendBtn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold p-3 rounded-lg"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- 2nd Column: Work Area Diagram -->
+        <div class="lg:col-span-1 h-full">
+            <div class="card p-6 rounded-xl h-full overflow-y-auto">
+                <h3 class="font-bold text-xl mb-3"><i class="fas fa-drafting-compass mr-2"></i>작업 구역 도면</h3>
+                <div class="bg-gray-900 rounded-md p-4 border border-gray-700">
+                    <pre id="workAreaDiagram" class="text-gray-300 whitespace-pre-wrap m-0"></pre>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-700">
+                    <h4 class="text-sm font-semibold text-gray-400 mb-2">범례</h4>
+                    <div id="diagramLegend" class="text-xs text-gray-300">
+                        <!-- 동적으로 생성되는 범례 -->
                     </div>
-                    <button id="showResultBtn" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all duration-300">
-                        <i class="fas fa-flag-checkered mr-2"></i>TBM 종료 및 결과 보기
+                </div>
+            </div>
+        </div>
+
+        <!-- 3rd Column: Simulation -->
+        <div class="lg:col-span-1 card rounded-xl flex flex-col h-full max-h-[calc(100vh-200px)] simulation-column">
+            <h3 class="font-bold text-xl p-6 border-b border-gray-700 flex-shrink-0">TBM 대화 시뮬레이션</h3>
+            
+            <!-- ✨ [신규] 턴 수 및 시간 표시 영역 -->
+            <div id="turnTimeInfo" class="flex justify-between items-center text-center p-3 bg-gray-900/50 rounded-lg mx-4 mb-4 hidden flex-shrink-0">
+                <div>
+                    <p class="text-xs text-gray-400">경과 시간</p>
+                    <p id="elapsedTimeText" class="font-bold text-lg">00:00</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400">남은 대화 횟수</p>
+                    <p id="turnsLeftText" class="font-bold text-lg text-amber-400">5</p>
+                </div>
+            </div>
+            
+            <!-- ✨ [신규] 시뮬레이션 시작 버튼 영역 -->
+            <div id="startSimulationArea" class="flex-grow p-6 flex flex-col items-center justify-center">
+                <div class="text-center space-y-4">
+                    <i class="fas fa-play-circle text-5xl text-amber-400 mb-4"></i>
+                    <h4 class="text-lg font-bold text-gray-300">TBM 시뮬레이션 시작</h4>
+                    <p class="text-gray-400 mb-4 text-sm">AI 작업자와의 안전 대화 훈련을 시작하세요</p>
+                    <button id="startSimulationBtn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-6 rounded-lg text-base transition-colors">
+                        <i class="fas fa-comments mr-2"></i>시뮬레이션 시작
                     </button>
                 </div>
             </div>
-
-            <!-- 4th Column: AI Coach -->
-            <div class="lg:col-span-1 card rounded-xl flex flex-col h-full max-h-[calc(100vh-200px)]">
-                <h3 class="font-bold text-xl p-6 border-b border-gray-700 flex-shrink-0">AI 실시간 코칭</h3>
-                <!-- ✨ [수정] 코칭 로그도 높이 제한하여 스크롤이 생기도록 고정 높이 설정 -->
-                <div id="coachLog" class="flex-1 p-4 space-y-3 overflow-y-auto min-h-0 max-h-full"></div>
+            
+            <!-- ✨ [수정] 채팅 영역을 flex로 구성하여 안정적인 레이아웃 -->
+            <div id="chatContainer" class="flex-grow flex flex-col hidden max-h-[calc(100vh-300px)]">
+                <!-- ✨ [신규] 돌발 상황 표시 영역 (고정 높이) -->
+                <div id="suddenEventArea" class="h-12 bg-red-900 text-center text-white font-bold flex items-center justify-center hidden animate-pulse flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span id="suddenEventText"></span>
+                </div>
+                
+                <!-- ✨ [수정] 채팅창 (고정 높이, 스크롤 강제) -->
+                <div id="chatLog" class="flex-1 p-4 space-y-4 overflow-y-auto min-h-0 max-h-full"></div>
             </div>
-        </main>
-
-        <!-- ✨ [신규] TBM 결과 및 리플레이 모달 -->
-        <div id="replayModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
-            <div class="bg-gray-800 rounded-xl p-6 max-w-5xl w-full h-[85vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0" id="replayCard">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">TBM 결과 및 리플레이</h2>
-                    <button id="closeReplayBtn" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+            <div id="chatInputArea" class="p-4 border-t border-gray-700 hidden flex-shrink-0">
+                <div class="flex gap-2">
+                    <input type="text" id="userInput" class="flex-grow p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="작업자에게 할 말을 입력하세요...">
+                    <button id="sendBtn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold p-3 rounded-lg"><i class="fas fa-paper-plane"></i></button>
                 </div>
-                <div id="finalResultArea" class="mb-4 p-4 rounded-lg border border-gray-600 bg-gray-700/50">
-                    <h3 id="finalResultTitle" class="text-xl font-bold text-center mb-2"></h3>
-                    <p id="finalResultNarrative" class="text-center text-gray-300 text-sm leading-relaxed mb-4"></p>
-                    
-                    <!-- ✨ [신규] 재해 수치 표시 영역 -->
-                    <div id="casualtyStatsArea" class="flex justify-center items-center gap-8 py-3 border-t border-gray-600">
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-red-400 mb-1" id="majorCasualtyCount">0</div>
-                            <div class="text-xs text-gray-400">중대재해</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-orange-400 mb-1" id="minorCasualtyCount">0</div>
-                            <div class="text-xs text-gray-400">일반재해</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-green-400 mb-1" id="safetyScoreDisplay">?</div>
-                            <div class="text-xs text-gray-400">안전도</div>
-                        </div>
-                    </div>
-                </div>
-                <div id="replayLog" class="flex-grow p-4 bg-gray-900 rounded overflow-y-auto border border-gray-700 max-h-[50vh]">
-                    <!-- 리플레이 내용이 여기에 표시됩니다 -->
-                </div>
-                <button id="newSimulationBtn" class="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg">
-                    <i class="fas fa-redo mr-2"></i>새로운 시뮬레이션 시작
+                <button id="showResultBtn" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all duration-300">
+                    <i class="fas fa-flag-checkered mr-2"></i>TBM 종료 및 결과 보기
                 </button>
             </div>
         </div>
 
-        <!-- ✨ [신규] TBM 운영 가이드 모달 -->
-        <div id="guideModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
-            <div class="bg-gray-800 rounded-xl p-8 max-w-3xl w-full h-auto max-h-[85vh] flex flex-col" id="guideCard">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-teal-400"><i class="fas fa-book-open mr-2"></i>AI TBM 코칭 운영 가이드</h2>
-                    <button id="closeGuideBtn" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
-                </div>
-                <div id="guideContent" class="prose prose-invert max-w-none overflow-y-auto pr-4">
-                    <!-- 가이드 내용이 여기에 표시됩니다 -->
+        <!-- 4th Column: AI Coach -->
+        <div class="lg:col-span-1 card rounded-xl flex flex-col h-full max-h-[calc(100vh-200px)]">
+            <h3 class="font-bold text-xl p-6 border-b border-gray-700 flex-shrink-0">AI 실시간 코칭</h3>
+            <!-- ✨ [수정] 코칭 로그도 높이 제한하여 스크롤이 생기도록 고정 높이 설정 -->
+            <div id="coachLog" class="flex-1 p-4 space-y-3 overflow-y-auto min-h-0 max-h-full"></div>
+        </div>
+    </main>
+
+    <!-- ✨ [신규] TBM 결과 및 리플레이 모달 -->
+    <div id="replayModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-xl p-6 max-w-5xl w-full h-[85vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0" id="replayCard">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">TBM 결과 및 리플레이</h2>
+                <button id="closeReplayBtn" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <div id="finalResultArea" class="mb-4 p-4 rounded-lg border border-gray-600 bg-gray-700/50">
+                <h3 id="finalResultTitle" class="text-xl font-bold text-center mb-2"></h3>
+                <p id="finalResultNarrative" class="text-center text-gray-300 text-sm leading-relaxed mb-4"></p>
+                
+                <!-- ✨ [신규] 재해 수치 표시 영역 -->
+                <div id="casualtyStatsArea" class="flex justify-center items-center gap-8 py-3 border-t border-gray-600">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-400 mb-1" id="majorCasualtyCount">0</div>
+                        <div class="text-xs text-gray-400">중대재해</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-400 mb-1" id="minorCasualtyCount">0</div>
+                        <div class="text-xs text-gray-400">일반재해</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-400 mb-1" id="safetyScoreDisplay">?</div>
+                        <div class="text-xs text-gray-400">안전도</div>
+                    </div>
                 </div>
             </div>
+            <div id="replayLog" class="flex-grow p-4 bg-gray-900 rounded overflow-y-auto border border-gray-700 max-h-[50vh]">
+                <!-- 리플레이 내용이 여기에 표시됩니다 -->
+            </div>
+            <button id="newSimulationBtn" class="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg">
+                <i class="fas fa-redo mr-2"></i>새로운 시뮬레이션 시작
+            </button>
         </div>
-
-        <footer class="text-center py-8 text-xs" style="color: #9ca3af;">
-            <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
-            <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
-        </footer>
     </div>
 
-    <script src="tbm_simulator.js?v=1.1"></script>
+    <!-- ✨ [신규] TBM 운영 가이드 모달 -->
+    <div id="guideModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-xl p-8 max-w-3xl w-full h-auto max-h-[85vh] flex flex-col" id="guideCard">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-teal-400"><i class="fas fa-book-open mr-2"></i>AI TBM 코칭 운영 가이드</h2>
+                <button id="closeGuideBtn" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <div id="guideContent" class="prose prose-invert max-w-none overflow-y-auto pr-4">
+                <!-- 가이드 내용이 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-8 text-xs" style="color: #9ca3af;">
+        <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
+        <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
+    </footer>
+    </div>
+
+    <script src="tbm_simulator.js?v=1.2"></script>
 </body>
 </html> 
