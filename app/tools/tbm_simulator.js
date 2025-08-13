@@ -411,6 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
+            // 디버깅을 위한 로그
+            console.log('API 응답 데이터:', data);
+            
             if (!data || !data.scenario || !data.workers) {
                 throw new Error('시나리오 데이터가 올바르지 않습니다.');
             }
@@ -425,9 +428,21 @@ document.addEventListener('DOMContentLoaded', () => {
             updateWorkAreaDiagramUI(state.scenario.work_area_diagram);
             updateDiagramLegendUI(state.scenario.work_area_diagram, state.scenario.diagram_legend);
             
-            // ✨ 첫 대사 처리
-            const startMsg = data.initial_message.text || "안전관리자님, 오늘도 안전하게 작업하겠습니다.";
-            const speakerName = data.initial_message.speaker_name || "작업자";
+            // ✨ 첫 대사 처리 (안전한 처리)
+            let startMsg, speakerName;
+            
+            if (data.initial_message && data.initial_message.text) {
+                startMsg = data.initial_message.text;
+                speakerName = data.initial_message.speaker_name || "작업자";
+            } else if (data.initial_dialogue && data.initial_dialogue.length > 0) {
+                // 백엔드에서 initial_dialogue 배열로 응답한 경우
+                startMsg = data.initial_dialogue[0].text;
+                speakerName = data.initial_dialogue[0].speaker_name || "작업자";
+            } else {
+                // 기본값
+                startMsg = "안전관리자님, 오늘도 안전하게 작업하겠습니다.";
+                speakerName = "작업자";
+            }
             addMessage('ai', speakerName, startMsg);
             addCoachFeedback("suggestion", "AI 작업자들과의 TBM 시뮬레이션을 시작합니다. 먼저 작업자들의 말을 경청하고, 공감하는 태도로 대화를 시작해보세요.");
             
