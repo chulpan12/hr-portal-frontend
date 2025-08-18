@@ -756,8 +756,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.result_image_key) {
                 const imageUrl = `./images/sites/${result.result_image_key}.png`;
                 dom.resultImage.src = imageUrl;
+                dom.resultImage.classList.remove('hidden');  // 이미지 자체의 hidden 클래스 제거
                 dom.resultImageContainer.classList.remove('hidden');
             } else {
+                dom.resultImage.classList.add('hidden');
                 dom.resultImageContainer.classList.add('hidden');
             }
 
