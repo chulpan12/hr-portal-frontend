@@ -53,7 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
             guideModal: document.getElementById('guideModal'),
             guideCard: document.getElementById('guideCard'),
             guideContent: document.getElementById('guideContent'),
-            closeGuideBtn: document.getElementById('closeGuideBtn')
+            closeGuideBtn: document.getElementById('closeGuideBtn'),
+            // ✨ [신규] 현장 이미지 관련 DOM 요소들
+            siteImageContainer: document.getElementById('siteImageContainer'),
+            siteImage: document.getElementById('siteImage'),
+            siteImageSpinner: document.getElementById('siteImageSpinner'),
+            siteImagePlaceholder: document.getElementById('siteImagePlaceholder')
         };
 
     const API_BASE_URL = 'https://api.dreamofenc.com'; // ✨ [수정] 운영 서버 API 주소로 변경
@@ -196,8 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.scenarioContainer.innerHTML = scenarioHTML + workersHTML;
     }
 
-    // ✨ [신규] 돌발 상황 표시 함수 (개선된 버전)
-    function showSuddenEvent(eventText) {
+    // ✨ [신규] 돌발 상황 표시 함수 (이미지 지원 버전)
+    function showSuddenEvent(suddenEvent) {
+        if (!suddenEvent) return;
+        
+        // suddenEvent가 문자열인 경우 (기존 호환성 유지)
+        const eventText = typeof suddenEvent === 'string' ? suddenEvent : suddenEvent.text;
+        const imageKey = typeof suddenEvent === 'object' ? suddenEvent.image_key : null;
+        
         if (!eventText) return;
         
         // 상단 경고 영역 표시 (부드러운 애니메이션)
@@ -212,14 +223,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const suddenEventBubble = document.createElement('div');
-        suddenEventBubble.className = 'chat-bubble p-3 rounded-lg flex flex-col chat-bubble-ai self-start bg-red-900/50 border border-red-500 animate-pulse sudden-event-bubble';
-        suddenEventBubble.innerHTML = `
-            <span class="text-xs font-bold mb-1 text-red-300">🚨 돌발 상황</span>
-            <div class="flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle text-red-400"></i>
-                <p class="text-red-200">${eventText}</p>
+        suddenEventBubble.className = 'w-full flex flex-col items-start sudden-event-bubble'; // 전체 너비를 사용하도록 수정
+
+        let bubbleHTML = `
+            <div class="chat-bubble p-3 rounded-lg flex flex-col chat-bubble-ai self-start bg-red-900/50 border border-red-500 animate-pulse">
+                <span class="text-xs font-bold mb-1 text-red-300">🚨 돌발 상황</span>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-red-400"></i>
+                    <p class="text-red-200">${eventText}</p>
+                </div>
             </div>
         `;
+
+        // 이미지 키가 있는 경우, 이미지 버블 추가
+        if (imageKey) {
+            const imageUrl = `./images/sites/${imageKey}.png`;
+            bubbleHTML += `
+                <div class="mt-2 w-full max-w-md self-start rounded-lg overflow-hidden border-2 border-red-500">
+                    <img src="${imageUrl}" alt="${eventText}" class="w-full aspect-video object-cover" 
+                         onerror="this.style.display='none'; console.warn('돌발 상황 이미지 로딩 실패:', '${imageUrl}');">
+                </div>
+            `;
+        }
+        
+        suddenEventBubble.innerHTML = bubbleHTML;
         dom.chatLog.appendChild(suddenEventBubble);
         
         // 스크롤을 맨 아래로 이동 (강제)
@@ -307,6 +334,41 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.diagramLegend.innerHTML = legendHTML;
     }
 
+    // ✨ [신규] 현장 이미지 표시 함수
+    function updateSiteImageUI(imageKey) {
+        const { siteImage, siteImageSpinner, siteImagePlaceholder } = dom;
+        
+        if (imageKey) {
+            // 이미지 경로를 설정합니다. (예: /images/sites/fall_01.jpg)
+            const imageUrl = `./images/sites/${imageKey}.png`;
+            
+            // 플레이스홀더 숨기기
+            siteImagePlaceholder.classList.add('hidden');
+            siteImage.classList.add('hidden');
+            siteImageSpinner.classList.remove('hidden');
+
+            // 이미지 로딩이 끝나면 스피너를 숨기고 이미지를 표시
+            siteImage.onload = () => {
+                siteImageSpinner.classList.add('hidden');
+                siteImage.classList.remove('hidden');
+            };
+            
+            // 이미지 로딩 실패 시 처리
+            siteImage.onerror = () => {
+                siteImageSpinner.classList.add('hidden');
+                siteImagePlaceholder.classList.remove('hidden');
+                console.warn(`현장 이미지 로딩 실패: ${imageUrl}`);
+            };
+            
+            siteImage.src = imageUrl;
+        } else {
+            // 이미지 키가 없으면 플레이스홀더 표시
+            siteImage.classList.add('hidden');
+            siteImageSpinner.classList.add('hidden');
+            siteImagePlaceholder.classList.remove('hidden');
+        }
+    }
+
     function updateSafetyScoreUI() {
         // ✨ [수정] 시뮬레이션 중에는 점수를 숨기고, 게이지만 회색으로 표시
         const radius = dom.progressRing.r.baseVal.value;
@@ -389,6 +451,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.diagramLegend.innerHTML = '';
         dom.suddenEventArea.classList.add('hidden'); // 돌발 상황 영역 숨기기
         
+        // ✨ [신규] 현장 이미지 초기화
+        updateSiteImageUI(null);
+        
         // ✨ [수정] 턴 수와 시간 초기화 추가
         initializeTurnTime();
         
@@ -427,6 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
             updateScenarioUI();
             updateWorkAreaDiagramUI(state.scenario.work_area_diagram);
             updateDiagramLegendUI(state.scenario.work_area_diagram, state.scenario.diagram_legend);
+            
+            // ✨ [신규] 현장 이미지 표시 함수 호출
+            updateSiteImageUI(state.scenario.image_key);
             
             // ✨ 첫 대사 처리 (안전한 처리)
             let startMsg, speakerName;
@@ -555,7 +623,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // 돌발 상황 및 코칭 피드백은 한 번만 표시합니다.
-            showSuddenEvent(data.sudden_event);
+            // ✨ [수정] sudden_event가 객체 형태로 변경됨에 따라 처리 방식 수정
+            if (data.sudden_event && (data.sudden_event.text || data.sudden_event.image_key)) {
+                showSuddenEvent(data.sudden_event);
+            }
             addCoachFeedback(data.coach_feedback.type, data.coach_feedback.text);
 
             state.safetyScore = Math.max(0, Math.min(100, state.safetyScore + data.safety_score_change));
@@ -699,9 +770,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 돌발 상황 표시
                 if (log.suddenEvent) {
-                    entryHTML += `<div class="text-xs text-red-400 bg-red-900/20 p-2 rounded mt-2 border border-red-500">`;
-                    entryHTML += `<i class="fas fa-exclamation-triangle mr-1"></i>`;
-                    entryHTML += `<span>돌발 상황: ${log.suddenEvent}</span></div>`;
+                    const eventText = typeof log.suddenEvent === 'string' ? log.suddenEvent : log.suddenEvent.text;
+                    if (eventText) {
+                        entryHTML += `<div class="text-xs text-red-400 bg-red-900/20 p-2 rounded mt-2 border border-red-500">`;
+                        entryHTML += `<i class="fas fa-exclamation-triangle mr-1"></i>`;
+                        entryHTML += `<span>돌발 상황: ${eventText}</span></div>`;
+                    }
                 }
                 
                 entryHTML += `</div>`;
@@ -797,6 +871,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.workAreaDiagram.textContent = '';
         dom.diagramLegend.innerHTML = '';
         dom.suddenEventArea.classList.add('hidden');
+        
+        // ✨ [신규] 현장 이미지 초기화
+        updateSiteImageUI(null);
         
         // 상태 초기화
         state.scenario = null;
