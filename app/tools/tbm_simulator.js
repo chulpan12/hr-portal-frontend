@@ -58,7 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
             siteImageContainer: document.getElementById('siteImageContainer'),
             siteImage: document.getElementById('siteImage'),
             siteImageSpinner: document.getElementById('siteImageSpinner'),
-            siteImagePlaceholder: document.getElementById('siteImagePlaceholder')
+            siteImagePlaceholder: document.getElementById('siteImagePlaceholder'),
+            // ✨ [신규] 결과 이미지 관련 DOM 요소들
+            resultImageContainer: document.getElementById('resultImageContainer'),
+            resultImage: document.getElementById('resultImage')
         };
 
     const API_BASE_URL = 'https://api.dreamofenc.com'; // ✨ [수정] 운영 서버 API 주소로 변경
@@ -748,6 +751,15 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // ✨ [신규] 최종 안전도 점수 공개
             showFinalSafetyScore();
+
+            // ✨ [신규] 결과 이미지 표시 로직
+            if (result.result_image_key) {
+                const imageUrl = `./images/sites/${result.result_image_key}.png`;
+                dom.resultImage.src = imageUrl;
+                dom.resultImageContainer.classList.remove('hidden');
+            } else {
+                dom.resultImageContainer.classList.add('hidden');
+            }
 
             // 2. dialogueLog를 바탕으로 리플레이 로그 생성
             dom.replayLog.innerHTML = ''; // 초기화
