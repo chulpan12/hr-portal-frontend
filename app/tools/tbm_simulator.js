@@ -460,6 +460,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // ✨ [수정] 턴 수와 시간 초기화 추가
         initializeTurnTime();
         
+        // ✨ [신규] TBM 종료 버튼 재활성화
+        dom.showResultBtn.disabled = false;
+        dom.showResultBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        dom.showResultBtn.classList.add('hover:bg-blue-700');
+        
         state.history = "";
         state.safetyScore = 50;
         state.dialogueLog = []; // ✨ 대화 기록 초기화
@@ -711,6 +716,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ✨ [신규] 결과 및 리플레이 표시 함수
     async function showResultAndReplay() {
+        // ✨ [신규] TBM 종료 버튼 비활성화 (중복 클릭 방지)
+        dom.showResultBtn.disabled = true;
+        dom.showResultBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        dom.showResultBtn.classList.remove('hover:bg-blue-700');
+        
         setLoading(true, "작업 결과를 집계 중입니다...");
         
         try {
