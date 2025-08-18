@@ -251,41 +251,48 @@
 
     <!-- ✨ [신규] TBM 결과 및 리플레이 모달 -->
     <div id="replayModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
-        <div class="bg-gray-800 rounded-xl p-6 max-w-5xl w-full h-[85vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0" id="replayCard">
-            <div class="flex justify-between items-center mb-4">
+        <div class="bg-gray-800 rounded-xl p-6 max-w-6xl w-full h-[85vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0" id="replayCard">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
                 <h2 class="text-2xl font-bold">TBM 결과 및 리플레이</h2>
                 <button id="closeReplayBtn" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
             </div>
-            
-            <!-- ✨ [신규] 결과 이미지 표시 영역 -->
-            <div id="resultImageContainer" class="mb-4 rounded-lg overflow-hidden border-2 border-gray-600 hidden">
-                <img id="resultImage" src="" alt="작업 결과 이미지" class="w-full aspect-video object-cover">
-            </div>
-            
-            <div id="finalResultArea" class="mb-4 p-4 rounded-lg border border-gray-600 bg-gray-700/50">
-                <h3 id="finalResultTitle" class="text-xl font-bold text-center mb-2"></h3>
-                <p id="finalResultNarrative" class="text-center text-gray-300 text-sm leading-relaxed mb-4"></p>
-                
-                <!-- ✨ [신규] 재해 수치 표시 영역 -->
-                <div id="casualtyStatsArea" class="flex justify-center items-center gap-8 py-3 border-t border-gray-600">
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-red-400 mb-1" id="majorCasualtyCount">0</div>
-                        <div class="text-xs text-gray-400">중대재해</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-orange-400 mb-1" id="minorCasualtyCount">0</div>
-                        <div class="text-xs text-gray-400">일반재해</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-green-400 mb-1" id="safetyScoreDisplay">?</div>
-                        <div class="text-xs text-gray-400">안전도</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6 flex-grow min-h-0">
+
+                <div class="md:col-span-2 h-full">
+                    <div id="resultImageContainer" class="h-full rounded-lg overflow-hidden border-2 border-gray-600">
+                        <img id="resultImage" src="" alt="작업 결과 이미지" class="w-full h-full object-cover hidden">
                     </div>
                 </div>
+
+                <div class="md:col-span-3 h-full flex flex-col gap-4">
+                    <div id="finalResultArea" class="p-4 rounded-lg border border-gray-600 bg-gray-700/50 flex-shrink-0">
+                        <h3 id="finalResultTitle" class="text-xl font-bold text-center mb-2"></h3>
+                        <p id="finalResultNarrative" class="text-center text-gray-300 text-sm leading-relaxed mb-4"></p>
+                        
+                        <!-- ✨ [신규] 재해 수치 표시 영역 -->
+                        <div id="casualtyStatsArea" class="flex justify-center items-center gap-8 py-3 border-t border-gray-600">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-red-400 mb-1" id="majorCasualtyCount">0</div>
+                                <div class="text-xs text-gray-400">중대재해</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-orange-400 mb-1" id="minorCasualtyCount">0</div>
+                                <div class="text-xs text-gray-400">일반재해</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-400 mb-1" id="safetyScoreDisplay">?</div>
+                                <div class="text-xs text-gray-400">안전도</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="replayLog" class="flex-grow p-4 bg-gray-900 rounded overflow-y-auto border border-gray-700 min-h-0">
+                        <!-- 리플레이 내용이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+
             </div>
-            <div id="replayLog" class="flex-grow p-4 bg-gray-900 rounded overflow-y-auto border border-gray-700 max-h-[50vh]">
-                <!-- 리플레이 내용이 여기에 표시됩니다 -->
-            </div>
-            <button id="newSimulationBtn" class="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg">
+            <button id="newSimulationBtn" class="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg flex-shrink-0">
                 <i class="fas fa-redo mr-2"></i>새로운 시뮬레이션 시작
             </button>
         </div>
@@ -310,6 +317,6 @@
     </footer>
     </div>
 
-    <script src="tbm_simulator.js?v=1.72"></script>
+    <script src="tbm_simulator.js?v=1.73"></script>
 </body>
 </html> 
