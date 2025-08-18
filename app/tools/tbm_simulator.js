@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 이미지 키가 있는 경우, 이미지 버블 추가
         if (imageKey) {
-            const imageUrl = `./images/sites/${imageKey}.png`;
+            const imageUrl = `./images/sites/${imageKey}.png?v=${new Date().getTime()}`;
             bubbleHTML += `
                 <div class="mt-2 w-full max-w-md self-start rounded-lg overflow-hidden border-2 border-red-500">
                     <img src="${imageUrl}" alt="${eventText}" class="w-full aspect-video object-cover" 
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (imageKey) {
             // 이미지 경로를 설정합니다. (예: /images/sites/fall_01.jpg)
-            const imageUrl = `./images/sites/${imageKey}.png`;
+            const imageUrl = `./images/sites/${imageKey}.png?v=${new Date().getTime()}`;
             
             // 플레이스홀더 숨기기
             siteImagePlaceholder.classList.add('hidden');
@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // ✨ [신규] 결과 이미지 표시 로직
             if (result.result_image_key) {
-                const imageUrl = `./images/sites/${result.result_image_key}.png`;
+                const imageUrl = `./images/sites/${result.result_image_key}.png?v=${new Date().getTime()}`;
                 dom.resultImage.src = imageUrl;
                 dom.resultImage.classList.remove('hidden');  // 이미지 자체의 hidden 클래스 제거
                 dom.resultImageContainer.classList.remove('hidden');
