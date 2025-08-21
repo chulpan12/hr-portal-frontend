@@ -408,7 +408,10 @@
                                             if (startBrace !== -1 && endBrace !== -1 && endBrace > startBrace) {
                                                 cleanJsonString = cleanJsonString.substring(startBrace, endBrace + 1);
                                                 
-                                                // 4. 불완전한 문자열 값 복구 시도
+                                                // 4. ✨ [핵심 수정] 스마트 따옴표를 표준 따옴표로 치환
+                                                cleanJsonString = cleanJsonString.replace(/"/g, '"').replace(/"/g, '"');
+                                                
+                                                // 5. 불완전한 문자열 값 복구 시도
                                                 cleanJsonString = cleanJsonString.replace(/"([^"]*?)(?=\s*[,}])/g, (match, content) => {
                                                     // 문자열이 완전하지 않으면 마지막 부분을 제거
                                                     return `"${content.replace(/[^\w\s가-힣.,!?;:()]/g, '')}"`;
