@@ -549,7 +549,14 @@
                 if(chartInstance) {
                     chartInstance.destroy(); // 이전 차트가 있으면 파괴
                 }
-                const sentimentColors = { '긍정': 'rgba(22, 163, 74, 0.8)', '부정': 'rgba(220, 38, 38, 0.8)', '중립': 'rgba(107, 114, 128, 0.8)' };
+                const sentimentColors = { 
+                    '긍정': 'rgba(22, 163, 74, 0.8)', 
+                    '부정': 'rgba(220, 38, 38, 0.8)', 
+                    '중립': 'rgba(107, 114, 128, 0.8)',
+                    'Positive': 'rgba(22, 163, 74, 0.8)', 
+                    'Negative': 'rgba(220, 38, 38, 0.8)', 
+                    'Neutral': 'rgba(107, 114, 128, 0.8)'
+                };
                 
                 chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
                     type: 'treemap',
