@@ -525,8 +525,6 @@
                         // children 배열에서 실제 데이터에 접근
                         const originalData = ctx.raw._data?.children?.[0];
                         const sentiment = originalData?.sentiment;
-                        console.log('ctx.raw._data.children[0]:', originalData);
-                        console.log('Found sentiment:', sentiment);
                         
                         return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
                     },
@@ -540,20 +538,69 @@
                         callbacks: {
                             title: (item) => {
                                 const originalData = item[0].raw._data?.children?.[0];
-                                console.log('Tooltip originalData:', originalData);
                                 return originalData?.topicName || '알 수 없는 주제';
                             },
                             label: (item) => `응답 수: ${item.raw.v}`,
                             afterLabel: (item) => {
                                 const originalData = item.raw._data?.children?.[0];
                                 const sentiment = originalData?.sentiment;
-                                console.log('Tooltip sentiment:', sentiment);
                                 return `주요 감성: ${sentiment || '알 수 없음'}`;
                             }
                         }
                     },
-                    legend: { display: false }
+                    legend: { display: false },
+                    // 트리맵에 텍스트 표시
+                    afterDraw: (chart) => {
+                        const ctx = chart.ctx;
+                        const data = chart.data.datasets[0].tree;
+                        
+                        data.forEach((item, index) => {
+                            const meta = chart.getDatasetMeta(0);
+                            const element = meta.data[index];
+                            
+                            if (element && element.x && element.y && element.w && element.h) {
+                                // 텍스트가 사각형 안에 들어갈 수 있는지 확인
+                                if (element.w > 60 && element.h > 20) {
+                                    ctx.save();
+                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                                    ctx.font = 'bold 12px Arial';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    
+                                    // 텍스트 줄바꿈 처리
+                                    const maxWidth = element.w - 10;
+                                    const words = item.topicName.split(' ');
+                                    let lines = [];
+                                    let currentLine = '';
+                                    
+                                    words.forEach(word => {
+                                        const testLine = currentLine + word + ' ';
+                                        const metrics = ctx.measureText(testLine);
+                                        if (metrics.width > maxWidth && currentLine !== '') {
+                                            lines.push(currentLine);
+                                            currentLine = word + ' ';
+                                        } else {
+                                            currentLine = testLine;
+                                        }
+                                    });
+                                    lines.push(currentLine);
+                                    
+                                    // 최대 2줄까지만 표시
+                                    lines = lines.slice(0, 2);
+                                    
+                                    lines.forEach((line, lineIndex) => {
+                                        const y = element.y + (element.h / 2) + (lineIndex - (lines.length - 1) / 2) * 14;
+                                        ctx.fillText(line.trim(), element.x + element.w / 2, y);
+                                    });
+                                    
+                                    ctx.restore();
+                                }
+                            }
+                        });
+                    }
                 },
+                responsive: true,
+                maintainAspectRatio: false
             }
         });
             }
