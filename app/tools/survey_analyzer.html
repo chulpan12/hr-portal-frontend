@@ -509,12 +509,29 @@
                 }
                 const sentimentColors = { '긍정': 'rgba(22, 163, 74, 0.7)', '부정': 'rgba(220, 38, 38, 0.7)', '중립': 'rgba(107, 114, 128, 0.7)' };
                 
+                // ✨ [핵심 수정] 차트에 데이터를 전달하기 전, sentiment 값을 보정하거나 직접 계산합니다.
+                const processedTopics = data.topics.map(topic => {
+                    // sentiment 값이 없거나 유효하지 않을 경우, sentimentBreakdown을 기반으로 직접 계산
+                    if ((!topic.sentiment || !sentimentColors[topic.sentiment]) && topic.sentimentBreakdown) {
+                        const breakdown = topic.sentimentBreakdown;
+                        
+                        // 가장 높은 값을 가진 감성을 찾습니다. (예: 'positive', 'negative', 'neutral')
+                        const dominantSentimentKey = Object.keys(breakdown).reduce((a, b) => breakdown[a] > breakdown[b] ? a : b);
+                        
+                        // 영어를 한글로 변환합니다.
+                        const sentimentMap = { 'positive': '긍정', 'neutral': '중립', 'negative': '부정' };
+                        topic.sentiment = sentimentMap[dominantSentimentKey];
+                    }
+                    return topic;
+                });
+                
                 chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
                     type: 'treemap',
                     data: {
                         datasets: [{
                             label: '주제별 분포',
-                            tree: data.topics,
+                            // ✨ [핵심 수정] 원본 데이터 대신 가공된 데이터를 사용합니다.
+                            tree: processedTopics,
                             key: 'count',
                             groups: ['topicName'],
                             backgroundColor: (ctx) => {
