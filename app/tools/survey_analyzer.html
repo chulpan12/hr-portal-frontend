@@ -339,13 +339,24 @@
                                         dom.loader.classList.add('hidden');
                                         dom.resultContainer.classList.remove('hidden');
                                         console.log('스트리밍 완료. 최종 수집된 텍스트:', fullResponseText);
+                                        
                                         try {
-                                            const finalJson = JSON.parse(fullResponseText);
-                                            console.log('파싱된 JSON:', finalJson);
-                                            renderResults(finalJson); // 최종 결과 렌더링
+                                            // ✨ [핵심 수정] 정규표현식을 사용해 순수 JSON 데이터만 추출
+                                            const jsonMatch = fullResponseText.match(/\{[\s\S]*\}/);
+
+                                            if (jsonMatch && jsonMatch[0]) {
+                                                const cleanJsonString = jsonMatch[0];
+                                                const finalJson = JSON.parse(cleanJsonString);
+                                                console.log('성공적으로 추출 및 파싱된 JSON:', finalJson);
+                                                renderResults(finalJson);
+                                            } else {
+                                                // 응답 텍스트에서 JSON 객체를 찾지 못한 경우
+                                                throw new Error("응답에서 유효한 JSON 객체를 찾을 수 없습니다.");
+                                            }
+
                                         } catch (parseError) {
                                             console.error('최종 JSON 파싱 오류:', parseError, '수집된 텍스트:', fullResponseText);
-                                            alert('분석 결과를 처리하는 중 오류가 발생했습니다. 다시 시도해주세요.');
+                                            alert('분석 결과를 처리하는 중 오류가 발생했습니다. 개발자 콘솔을 확인해주세요.');
                                         }
                                         return;
                                     }
