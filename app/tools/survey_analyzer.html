@@ -509,53 +509,40 @@
                 }
                 const sentimentColors = { '긍정': 'rgba(22, 163, 74, 0.7)', '부정': 'rgba(220, 38, 38, 0.7)', '중립': 'rgba(107, 114, 128, 0.7)' };
                 
-                // ✨ [핵심 수정] 차트에 데이터를 전달하기 전, sentiment 값을 보정하거나 직접 계산합니다.
-                const processedTopics = data.topics.map(topic => {
-                    // sentiment 값이 없거나 유효하지 않을 경우, sentimentBreakdown을 기반으로 직접 계산
-                    if ((!topic.sentiment || !sentimentColors[topic.sentiment]) && topic.sentimentBreakdown) {
-                        const breakdown = topic.sentimentBreakdown;
-                        
-                        // 가장 높은 값을 가진 감성을 찾습니다. (예: 'positive', 'negative', 'neutral')
-                        const dominantSentimentKey = Object.keys(breakdown).reduce((a, b) => breakdown[a] > breakdown[b] ? a : b);
-                        
-                        // 영어를 한글로 변환합니다.
-                        const sentimentMap = { 'positive': '긍정', 'neutral': '중립', 'negative': '부정' };
-                        topic.sentiment = sentimentMap[dominantSentimentKey];
-                    }
-                    return topic;
-                });
-                
-                chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
-                    type: 'treemap',
-                    data: {
-                        datasets: [{
-                            label: '주제별 분포',
-                            // ✨ [핵심 수정] 원본 데이터 대신 가공된 데이터를 사용합니다.
-                            tree: processedTopics,
-                            key: 'count',
-                            groups: ['topicName'],
-                            backgroundColor: (ctx) => {
-                                if (ctx.type !== 'data') return 'transparent';
-                                const sentiment = ctx.raw._data.sentiment;
-                                return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
-                            },
-                            borderColor: 'rgba(255, 255, 255, 0.5)',
-                            borderWidth: 1,
-                        }],
+                        // 이전의 sentiment 보정/계산 로직은 AI 응답이 안정적이므로 일단 제거하고, 필요 시 다시 추가할 수 있습니다.
+        
+        chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
+            type: 'treemap',
+            data: {
+                datasets: [{
+                    label: '주제별 분포',
+                    tree: data.topics, // 원본 데이터를 바로 사용
+                    key: 'count',
+                    groups: ['topicName'],
+                    backgroundColor: (ctx) => {
+                        if (ctx.type !== 'data') return 'transparent';
+                        // ✨ [핵심 수정 1] ._data 제거
+                        const sentiment = ctx.raw.sentiment; 
+                        return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
                     },
-                    options: {
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    title: (item) => item[0].raw._data.topicName,
-                                    label: (item) => `응답 수: ${item.raw.v}`,
-                                    afterLabel: (item) => `주요 감성: ${item.raw._data.sentiment}`
-                                }
-                            },
-                            legend: { display: false }
-                        },
-                    }
-                });
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: (item) => item[0].raw.topicName,
+                            label: (item) => `응답 수: ${item.raw.v}`,
+                            // ✨ [핵심 수정 2] ._data 제거
+                            afterLabel: (item) => `주요 감성: ${item.raw.sentiment}`
+                        }
+                    },
+                    legend: { display: false }
+                },
+            }
+        });
             }
 
             // [요청 2] 주제별 분석 결과 렌더링 (감성 비율 그래프 포함)
