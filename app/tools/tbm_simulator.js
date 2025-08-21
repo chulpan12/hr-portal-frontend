@@ -460,10 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // ✨ [수정] 턴 수와 시간 초기화 추가
         initializeTurnTime();
         
-        // ✨ [신규] TBM 종료 버튼 재활성화
-        dom.showResultBtn.disabled = false;
-        dom.showResultBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        dom.showResultBtn.classList.add('hover:bg-blue-700');
+        // ✨ [수정] TBM 종료 버튼은 startSimulation에서 관리하므로 여기서는 제거
         
         state.history = "";
         state.safetyScore = 50;
@@ -538,6 +535,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.diagramLegend.innerHTML = '';
         } finally {
             setLoading(false);
+            // ✨ [수정] 에러가 발생한 경우에도 TBM 종료 버튼 상태 확인
+            // startSimulation에서 관리하므로 여기서는 추가 조치 불필요
         }
     }
 
@@ -716,6 +715,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ✨ [신규] 결과 및 리플레이 표시 함수
     async function showResultAndReplay() {
+        // ✨ [수정] 시나리오가 로드되지 않은 상태에서 호출되는 것을 방지
+        if (!state.scenario) {
+            addCoachFeedback('suggestion', '시나리오가 아직 로드되지 않았습니다. 잠시 기다려주세요.');
+            return;
+        }
+        
         // ✨ [신규] TBM 종료 버튼 비활성화 (중복 클릭 방지)
         dom.showResultBtn.disabled = true;
         dom.showResultBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -820,6 +825,12 @@ document.addEventListener('DOMContentLoaded', () => {
             addCoachFeedback('suggestion', `오류: ${error.message}`);
         } finally {
             setLoading(false);
+            // ✨ [수정] 에러가 발생한 경우 TBM 종료 버튼을 다시 활성화
+            if (!state.scenario) {
+                dom.showResultBtn.disabled = false;
+                dom.showResultBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                dom.showResultBtn.classList.add('hover:bg-blue-700');
+            }
         }
     }
     
@@ -938,13 +949,26 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSafetyScoreUI();
     }
 
-    function startSimulation() {
+    async function startSimulation() {
         dom.startSimulationArea.classList.add('hidden');
         dom.chatContainer.classList.remove('hidden');
         dom.chatInputArea.classList.remove('hidden');
         // ✨ [추가] 새로운 상황 버튼 보이기
         dom.newScenarioBtn.classList.remove('hidden');
-        startNewScenario();
+        
+        // ✨ [수정] 시나리오 생성 중에는 TBM 종료 버튼 비활성화
+        dom.showResultBtn.disabled = true;
+        dom.showResultBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        dom.showResultBtn.classList.remove('hover:bg-blue-700');
+        
+        // ✨ [수정] startNewScenario 완료를 기다림
+        await startNewScenario();
+        
+        // ✨ [수정] 시나리오 생성 완료 후 TBM 종료 버튼 활성화
+        dom.showResultBtn.disabled = false;
+        dom.showResultBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        dom.showResultBtn.classList.add('hover:bg-blue-700');
+        
         // ✨ 시나리오 로드 완료 후 턴 수와 시간 초기화
         setTimeout(() => {
             initializeTurnTime();
