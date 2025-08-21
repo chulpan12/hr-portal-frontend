@@ -230,20 +230,14 @@
 
             dom.loader.classList.remove('hidden');
             dom.resultContainer.classList.add('hidden');
+            dom.overallSummary.innerHTML = ''; // 이전 결과 초기화
+            dom.topicResults.innerHTML = ''; // 이전 결과 초기화
 
-            try {
-                const result = await callBackendAPI(rawText, delimiter);
-                renderResults(result);
-            } catch (error) {
-                console.error("API 호출 오류:", error);
-                alert(`분석 중 오류가 발생했습니다: ${error.message}`);
-            } finally {
-                dom.loader.classList.add('hidden');
-                dom.resultContainer.classList.remove('hidden');
-            }
+            // 스트리밍을 처리하는 함수 호출
+            streamFromBackend(rawText, delimiter);
         }
 
-        // ✨ [수정] callBackendAPI 함수
+        // ✨ [수정] callBackendAPI 함수 (기존 호환성을 위해 유지)
         async function callBackendAPI(text, delimiter) {
             const apiUrl = 'https://api.dreamofenc.com/api/survey/analyze'; // 각 툴에 맞는 주소
             const token = sessionStorage.getItem('ai-tool-token');
@@ -281,6 +275,99 @@
             }
 
             return await response.json();
+        }
+
+        // ✨ [추가] 스트리밍을 처리하는 새로운 함수
+        function streamFromBackend(text, delimiter) {
+            const apiUrl = 'https://api.dreamofenc.com/api/survey/analyze-stream'; // 스트리밍 엔드포인트 주소
+            const token = sessionStorage.getItem('ai-tool-token');
+
+            if (!token) {
+                alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                dom.mainContent.classList.add('hidden');
+                dom.loginModal.classList.remove('hidden');
+                dom.loader.classList.add('hidden');
+                return;
+            }
+
+            let fullResponseText = ""; // AI가 보내는 텍스트 조각들을 합칠 변수
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ text: text, delimiter: delimiter })
+            })
+            .then(response => {
+                if (!response.ok) {
+                     // 401 인증 오류 등 처리
+                    if (response.status === 401) {
+                        sessionStorage.removeItem('ai-tool-token');
+                        dom.mainContent.classList.add('hidden');
+                        dom.loginModal.classList.remove('hidden');
+                        throw new Error('인증에 실패했습니다. 다시 로그인해주세요.');
+                    }
+                    throw new Error(`서버 응답 오류: ${response.status}`);
+                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                // 스트림을 읽는 재귀 함수
+                function read() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            console.log('스트림 완료.');
+                            return;
+                        }
+                        
+                        const chunk = decoder.decode(value, { stream: true });
+                        // SSE는 "data: ...\n\n" 형식으로 여러 메시지를 보낼 수 있음
+                        const lines = chunk.split('\n\n');
+                        
+                        lines.forEach(line => {
+                            if (line.startsWith('data:')) {
+                                const jsonData = line.substring(5).trim();
+                                if (!jsonData) return;
+                                
+                                try {
+                                    const parsedData = JSON.parse(jsonData);
+
+                                    // 완료 이벤트 처리
+                                    if (parsedData.event === 'done') {
+                                        dom.loader.classList.add('hidden');
+                                        dom.resultContainer.classList.remove('hidden');
+                                        const finalJson = JSON.parse(fullResponseText);
+                                        renderResults(finalJson); // 최종 결과 렌더링
+                                        return;
+                                    }
+                                    
+                                    // 에러 메시지 처리
+                                    if (parsedData.error) {
+                                        throw new Error(parsedData.error);
+                                    }
+
+                                    // 텍스트 조각 이어붙이기
+                                    if (parsedData.text) {
+                                        fullResponseText += parsedData.text;
+                                    }
+
+                                } catch (e) {
+                                    console.error('JSON 파싱 오류:', e, '데이터:', jsonData);
+                                }
+                            }
+                        });
+                        read(); // 다음 조각 읽기
+                    });
+                }
+                read();
+            })
+            .catch(error => {
+                console.error("스트리밍 오류:", error);
+                alert(`분석 중 오류가 발생했습니다: ${error.message}`);
+                dom.loader.classList.add('hidden');
+            });
         }
 
         function renderResults(data) {
