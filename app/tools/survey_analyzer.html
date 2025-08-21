@@ -120,24 +120,12 @@
                     <div id="resultContainer" class="hidden space-y-6">
                         <div id="overallSummary" class="result-card p-5 rounded-xl col-span-1 md:col-span-2"></div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div id="wordCloudCard" class="result-card p-5 rounded-xl">
-                                <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
-                                    핵심 키워드
-                                </h3>
-                                <div id="wordCloudContainer" class="w-full h-80"></div>
-                            </div>
-
-                            <div id="treemapCard" class="result-card p-5 rounded-xl">
-                                <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                    주제별 분포
-                                </h3>
-                                <div class="relative" style="height: 400px;">
-                                    <canvas id="treemapChart"></canvas>
-                                </div>
-                            </div>
+                        <div id="wordCloudCard" class="result-card p-5 rounded-xl">
+                            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                                핵심 키워드
+                            </h3>
+                            <div id="wordCloudContainer" class="w-full h-96"></div>
                         </div>
 
                         <div id="topicResults" class="space-y-6"></div>
@@ -191,9 +179,8 @@
             themeToggle: document.getElementById('themeToggle'),
             themeIcon: document.getElementById('themeIcon'),
             downloadBtn: document.getElementById('downloadBtn'), // ✨ [요청 4] 다운로드 버튼 DOM 추가
-            treemapChart: document.getElementById('treemapChart'), // ✨ [요청 3] 트리맵 캔버스 DOM 추가
+
         };
-        let chartInstance = null; // ✨ [요청 3] 차트 인스턴스 변수
 
         // --- Event Listeners ---
         dom.analyzeBtn.addEventListener('click', analyzeText);
@@ -527,7 +514,7 @@
                         gridSize: 4, // 단어 간격을 더 좁게 조절
                         weightFactor: function (size) {
                             // 글씨 크기를 결정하는 배율을 높여 전반적으로 크게 만듭니다.
-                            return size * 16; 
+                            return size * 24; 
                         },
                         fontFamily: 'Noto Sans KR, sans-serif',
                         color: 'random-light',
@@ -544,115 +531,7 @@
                 }
             }
 
-            // [요청 3] 트리맵 렌더링
-            if (data.topics && Array.isArray(data.topics)) {
-                if(chartInstance) {
-                    chartInstance.destroy(); // 이전 차트가 있으면 파괴
-                }
-                const sentimentColors = { 
-                    '긍정': 'rgba(22, 163, 74, 0.8)', 
-                    '부정': 'rgba(220, 38, 38, 0.8)', 
-                    '중립': 'rgba(107, 114, 128, 0.8)',
-                    'Positive': 'rgba(22, 163, 74, 0.8)', 
-                    'Negative': 'rgba(220, 38, 38, 0.8)', 
-                    'Neutral': 'rgba(107, 114, 128, 0.8)'
-                };
-                
-                chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
-                    type: 'treemap',
-                    data: {
-                        datasets: [{
-                            label: '주제별 분포',
-                            tree: data.topics,
-                            key: 'count',
-                            groups: ['topicName'],
-                            backgroundColor: (ctx) => {
-                                if (ctx.type !== 'data') return 'transparent';
-                                
-                                // children 배열에서 실제 데이터에 접근
-                                const originalData = ctx.raw._data?.children?.[0];
-                                const sentiment = originalData?.sentiment;
-                                
-                                return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
-                            },
-                            borderColor: 'rgba(255, 255, 255, 0.3)',
-                            borderWidth: 1.5,
-                        }],
-                    },
-                    options: {
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    title: (item) => {
-                                        const originalData = item[0].raw._data?.children?.[0];
-                                        return originalData?.topicName || '알 수 없는 주제';
-                                    },
-                                    label: (item) => `응답 수: ${item.raw.v}`,
-                                    afterLabel: (item) => {
-                                        const originalData = item.raw._data?.children?.[0];
-                                        const sentiment = originalData?.sentiment;
-                                        return `주요 감성: ${sentiment || '알 수 없음'}`;
-                                    }
-                                }
-                            },
-                            legend: { display: false }
-                        },
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        // 차트 렌더링 완료 후 HTML 오버레이 추가
-                        onComplete: (chart) => {
-                            // 기존 오버레이 제거
-                            const existingOverlays = document.querySelectorAll('.treemap-label-overlay');
-                            existingOverlays.forEach(overlay => overlay.remove());
-                            
-                            const data = chart.data.datasets[0].tree;
-                            const canvas = chart.canvas;
-                            const rect = canvas.getBoundingClientRect();
-                            
-                            data.forEach((item, index) => {
-                                const meta = chart.getDatasetMeta(0);
-                                const element = meta.data[index];
-                                
-                                if (element && element.x && element.y && element.w && element.h) {
-                                    // 사각형이 충분히 큰 경우에만 라벨 표시
-                                    if (element.w > 80 && element.h > 30) {
-                                        const labelDiv = document.createElement('div');
-                                        labelDiv.className = 'treemap-label-overlay';
-                                        labelDiv.style.position = 'absolute';
-                                        labelDiv.style.left = (rect.left + element.x) + 'px';
-                                        labelDiv.style.top = (rect.top + element.y) + 'px';
-                                        labelDiv.style.width = element.w + 'px';
-                                        labelDiv.style.height = element.h + 'px';
-                                        labelDiv.style.display = 'flex';
-                                        labelDiv.style.alignItems = 'center';
-                                        labelDiv.style.justifyContent = 'center';
-                                        labelDiv.style.pointerEvents = 'none';
-                                        labelDiv.style.zIndex = '10';
-                                        labelDiv.style.fontFamily = 'Noto Sans KR, sans-serif';
-                                        labelDiv.style.fontWeight = 'bold';
-                                        labelDiv.style.fontSize = '12px';
-                                        labelDiv.style.color = 'white';
-                                        labelDiv.style.textAlign = 'center';
-                                        labelDiv.style.textShadow = '1px 1px 2px rgba(0,0,0,0.8)';
-                                        labelDiv.style.lineHeight = '1.2';
-                                        labelDiv.style.padding = '4px';
-                                        labelDiv.style.wordBreak = 'break-word';
-                                        
-                                        // 텍스트가 너무 길면 줄임
-                                        let displayText = item.topicName;
-                                        if (displayText.length > 15) {
-                                            displayText = displayText.substring(0, 12) + '...';
-                                        }
-                                        
-                                        labelDiv.textContent = displayText;
-                                        document.body.appendChild(labelDiv);
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
+
 
             // [요청 2] 주제별 분석 결과 렌더링 (감성 비율 그래프 포함)
             dom.topicResults.innerHTML = '';
