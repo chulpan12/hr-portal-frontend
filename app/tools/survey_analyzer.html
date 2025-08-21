@@ -14,6 +14,9 @@
     <!-- Chart.js and Treemap Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.0.1/dist/chartjs-chart-treemap.min.js"></script>
+    
+    <!-- WordCloud2.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
 
     <style>
         :root {
@@ -115,19 +118,28 @@
                         <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
                     </div>
                     <div id="resultContainer" class="hidden space-y-6">
-                        <div id="overallSummary" class="result-card p-5 rounded-xl"></div>
+                        <div id="overallSummary" class="result-card p-5 rounded-xl col-span-1 md:col-span-2"></div>
 
-                        <!-- ✨ [추가] 트리맵 차트 카드 -->
-                        <div id="treemapCard" class="result-card p-5 rounded-xl">
-                            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                주제별 분포 (크기: 응답 수, 색상: 감성)
-                            </h3>
-                            <div class="relative" style="height: 400px;">
-                                <canvas id="treemapChart"></canvas>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div id="wordCloudCard" class="result-card p-5 rounded-xl">
+                                <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                                    핵심 키워드
+                                </h3>
+                                <div id="wordCloudContainer" class="w-full h-80"></div>
+                            </div>
+
+                            <div id="treemapCard" class="result-card p-5 rounded-xl">
+                                <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    주제별 분포
+                                </h3>
+                                <div class="relative" style="height: 400px;">
+                                    <canvas id="treemapChart"></canvas>
+                                </div>
                             </div>
                         </div>
-                        
+
                         <div id="topicResults" class="space-y-6"></div>
                     </div>
                 </div>
@@ -502,6 +514,27 @@
                 `;
             } else {
                 dom.overallSummary.innerHTML = '<p class="text-red-400">전체 요약 데이터를 불러올 수 없습니다.</p>';
+            }
+
+            // ✨ [요청 2] 워드클라우드 렌더링 (새로 추가된 부분)
+            if (data.overall && Array.isArray(data.overall.keywords)) {
+                const wordCloudList = data.overall.keywords.map(item => [item.word, item.count]);
+                
+                if (wordCloudList.length > 0) {
+                    WordCloud(document.getElementById('wordCloudContainer'), { 
+                        list: wordCloudList,
+                        gridSize: Math.round(16 * document.getElementById('wordCloudContainer').clientWidth / 1024),
+                        weightFactor: function (size) {
+                            // 키워드 빈도에 따라 폰트 크기 조절
+                            return Math.pow(size, 1.2) * 2;
+                        },
+                        fontFamily: 'Noto Sans KR, sans-serif',
+                        color: 'random-light',
+                        backgroundColor: 'transparent',
+                        shuffle: false,
+                        rotateRatio: 0
+                    });
+                }
             }
 
             // [요청 3] 트리맵 렌더링
