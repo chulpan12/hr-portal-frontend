@@ -524,16 +524,22 @@
                     // ✨ [핵심 수정 1] 워드클라우드 옵션 조정
                     WordCloud(document.getElementById('wordCloudContainer'), { 
                         list: wordCloudList,
-                        gridSize: 8, // 단어 간격 조절
+                        gridSize: 4, // 단어 간격을 더 좁게 조절
                         weightFactor: function (size) {
                             // 글씨 크기를 결정하는 배율을 높여 전반적으로 크게 만듭니다.
-                            return size * 6; 
+                            return size * 8; 
                         },
                         fontFamily: 'Noto Sans KR, sans-serif',
                         color: 'random-light',
                         backgroundColor: 'transparent',
                         shuffle: false,
-                        rotateRatio: 0
+                        rotateRatio: 0,
+                        // 영역에 꽉 차도록 설정
+                        minSize: 8,
+                        maxSize: 60,
+                        // 컨테이너 크기에 맞춰 자동 조정
+                        width: document.getElementById('wordCloudContainer').clientWidth,
+                        height: document.getElementById('wordCloudContainer').clientHeight
                     });
                 }
             }
@@ -564,27 +570,6 @@
                             },
                             borderColor: 'rgba(255, 255, 255, 0.3)',
                             borderWidth: 1.5,
-                            
-                            // ✨ [핵심 수정 2] 트리맵에 레이블(주제명)을 표시하는 옵션 추가
-                            labels: {
-                                display: true,
-                                color: (ctx) => { // 글자색 자동 조절 (어두운 배경에 흰색)
-                                   return '#fff';
-                                },
-                                font: {
-                                    size: 14,
-                                    weight: 'bold',
-                                },
-                                align: 'center',
-                                position: 'center',
-                                // 작은 사각형에는 레이블이 표시되지 않도록 하여 가독성 확보
-                                formatter(ctx) {
-                                   if (ctx.raw.v > 2) { // 응답 수가 2개 초과인 경우에만 표시
-                                     return ctx.raw.topicName.split(' ');
-                                   }
-                                   return null;
-                                }
-                            }
                         }],
                     },
                     options: {
@@ -603,7 +588,56 @@
                                     }
                                 }
                             },
-                            legend: { display: false }
+                            legend: { display: false },
+                            // 트리맵에 텍스트 표시 (안정적인 방법)
+                            afterDraw: (chart) => {
+                                const ctx = chart.ctx;
+                                const data = chart.data.datasets[0].tree;
+                                
+                                data.forEach((item, index) => {
+                                    const meta = chart.getDatasetMeta(0);
+                                    const element = meta.data[index];
+                                    
+                                    if (element && element.x && element.y && element.w && element.h) {
+                                        // 텍스트가 사각형 안에 들어갈 수 있는지 확인
+                                        if (element.w > 80 && element.h > 30) {
+                                            ctx.save();
+                                            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                                            ctx.font = 'bold 14px Noto Sans KR';
+                                            ctx.textAlign = 'center';
+                                            ctx.textBaseline = 'middle';
+                                            
+                                            // 텍스트 줄바꿈 처리
+                                            const maxWidth = element.w - 10;
+                                            const words = item.topicName.split(' ');
+                                            let lines = [];
+                                            let currentLine = '';
+                                            
+                                            words.forEach(word => {
+                                                const testLine = currentLine + word + ' ';
+                                                const metrics = ctx.measureText(testLine);
+                                                if (metrics.width > maxWidth && currentLine !== '') {
+                                                    lines.push(currentLine);
+                                                    currentLine = word + ' ';
+                                                } else {
+                                                    currentLine = testLine;
+                                                }
+                                            });
+                                            lines.push(currentLine);
+                                            
+                                            // 최대 2줄까지만 표시
+                                            lines = lines.slice(0, 2);
+                                            
+                                            lines.forEach((line, lineIndex) => {
+                                                const y = element.y + (element.h / 2) + (lineIndex - (lines.length - 1) / 2) * 16;
+                                                ctx.fillText(line.trim(), element.x + element.w / 2, y);
+                                            });
+                                            
+                                            ctx.restore();
+                                        }
+                                    }
+                                });
+                            }
                         },
                         responsive: true,
                         maintainAspectRatio: false
