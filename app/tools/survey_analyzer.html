@@ -521,13 +521,10 @@
                     groups: ['topicName'],
                     backgroundColor: (ctx) => {
                         if (ctx.type !== 'data') return 'transparent';
-                        // 디버깅: 실제 데이터 구조 확인
-                        console.log('Chart context:', ctx);
-                        console.log('ctx.raw:', ctx.raw);
-                        console.log('ctx.raw keys:', Object.keys(ctx.raw));
                         
-                        // 다양한 접근 방법 시도
-                        const sentiment = ctx.raw.sentiment || ctx.raw._data?.sentiment || ctx.raw.data?.sentiment;
+                        // ctx.raw._data에서 실제 데이터에 접근
+                        const sentiment = ctx.raw._data?.sentiment;
+                        console.log('ctx.raw._data:', ctx.raw._data);
                         console.log('Found sentiment:', sentiment);
                         
                         return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
@@ -541,13 +538,12 @@
                     tooltip: {
                         callbacks: {
                             title: (item) => {
-                                console.log('Tooltip item:', item);
-                                console.log('item[0].raw:', item[0].raw);
-                                return item[0].raw.topicName || item[0].raw._data?.topicName || '알 수 없는 주제';
+                                console.log('Tooltip item[0].raw._data:', item[0].raw._data);
+                                return item[0].raw._data?.topicName || '알 수 없는 주제';
                             },
                             label: (item) => `응답 수: ${item.raw.v}`,
                             afterLabel: (item) => {
-                                const sentiment = item.raw.sentiment || item.raw._data?.sentiment || item.raw.data?.sentiment;
+                                const sentiment = item.raw._data?.sentiment;
                                 console.log('Tooltip sentiment:', sentiment);
                                 return `주요 감성: ${sentiment || '알 수 없음'}`;
                             }
