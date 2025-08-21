@@ -521,8 +521,15 @@
                     groups: ['topicName'],
                     backgroundColor: (ctx) => {
                         if (ctx.type !== 'data') return 'transparent';
-                        // ✨ [핵심 수정 1] ._data 제거
-                        const sentiment = ctx.raw.sentiment; 
+                        // 디버깅: 실제 데이터 구조 확인
+                        console.log('Chart context:', ctx);
+                        console.log('ctx.raw:', ctx.raw);
+                        console.log('ctx.raw keys:', Object.keys(ctx.raw));
+                        
+                        // 다양한 접근 방법 시도
+                        const sentiment = ctx.raw.sentiment || ctx.raw._data?.sentiment || ctx.raw.data?.sentiment;
+                        console.log('Found sentiment:', sentiment);
+                        
                         return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
                     },
                     borderColor: 'rgba(255, 255, 255, 0.5)',
@@ -533,10 +540,17 @@
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            title: (item) => item[0].raw.topicName,
+                            title: (item) => {
+                                console.log('Tooltip item:', item);
+                                console.log('item[0].raw:', item[0].raw);
+                                return item[0].raw.topicName || item[0].raw._data?.topicName || '알 수 없는 주제';
+                            },
                             label: (item) => `응답 수: ${item.raw.v}`,
-                            // ✨ [핵심 수정 2] ._data 제거
-                            afterLabel: (item) => `주요 감성: ${item.raw.sentiment}`
+                            afterLabel: (item) => {
+                                const sentiment = item.raw.sentiment || item.raw._data?.sentiment || item.raw.data?.sentiment;
+                                console.log('Tooltip sentiment:', sentiment);
+                                return `주요 감성: ${sentiment || '알 수 없음'}`;
+                            }
                         }
                     },
                     legend: { display: false }
