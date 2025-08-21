@@ -531,10 +531,10 @@
                     // ✨ [핵심 수정 1] 워드클라우드 옵션 조정
                     WordCloud(document.getElementById('wordCloudContainer'), { 
                         list: wordCloudList,
-                        gridSize: 8, // 단어 간격을 더 좁게 조절
+                        gridSize: 6, // 단어 간격 조절
                         weightFactor: function (size) {
-                            // 글씨 크기를 결정하는 배율을 높여 전반적으로 크게 만듭니다.
-                            return size * 8; 
+                            // 빈도 차이를 줄여서 모든 키워드가 보이도록 조정
+                            return Math.log(size + 1) * 15; 
                         },
                         fontFamily: 'Noto Sans KR, sans-serif',
                         color: 'random-light',
@@ -542,8 +542,8 @@
                         shuffle: false,
                         rotateRatio: 0,
                         // 영역에 꽉 차도록 설정
-                        minSize: 8,
-                        maxSize: 60,
+                        minSize: 10,
+                        maxSize: 50,
                         // 컨테이너 크기에 맞춰 자동 조정
                         width: document.getElementById('wordCloudContainer').clientWidth,
                         height: document.getElementById('wordCloudContainer').clientHeight
