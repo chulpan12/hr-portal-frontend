@@ -338,8 +338,15 @@
                                     if (parsedData.event === 'done') {
                                         dom.loader.classList.add('hidden');
                                         dom.resultContainer.classList.remove('hidden');
-                                        const finalJson = JSON.parse(fullResponseText);
-                                        renderResults(finalJson); // 최종 결과 렌더링
+                                        console.log('스트리밍 완료. 최종 수집된 텍스트:', fullResponseText);
+                                        try {
+                                            const finalJson = JSON.parse(fullResponseText);
+                                            console.log('파싱된 JSON:', finalJson);
+                                            renderResults(finalJson); // 최종 결과 렌더링
+                                        } catch (parseError) {
+                                            console.error('최종 JSON 파싱 오류:', parseError, '수집된 텍스트:', fullResponseText);
+                                            alert('분석 결과를 처리하는 중 오류가 발생했습니다. 다시 시도해주세요.');
+                                        }
                                         return;
                                     }
                                     
@@ -351,6 +358,7 @@
                                     // 텍스트 조각 이어붙이기
                                     if (parsedData.text) {
                                         fullResponseText += parsedData.text;
+                                        console.log('스트리밍 진행 중... 현재 길이:', fullResponseText.length);
                                     }
 
                                 } catch (e) {
@@ -371,45 +379,63 @@
         }
 
         function renderResults(data) {
+            // 데이터 유효성 검사
+            if (!data || typeof data !== 'object') {
+                console.error('유효하지 않은 데이터:', data);
+                dom.overallSummary.innerHTML = '<p class="text-red-400">분석 결과를 불러오는 중 오류가 발생했습니다.</p>';
+                dom.topicResults.innerHTML = '';
+                return;
+            }
+
             // 1. 전체 요약 렌더링
-            dom.overallSummary.innerHTML = `
-                <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    종합 분석 (총 ${data.overall.totalResponses}개 응답)
-                </h3>
-                <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">${data.overall.summary}</p>
-                <div class="flex gap-4">
-                    <div class="flex-1 text-center bg-green-500/20 p-2 rounded-lg">
-                        <div class="font-bold text-xl text-green-400">${data.overall.positivePercentage}%</div>
-                        <div class="text-xs text-green-400/80">긍정</div>
+            if (data.overall && typeof data.overall === 'object') {
+                dom.overallSummary.innerHTML = `
+                    <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        종합 분석 (총 ${data.overall.totalResponses || 0}개 응답)
+                    </h3>
+                    <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">${data.overall.summary || '분석 중...'}</p>
+                    <div class="flex gap-4">
+                        <div class="flex-1 text-center bg-green-500/20 p-2 rounded-lg">
+                            <div class="font-bold text-xl text-green-400">${data.overall.positivePercentage || 0}%</div>
+                            <div class="text-xs text-green-400/80">긍정</div>
+                        </div>
+                        <div class="flex-1 text-center bg-red-500/20 p-2 rounded-lg">
+                            <div class="font-bold text-xl text-red-400">${data.overall.negativePercentage || 0}%</div>
+                            <div class="text-xs text-red-400/80">부정</div>
+                        </div>
                     </div>
-                    <div class="flex-1 text-center bg-red-500/20 p-2 rounded-lg">
-                        <div class="font-bold text-xl text-red-400">${data.overall.negativePercentage}%</div>
-                        <div class="text-xs text-red-400/80">부정</div>
-                    </div>
-                </div>
-            `;
+                `;
+            } else {
+                dom.overallSummary.innerHTML = '<p class="text-red-400">전체 요약 데이터를 불러올 수 없습니다.</p>';
+            }
 
             // 2. 주제별 분석 결과 렌더링
             dom.topicResults.innerHTML = '';
-            data.topics.forEach(topic => {
-                const topicCard = document.createElement('div');
-                topicCard.className = 'result-card p-5 rounded-xl';
-                topicCard.innerHTML = `
-                    <h3 class="font-bold text-lg mb-3 flex justify-between items-center">
-                        <span class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15v1a1 1 0 001 1h12a1 1 0 001-1v-1a1 1 0 00-.293-.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
-                            ${topic.topicName}
-                        </span>
-                        <span class="text-sm font-medium bg-gray-700/50 px-2 py-1 rounded-md">${topic.count}개</span>
-                    </h3>
-                    <p class="text-sm leading-relaxed mb-3" style="color: var(--text-secondary);">${topic.summary}</p>
-                    <div class="text-xs border-l-2 border-amber-500 pl-3 italic" style="color: var(--text-secondary);">
-                        <strong>대표 의견:</strong> "${topic.representativeQuote}"
-                    </div>
-                `;
-                dom.topicResults.appendChild(topicCard);
-            });
+            if (data.topics && Array.isArray(data.topics)) {
+                data.topics.forEach(topic => {
+                    if (topic && typeof topic === 'object') {
+                        const topicCard = document.createElement('div');
+                        topicCard.className = 'result-card p-5 rounded-xl';
+                        topicCard.innerHTML = `
+                            <h3 class="font-bold text-lg mb-3 flex justify-between items-center">
+                                <span class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15v1a1 1 0 001 1h12a1 1 0 001-1v-1a1 1 0 00-.293-.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
+                                    ${topic.topicName || '알 수 없는 주제'}
+                                </span>
+                                <span class="text-sm font-medium bg-gray-700/50 px-2 py-1 rounded-md">${topic.count || 0}개</span>
+                            </h3>
+                            <p class="text-sm leading-relaxed mb-3" style="color: var(--text-secondary);">${topic.summary || '요약 정보 없음'}</p>
+                            <div class="text-xs border-l-2 border-amber-500 pl-3 italic" style="color: var(--text-secondary);">
+                                <strong>대표 의견:</strong> "${topic.representativeQuote || '대표 의견 없음'}"
+                            </div>
+                        `;
+                        dom.topicResults.appendChild(topicCard);
+                    }
+                });
+            } else {
+                dom.topicResults.innerHTML = '<p class="text-red-400">주제별 분석 데이터를 불러올 수 없습니다.</p>';
+            }
         }
 
         function toggleTheme() {
