@@ -424,15 +424,28 @@
                                             // 파싱 실패 시 사용자에게 보여줄 에러 UI
                                             dom.loader.classList.add('hidden');
                                             dom.resultContainer.classList.remove('hidden');
+                                            
+                                            // 오류 메시지 개선
+                                            let errorTitle = '분석 결과 처리 중 오류가 발생했습니다';
+                                            let errorMessage = 'AI가 반환한 데이터 형식에 문제가 있어 결과를 표시할 수 없습니다.';
+                                            let buttonText = '다시 시도하기';
+                                            
+                                            // API 과부하 오류인지 확인
+                                            if (fullResponseText.includes('overloaded') || fullResponseText.includes('503')) {
+                                                errorTitle = 'AI 서버가 일시적으로 과부하 상태입니다';
+                                                errorMessage = '현재 AI 서버 사용량이 많아 분석이 지연되고 있습니다. 잠시 후 다시 시도해주세요.';
+                                                buttonText = '잠시 후 다시 시도';
+                                            }
+                                            
                                             dom.overallSummary.innerHTML = `
                                                 <div class="text-center p-8">
-                                                    <svg class="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="mx-auto h-12 w-12 text-amber-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                                                     </svg>
-                                                    <h3 class="text-lg font-medium text-red-400 mb-2">분석 결과 처리 중 오류가 발생했습니다</h3>
-                                                    <p class="text-sm text-gray-400 mb-4">AI가 반환한 데이터 형식에 문제가 있어 결과를 표시할 수 없습니다.</p>
+                                                    <h3 class="text-lg font-medium text-amber-400 mb-2">${errorTitle}</h3>
+                                                    <p class="text-sm text-gray-400 mb-4">${errorMessage}</p>
                                                     <button onclick="location.reload()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm">
-                                                        다시 시도하기
+                                                        ${buttonText}
                                                     </button>
                                                 </div>
                                             `;
@@ -464,7 +477,14 @@
             })
             .catch(error => {
                 console.error("스트리밍 오류:", error);
-                alert(`분석 중 오류가 발생했습니다: ${error.message}`);
+                
+                // 오류 메시지 개선
+                let errorMessage = '분석 중 오류가 발생했습니다.';
+                if (error.message.includes('overloaded') || error.message.includes('503')) {
+                    errorMessage = 'AI 서버가 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.';
+                }
+                
+                alert(errorMessage);
                 dom.loader.classList.add('hidden');
             });
         }
@@ -511,10 +531,10 @@
                     // ✨ [핵심 수정 1] 워드클라우드 옵션 조정
                     WordCloud(document.getElementById('wordCloudContainer'), { 
                         list: wordCloudList,
-                        gridSize: 4, // 단어 간격을 더 좁게 조절
+                        gridSize: 8, // 단어 간격을 더 좁게 조절
                         weightFactor: function (size) {
                             // 글씨 크기를 결정하는 배율을 높여 전반적으로 크게 만듭니다.
-                            return size * 24; 
+                            return size * 32; 
                         },
                         fontFamily: 'Noto Sans KR, sans-serif',
                         color: 'random-light',
