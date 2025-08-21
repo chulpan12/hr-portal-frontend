@@ -392,42 +392,35 @@
                                         console.log('스트리밍 완료. 최종 수집된 텍스트:', fullResponseText);
                                         
                                         try {
-                                            // ✨ [핵심 수정] JSON 정제 및 복구 로직
-                                            let cleanJsonString = fullResponseText;
+                                            // 최종 수집된 텍스트에서 JSON 부분만 추출하는 것을 시도합니다.
+                                            const jsonMatch = fullResponseText.match(/\{[\s\S]*\}/);
                                             
-                                            // 1. 마크다운 코드 블록 제거
-                                            cleanJsonString = cleanJsonString.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
-                                            
-                                            // 2. 제어 문자 제거 (줄바꿈, 탭 등)
-                                            cleanJsonString = cleanJsonString.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-                                            
-                                            // 3. JSON 객체 시작과 끝 찾기
-                                            const startBrace = cleanJsonString.indexOf('{');
-                                            const endBrace = cleanJsonString.lastIndexOf('}');
-                                            
-                                            if (startBrace !== -1 && endBrace !== -1 && endBrace > startBrace) {
-                                                cleanJsonString = cleanJsonString.substring(startBrace, endBrace + 1);
+                                            if (jsonMatch && jsonMatch[0]) {
+                                                let cleanJsonString = jsonMatch[0];
+
+                                                // --- 최종 데이터 정제 단계 ---
                                                 
-                                                // 4. ✨ [핵심 수정] 스마트 따옴표를 표준 따옴표로 치환
+                                                // 1. (Defensive) 스마트 따옴표를 표준 따옴표로 치환합니다.
                                                 cleanJsonString = cleanJsonString.replace(/"/g, '"').replace(/"/g, '"');
                                                 
-                                                // 5. 불완전한 문자열 값 복구 시도
-                                                cleanJsonString = cleanJsonString.replace(/"([^"]*?)(?=\s*[,}])/g, (match, content) => {
-                                                    // 문자열이 완전하지 않으면 마지막 부분을 제거
-                                                    return `"${content.replace(/[^\w\s가-힣.,!?;:()]/g, '')}"`;
-                                                });
-                                                
+                                                // 2. ✨ [핵심 수정] 눈에 보이지 않는 제어 문자를 모두 제거합니다.
+                                                // JSON 파싱을 방해하는 ASCII 제어 문자(0-31)를 제거합니다.
+                                                cleanJsonString = cleanJsonString.replace(/[\x00-\x1F]/g, '');
+
+                                                // 3. 정제된 문자열로 JSON 파싱을 시도합니다.
                                                 const finalJson = JSON.parse(cleanJsonString);
-                                                console.log('성공적으로 추출 및 파싱된 JSON:', finalJson);
+                                                console.log('성공적으로 정제 및 파싱된 JSON:', finalJson);
                                                 renderResults(finalJson);
+
                                             } else {
+                                                // AI 응답에서 JSON 객체 형식을 전혀 찾지 못한 경우
                                                 throw new Error("응답에서 유효한 JSON 객체를 찾을 수 없습니다.");
                                             }
 
                                         } catch (parseError) {
                                             console.error('최종 JSON 파싱 오류:', parseError, '수집된 텍스트:', fullResponseText);
                                             
-                                            // 파싱 실패 시 사용자에게 알림
+                                            // 파싱 실패 시 사용자에게 보여줄 에러 UI
                                             dom.loader.classList.add('hidden');
                                             dom.resultContainer.classList.remove('hidden');
                                             dom.overallSummary.innerHTML = `
