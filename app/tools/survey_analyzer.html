@@ -527,7 +527,7 @@
                         gridSize: 4, // 단어 간격을 더 좁게 조절
                         weightFactor: function (size) {
                             // 글씨 크기를 결정하는 배율을 높여 전반적으로 크게 만듭니다.
-                            return size * 8; 
+                            return size * 16; 
                         },
                         fontFamily: 'Noto Sans KR, sans-serif',
                         color: 'random-light',
@@ -589,52 +589,52 @@
                                 }
                             },
                             legend: { display: false },
-                            // 트리맵에 텍스트 표시 (안정적인 방법)
+                            // 트리맵에 텍스트 표시 (더 확실한 방법)
                             afterDraw: (chart) => {
                                 const ctx = chart.ctx;
                                 const data = chart.data.datasets[0].tree;
+                                
+                                // 디버깅을 위한 로그
+                                console.log('트리맵 데이터:', data);
+                                console.log('차트 메타데이터:', chart.getDatasetMeta(0));
                                 
                                 data.forEach((item, index) => {
                                     const meta = chart.getDatasetMeta(0);
                                     const element = meta.data[index];
                                     
+                                    console.log(`요소 ${index}:`, element);
+                                    console.log(`아이템 ${index}:`, item);
+                                    
                                     if (element && element.x && element.y && element.w && element.h) {
+                                        console.log(`사각형 ${index} 크기:`, element.w, 'x', element.h);
+                                        
                                         // 텍스트가 사각형 안에 들어갈 수 있는지 확인
-                                        if (element.w > 80 && element.h > 30) {
+                                        if (element.w > 60 && element.h > 25) {
                                             ctx.save();
-                                            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-                                            ctx.font = 'bold 14px Noto Sans KR';
+                                            ctx.fillStyle = 'rgba(255, 255, 255, 1)'; // 완전 불투명한 흰색
+                                            ctx.font = 'bold 12px Noto Sans KR';
                                             ctx.textAlign = 'center';
                                             ctx.textBaseline = 'middle';
                                             
-                                            // 텍스트 줄바꿈 처리
-                                            const maxWidth = element.w - 10;
-                                            const words = item.topicName.split(' ');
-                                            let lines = [];
-                                            let currentLine = '';
+                                            // 간단한 텍스트 표시 (줄바꿈 없이)
+                                            const text = item.topicName || '알 수 없는 주제';
+                                            const maxWidth = element.w - 8;
                                             
-                                            words.forEach(word => {
-                                                const testLine = currentLine + word + ' ';
-                                                const metrics = ctx.measureText(testLine);
-                                                if (metrics.width > maxWidth && currentLine !== '') {
-                                                    lines.push(currentLine);
-                                                    currentLine = word + ' ';
-                                                } else {
-                                                    currentLine = testLine;
-                                                }
-                                            });
-                                            lines.push(currentLine);
+                                            // 텍스트가 너무 길면 줄임
+                                            let displayText = text;
+                                            if (ctx.measureText(text).width > maxWidth) {
+                                                displayText = text.substring(0, Math.floor(maxWidth / 8)) + '...';
+                                            }
                                             
-                                            // 최대 2줄까지만 표시
-                                            lines = lines.slice(0, 2);
-                                            
-                                            lines.forEach((line, lineIndex) => {
-                                                const y = element.y + (element.h / 2) + (lineIndex - (lines.length - 1) / 2) * 16;
-                                                ctx.fillText(line.trim(), element.x + element.w / 2, y);
-                                            });
-                                            
+                                            ctx.fillText(displayText, element.x + element.w / 2, element.y + element.h / 2);
                                             ctx.restore();
+                                            
+                                            console.log(`텍스트 표시됨: ${displayText}`);
+                                        } else {
+                                            console.log(`사각형 ${index}이 너무 작아서 텍스트 표시 안함`);
                                         }
+                                    } else {
+                                        console.log(`요소 ${index}에 위치 정보 없음`);
                                     }
                                 });
                             }
