@@ -521,12 +521,13 @@
                 const wordCloudList = data.overall.keywords.map(item => [item.word, item.count]);
                 
                 if (wordCloudList.length > 0) {
+                    // ✨ [핵심 수정 1] 워드클라우드 옵션 조정
                     WordCloud(document.getElementById('wordCloudContainer'), { 
                         list: wordCloudList,
-                        gridSize: Math.round(16 * document.getElementById('wordCloudContainer').clientWidth / 1024),
+                        gridSize: 8, // 단어 간격 조절
                         weightFactor: function (size) {
-                            // 키워드 빈도에 따라 폰트 크기 조절
-                            return Math.pow(size, 1.2) * 2;
+                            // 글씨 크기를 결정하는 배율을 높여 전반적으로 크게 만듭니다.
+                            return size * 6; 
                         },
                         fontFamily: 'Noto Sans KR, sans-serif',
                         color: 'random-light',
@@ -542,102 +543,72 @@
                 if(chartInstance) {
                     chartInstance.destroy(); // 이전 차트가 있으면 파괴
                 }
-                const sentimentColors = { '긍정': 'rgba(22, 163, 74, 0.7)', '부정': 'rgba(220, 38, 38, 0.7)', '중립': 'rgba(107, 114, 128, 0.7)' };
+                const sentimentColors = { '긍정': 'rgba(22, 163, 74, 0.8)', '부정': 'rgba(220, 38, 38, 0.8)', '중립': 'rgba(107, 114, 128, 0.8)' };
                 
-                        // 이전의 sentiment 보정/계산 로직은 AI 응답이 안정적이므로 일단 제거하고, 필요 시 다시 추가할 수 있습니다.
-        
-        chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
-            type: 'treemap',
-            data: {
-                datasets: [{
-                    label: '주제별 분포',
-                    tree: data.topics, // 원본 데이터를 바로 사용
-                    key: 'count',
-                    groups: ['topicName'],
-                    backgroundColor: (ctx) => {
-                        if (ctx.type !== 'data') return 'transparent';
-                        
-                        // children 배열에서 실제 데이터에 접근
-                        const originalData = ctx.raw._data?.children?.[0];
-                        const sentiment = originalData?.sentiment;
-                        
-                        return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
-                    },
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                    borderWidth: 1,
-                }],
-            },
-            options: {
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            title: (item) => {
-                                const originalData = item[0].raw._data?.children?.[0];
-                                return originalData?.topicName || '알 수 없는 주제';
-                            },
-                            label: (item) => `응답 수: ${item.raw.v}`,
-                            afterLabel: (item) => {
-                                const originalData = item.raw._data?.children?.[0];
+                chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
+                    type: 'treemap',
+                    data: {
+                        datasets: [{
+                            label: '주제별 분포',
+                            tree: data.topics,
+                            key: 'count',
+                            groups: ['topicName'],
+                            backgroundColor: (ctx) => {
+                                if (ctx.type !== 'data') return 'transparent';
+                                
+                                // children 배열에서 실제 데이터에 접근
+                                const originalData = ctx.raw._data?.children?.[0];
                                 const sentiment = originalData?.sentiment;
-                                return `주요 감성: ${sentiment || '알 수 없음'}`;
-                            }
-                        }
-                    },
-                    legend: { display: false },
-                    // 트리맵에 텍스트 표시
-                    afterDraw: (chart) => {
-                        const ctx = chart.ctx;
-                        const data = chart.data.datasets[0].tree;
-                        
-                        data.forEach((item, index) => {
-                            const meta = chart.getDatasetMeta(0);
-                            const element = meta.data[index];
+                                
+                                return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
+                            },
+                            borderColor: 'rgba(255, 255, 255, 0.3)',
+                            borderWidth: 1.5,
                             
-                            if (element && element.x && element.y && element.w && element.h) {
-                                // 텍스트가 사각형 안에 들어갈 수 있는지 확인
-                                if (element.w > 60 && element.h > 20) {
-                                    ctx.save();
-                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                                    ctx.font = 'bold 12px Arial';
-                                    ctx.textAlign = 'center';
-                                    ctx.textBaseline = 'middle';
-                                    
-                                    // 텍스트 줄바꿈 처리
-                                    const maxWidth = element.w - 10;
-                                    const words = item.topicName.split(' ');
-                                    let lines = [];
-                                    let currentLine = '';
-                                    
-                                    words.forEach(word => {
-                                        const testLine = currentLine + word + ' ';
-                                        const metrics = ctx.measureText(testLine);
-                                        if (metrics.width > maxWidth && currentLine !== '') {
-                                            lines.push(currentLine);
-                                            currentLine = word + ' ';
-                                        } else {
-                                            currentLine = testLine;
-                                        }
-                                    });
-                                    lines.push(currentLine);
-                                    
-                                    // 최대 2줄까지만 표시
-                                    lines = lines.slice(0, 2);
-                                    
-                                    lines.forEach((line, lineIndex) => {
-                                        const y = element.y + (element.h / 2) + (lineIndex - (lines.length - 1) / 2) * 14;
-                                        ctx.fillText(line.trim(), element.x + element.w / 2, y);
-                                    });
-                                    
-                                    ctx.restore();
+                            // ✨ [핵심 수정 2] 트리맵에 레이블(주제명)을 표시하는 옵션 추가
+                            labels: {
+                                display: true,
+                                color: (ctx) => { // 글자색 자동 조절 (어두운 배경에 흰색)
+                                   return '#fff';
+                                },
+                                font: {
+                                    size: 14,
+                                    weight: 'bold',
+                                },
+                                align: 'center',
+                                position: 'center',
+                                // 작은 사각형에는 레이블이 표시되지 않도록 하여 가독성 확보
+                                formatter(ctx) {
+                                   if (ctx.raw.v > 2) { // 응답 수가 2개 초과인 경우에만 표시
+                                     return ctx.raw.topicName.split(' ');
+                                   }
+                                   return null;
                                 }
                             }
-                        });
+                        }],
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: (item) => {
+                                        const originalData = item[0].raw._data?.children?.[0];
+                                        return originalData?.topicName || '알 수 없는 주제';
+                                    },
+                                    label: (item) => `응답 수: ${item.raw.v}`,
+                                    afterLabel: (item) => {
+                                        const originalData = item.raw._data?.children?.[0];
+                                        const sentiment = originalData?.sentiment;
+                                        return `주요 감성: ${sentiment || '알 수 없음'}`;
+                                    }
+                                }
+                            },
+                            legend: { display: false }
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false
                     }
-                },
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+                });
             }
 
             // [요청 2] 주제별 분석 결과 렌더링 (감성 비율 그래프 포함)
