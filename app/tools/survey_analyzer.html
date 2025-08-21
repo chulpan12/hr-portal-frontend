@@ -10,6 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js and Treemap Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.0.1/dist/chartjs-chart-treemap.min.js"></script>
+
     <style>
         :root {
             --bg-primary: #111827;
@@ -74,6 +79,10 @@
                     <a href="https://dreamofenc.com" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="Home">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     </a>
+                    <!-- ✨ [추가] 다운로드 버튼 -->
+                    <button id="downloadBtn" class="p-2 rounded-full transition" style="background-color: var(--input-bg);" aria-label="Download">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </button>
                     <!-- 테마 변경 버튼 -->
                     <button id="themeToggle" class="p-2 rounded-full transition" style="background-color: var(--input-bg);">
                         <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -107,6 +116,16 @@
                     </div>
                     <div id="resultContainer" class="hidden space-y-6">
                         <div id="overallSummary" class="result-card p-5 rounded-xl"></div>
+
+                        <!-- ✨ [추가] 트리맵 차트 카드 -->
+                        <div id="treemapCard" class="result-card p-5 rounded-xl">
+                            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                주제별 분포 (크기: 응답 수, 색상: 감성)
+                            </h3>
+                            <canvas id="treemapChart"></canvas>
+                        </div>
+                        
                         <div id="topicResults" class="space-y-6"></div>
                     </div>
                 </div>
@@ -157,12 +176,16 @@
             topicResults: document.getElementById('topicResults'),
             themeToggle: document.getElementById('themeToggle'),
             themeIcon: document.getElementById('themeIcon'),
+            downloadBtn: document.getElementById('downloadBtn'), // ✨ [요청 4] 다운로드 버튼 DOM 추가
+            treemapChart: document.getElementById('treemapChart'), // ✨ [요청 3] 트리맵 캔버스 DOM 추가
         };
+        let chartInstance = null; // ✨ [요청 3] 차트 인스턴스 변수
 
         // --- Event Listeners ---
         dom.analyzeBtn.addEventListener('click', analyzeText);
         dom.themeToggle.addEventListener('click', toggleTheme);
         dom.loginForm.addEventListener('submit', handleLogin);
+        dom.downloadBtn.addEventListener('click', downloadResultsHTML); // ✨ [요청 4] 다운로드 이벤트 리스너 추가
 
         // --- Core Functions ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -211,6 +234,34 @@
             } finally {
                 dom.loginSubmitBtn.disabled = false;
                 dom.loginSubmitBtn.textContent = '로그인';
+            }
+        }
+
+        // ✨ [요청 4] HTML 다운로드 기능 함수
+        function downloadResultsHTML() {
+            // 분석 결과가 없으면 다운로드하지 않음
+            if(dom.resultContainer.classList.contains('hidden')) {
+                alert('먼저 설문 분석을 실행해주세요.');
+                return;
+            }
+
+            // 다운로드 시에는 로더 등 불필요한 요소를 숨김
+            dom.loader.classList.add('hidden');
+            
+            try {
+                const htmlContent = document.documentElement.outerHTML;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'survey-analysis-report.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('다운로드 중 오류 발생:', error);
+                alert('결과를 다운로드하는 중 오류가 발생했습니다.');
             }
         }
 
@@ -389,6 +440,7 @@
             });
         }
 
+        // ✨ [요청 1, 2, 3] 모든 렌더링을 처리하는 통합 함수
         function renderResults(data) {
             // 데이터 유효성 검사
             if (!data || typeof data !== 'object') {
@@ -398,51 +450,103 @@
                 return;
             }
 
-            // 1. 전체 요약 렌더링
+            // [요청 1] 전체 요약 렌더링 (중립 포함)
             if (data.overall && typeof data.overall === 'object') {
+                const overall = data.overall;
                 dom.overallSummary.innerHTML = `
                     <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                        종합 분석 (총 ${data.overall.totalResponses || 0}개 응답)
+                        종합 분석 (총 ${overall.totalResponses || 0}개 응답)
                     </h3>
-                    <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">${data.overall.summary || '분석 중...'}</p>
-                    <div class="flex gap-4">
-                        <div class="flex-1 text-center bg-green-500/20 p-2 rounded-lg">
-                            <div class="font-bold text-xl text-green-400">${data.overall.positivePercentage || 0}%</div>
-                            <div class="text-xs text-green-400/80">긍정</div>
-                        </div>
-                        <div class="flex-1 text-center bg-red-500/20 p-2 rounded-lg">
-                            <div class="font-bold text-xl text-red-400">${data.overall.negativePercentage || 0}%</div>
-                            <div class="text-xs text-red-400/80">부정</div>
-                        </div>
+                    <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">${overall.summary || '요약 정보가 없습니다.'}</p>
+                    <div class="w-full bg-gray-700 rounded-full h-8 flex overflow-hidden text-xs text-white font-bold mt-4">
+                        <div class="flex items-center justify-center h-full bg-green-600" style="width: ${overall.positivePercentage || 0}%">${overall.positivePercentage || 0}%</div>
+                        <div class="flex items-center justify-center h-full bg-gray-500" style="width: ${overall.neutralPercentage || 0}%">${overall.neutralPercentage || 0}%</div>
+                        <div class="flex items-center justify-center h-full bg-red-600" style="width: ${overall.negativePercentage || 0}%">${overall.negativePercentage || 0}%</div>
+                    </div>
+                    <div class="flex justify-end gap-4 mt-2 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-600"></span> 긍정</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-gray-500"></span> 중립</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-600"></span> 부정</span>
                     </div>
                 `;
             } else {
                 dom.overallSummary.innerHTML = '<p class="text-red-400">전체 요약 데이터를 불러올 수 없습니다.</p>';
             }
 
-            // 2. 주제별 분석 결과 렌더링
+            // [요청 3] 트리맵 렌더링
+            if (data.topics && Array.isArray(data.topics)) {
+                if(chartInstance) {
+                    chartInstance.destroy(); // 이전 차트가 있으면 파괴
+                }
+                const sentimentColors = { '긍정': 'rgba(22, 163, 74, 0.7)', '부정': 'rgba(220, 38, 38, 0.7)', '중립': 'rgba(107, 114, 128, 0.7)' };
+                
+                chartInstance = new Chart(dom.treemapChart.getContext('2d'), {
+                    type: 'treemap',
+                    data: {
+                        datasets: [{
+                            label: '주제별 분포',
+                            tree: data.topics,
+                            key: 'count',
+                            groups: ['topicName'],
+                            backgroundColor: (ctx) => {
+                                if (ctx.type !== 'data') return 'transparent';
+                                const sentiment = ctx.raw._data.sentiment;
+                                return sentimentColors[sentiment] || 'rgba(156, 163, 175, 0.7)';
+                            },
+                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                            borderWidth: 1,
+                        }],
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: (item) => item[0].raw._data.topicName,
+                                    label: (item) => `응답 수: ${item.raw.v}`,
+                                    afterLabel: (item) => `주요 감성: ${item.raw._data.sentiment}`
+                                }
+                            },
+                            legend: { display: false }
+                        },
+                    }
+                });
+            }
+
+            // [요청 2] 주제별 분석 결과 렌더링 (감성 비율 그래프 포함)
             dom.topicResults.innerHTML = '';
             if (data.topics && Array.isArray(data.topics)) {
                 data.topics.forEach(topic => {
-                    if (topic && typeof topic === 'object') {
-                        const topicCard = document.createElement('div');
-                        topicCard.className = 'result-card p-5 rounded-xl';
-                        topicCard.innerHTML = `
-                            <h3 class="font-bold text-lg mb-3 flex justify-between items-center">
-                                <span class="flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15v1a1 1 0 001 1h12a1 1 0 001-1v-1a1 1 0 00-.293-.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
-                                    ${topic.topicName || '알 수 없는 주제'}
-                                </span>
-                                <span class="text-sm font-medium bg-gray-700/50 px-2 py-1 rounded-md">${topic.count || 0}개</span>
-                            </h3>
-                            <p class="text-sm leading-relaxed mb-3" style="color: var(--text-secondary);">${topic.summary || '요약 정보 없음'}</p>
-                            <div class="text-xs border-l-2 border-amber-500 pl-3 italic" style="color: var(--text-secondary);">
-                                <strong>대표 의견:</strong> "${topic.representativeQuote || '대표 의견 없음'}"
-                            </div>
-                        `;
-                        dom.topicResults.appendChild(topicCard);
-                    }
+                    const topicCard = document.createElement('div');
+                    topicCard.className = 'result-card p-5 rounded-xl';
+
+                    const breakdown = topic.sentimentBreakdown || { positive: 0, neutral: 0, negative: 0 };
+                    const total = breakdown.positive + breakdown.neutral + breakdown.negative || 1;
+                    const posPercent = (breakdown.positive / total) * 100;
+                    const neuPercent = (breakdown.neutral / total) * 100;
+                    const negPercent = (breakdown.negative / total) * 100;
+                    
+                    topicCard.innerHTML = `
+                        <h3 class="font-bold text-lg mb-3 flex justify-between items-center">
+                            <span class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15v1a1 1 0 001 1h12a1 1 0 001-1v-1a1 1 0 00-.293-.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
+                                ${topic.topicName || '알 수 없는 주제'}
+                            </span>
+                            <span class="text-sm font-medium bg-gray-700/50 px-2 py-1 rounded-md">${topic.count || 0}개</span>
+                        </h3>
+                        <p class="text-sm leading-relaxed mb-3" style="color: var(--text-secondary);">${topic.summary || '요약 정보 없음'}</p>
+                        
+                        <div class="w-full bg-gray-700/50 rounded-full h-4 flex overflow-hidden my-3">
+                            <div class="h-full bg-green-600" style="width: ${posPercent}%" title="긍정 ${posPercent.toFixed(1)}%"></div>
+                            <div class="h-full bg-gray-500" style="width: ${neuPercent}%" title="중립 ${neuPercent.toFixed(1)}%"></div>
+                            <div class="h-full bg-red-600" style="width: ${negPercent}%" title="부정 ${negPercent.toFixed(1)}%"></div>
+                        </div>
+
+                        <div class="text-xs border-l-2 border-amber-500 pl-3 italic" style="color: var(--text-secondary);">
+                            <strong>대표 의견:</strong> "${topic.representativeQuote || '대표 의견 없음'}"
+                        </div>
+                    `;
+                    dom.topicResults.appendChild(topicCard);
                 });
             } else {
                 dom.topicResults.innerHTML = '<p class="text-red-400">주제별 분석 데이터를 불러올 수 없습니다.</p>';
