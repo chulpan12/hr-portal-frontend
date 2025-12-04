@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/common-styles.css">
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #111827; color: #f3f4f6; }
         .card { background-color: #1f2937; border: 1px solid #374151; }
@@ -78,6 +79,31 @@
         }
         
         /* ✨ [신규] 채팅 컨테이너 강제 제한 */
+        
+        /* ✨ [신규] 조사 모드 관련 스타일 */
+        body.investigation-mode .lg\\:col-span-1:nth-child(2), /* 2,3열 */
+        body.investigation-mode .lg\\:col-span-1:nth-child(3) {
+            filter: brightness(0.5);
+            transition: filter 0.5s ease;
+        }
+        
+        body.investigation-mode .lg\\:col-span-1:nth-child(1), /* 1,4열 */
+        body.investigation-mode .lg\\:col-span-1:nth-child(4) {
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+            border-color: rgba(96, 165, 250, 0.7);
+            transform: scale(1.01);
+            transition: all 0.5s ease;
+        }
+        
+        /* 작업자 프로필 호버 효과 강화 */
+        .worker-profile {
+            transition: all 0.3s ease;
+        }
+        
+        .worker-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
         #chatContainer {
             max-height: calc(100vh - 400px) !important;
             height: calc(100vh - 400px) !important;
@@ -156,6 +182,15 @@
                 </div>
                 <div id="scenarioContainer" class="space-y-2 border-t border-gray-700 pt-4">
                     <!-- JS로 내용이 채워집니다 -->
+                </div>
+                
+                <!-- ✨ [신규] 조사 허브 영역 -->
+                <div id="investigation-hub" class="hidden border-t border-gray-700 pt-4 mt-4">
+                    <h4 class="text-sm font-semibold text-blue-400 mb-3">🔍 사전 조사</h4>
+                    <p class="text-xs text-gray-400 mb-3">작업자를 클릭하여 사전 탐문을 진행하세요.</p>
+                    <div id="worker-list-container">
+                        <!-- 작업자 목록이 JS로 생성됩니다 -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -246,6 +281,14 @@
             <h3 class="font-bold text-xl p-6 border-b border-gray-700 flex-shrink-0">AI 실시간 코칭</h3>
             <!-- ✨ [수정] 코칭 로그도 높이 제한하여 스크롤이 생기도록 고정 높이 설정 -->
             <div id="coachLog" class="flex-1 p-4 space-y-3 overflow-y-auto min-h-0 max-h-full"></div>
+            
+            <!-- ✨ [신규] 조사 수첩 영역 -->
+            <div class="border-t border-gray-700 pt-4 flex-shrink-0">
+                <div id="deductionBoard" class="p-4 bg-gray-900/50 rounded-lg min-h-[150px] overflow-y-auto">
+                    <h4 class="font-bold mb-2 text-yellow-300">🕵️‍♂️ 안전 조사 수첩</h4>
+                    <p class="text-xs text-gray-500 italic">조사를 통해 수집된 정보가 여기에 표시됩니다.</p>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -316,6 +359,8 @@
     </footer>
     </div>
 
+    <script src="../assets/copyright.js"></script>
     <script src="tbm_simulator.js?v=1.773"></script>
+    <script>document.addEventListener('DOMContentLoaded', initCopyright);</script>
 </body>
 </html> 
