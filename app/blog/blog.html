@@ -1,488 +1,781 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DreamofEnC - Blog</title>
-    <link rel="stylesheet" href="../../assets/blog.css?v=2.42">
-</head>
-<body>
-    <div class="container">
-        <h1 class="page-title">AI/자동화 활용실적</h1>
-
-        <main class="content-area">
-            <div id="post-list-view"></div>
-            <div id="post-detail-view" style="display: none;"></div>
-        </main>
-        
-        <div id="fab-list-container" class="fab-container">
-            <a href="../../index.html" class="fab" title="홈으로">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>
-            </a>
-            <a href="editor_login.html" class="fab" title="새 글 작성">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </a>
-        </div>
-
-        <div id="fab-detail-container" class="fab-container" style="display: none;">
-            <a href="#" id="fab-history-back" class="fab fab-action" title="뒤로가기">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-            </a>
-            <a href="#" id="fab-back-to-list" class="fab fab-action" title="목록으로">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7zm-4 6h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
-            </a>
-            <a href="#" id="fab-edit-post" class="fab fab-edit" title="수정하기">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14.06 9.02l.92.92L5.92 19H5v-.92l9.06-9.06M17.66 3c-.25 0-.51.1-.7.29l-1.83 1.83 3.75 3.75 1.83-1.83c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.2-.2-.45-.29-.71-.29zm-3.6 3.19L3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/></svg>
-            </a>
-        </div>
+    <title>DreamofEnC - Tech Blog</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
-// 전역 변수들
-let currentPostId = null;
-let postListCache = [];
-const API_BASE_URL = 'https://api.dreamofenc.com';
-
-// 댓글 수정 함수 (전역)
-window.editComment = async (commentId, currentContent) => {
-    const newContent = prompt('댓글을 수정하세요:', currentContent);
-    if (!newContent || newContent === currentContent) return;
-    
-    const password = prompt('비밀번호를 입력하세요:');
-    if (!password) return;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/blog/posts/${currentPostId}/comments/${commentId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                content: newContent,
-                password: password
-            })
-        });
-        
-        if (response.ok) {
-            loadComments(currentPostId);
-            alert('댓글이 수정되었습니다.');
-        } else {
-            const errorData = await response.json();
-            alert(`댓글 수정에 실패했습니다: ${errorData.error || '알 수 없는 오류'}`);
-        }
-    } catch (error) {
-        console.error('댓글 수정 오류:', error);
-        alert('댓글 수정 중 오류가 발생했습니다.');
-    }
-};
-
-// 댓글 목록 로드 함수 (전역)
-window.loadComments = async (postId) => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}/comments`);
-        if (response.ok) {
-            const comments = await response.json();
-            displayComments(comments);
-        } else {
-            console.error('댓글 로드 실패:', response.status);
-            displayComments([]);
-        }
-    } catch (error) {
-        console.error('댓글 로드 오류:', error);
-        displayComments([]);
-    }
-};
-
-// 댓글 목록 표시 함수 (전역)
-window.displayComments = (comments) => {
-    const commentsList = document.getElementById('comments-list');
-    if (!commentsList) return;
-    
-    if (!comments || comments.length === 0) {
-        commentsList.innerHTML = '<p style="color: #666; text-align: center;">아직 댓글이 없습니다.</p>';
-        return;
-    }
-    
-    commentsList.innerHTML = comments.map(comment => {
-        // ISO 형식의 날짜를 한국 시간으로 변환
-        const date = new Date(comment.date);
-        const formattedDate = date.toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-                        return `
-                    <div class="comment-item" data-comment-id="${comment.id}">
-                        <div class="comment-header">
-                            <span class="comment-author">${comment.author}</span>
-                            <div class="comment-meta">
-                                <span class="comment-date">${formattedDate}</span>
-                                <span class="comment-actions">
-                                    <a href="#" onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}'); return false;">수정</a> | 
-                                    <a href="#" onclick="deleteComment(${comment.id}); return false;">삭제</a>
-                                </span>
-                            </div>
-                        </div>
-                        <p class="comment-content">${comment.content}</p>
-                    </div>
-                `;
-    }).join('');
-};
-
-// 댓글 삭제 함수 (전역)
-window.deleteComment = async (commentId) => {
-    if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
-    
-    const password = prompt('비밀번호를 입력하세요:');
-    if (!password) return;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/blog/posts/${currentPostId}/comments/${commentId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                password: password
-            })
-        });
-        
-        if (response.ok) {
-            loadComments(currentPostId);
-            alert('댓글이 삭제되었습니다.');
-        } else {
-            const errorData = await response.json();
-            alert(`댓글 삭제에 실패했습니다: ${errorData.error || '알 수 없는 오류'}`);
-        }
-    } catch (error) {
-        console.error('댓글 삭제 오류:', error);
-        alert('댓글 삭제 중 오류가 발생했습니다.');
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    // DOM 요소 가져오기
-    const postListView = document.getElementById('post-list-view');
-    const postDetailView = document.getElementById('post-detail-view');
-    
-    // FAB 컨테이너 및 버튼 요소 가져오기 (수정)
-    const fabListContainer = document.getElementById('fab-list-container');
-    const fabDetailContainer = document.getElementById('fab-detail-container');
-    const fabHistoryBack = document.getElementById('fab-history-back');
-    const fabBackToList = document.getElementById('fab-back-to-list');
-    const fabEditPost = document.getElementById('fab-edit-post');
-
-    // --- START: 쇼케이스(목록) 관련 로직 ---
-    let currentIndex = 0;
-
-    const displayShowcaseList = (posts) => {
-        postListView.style.display = 'flex';
-        postDetailView.style.display = 'none';
-        
-        // FAB 컨테이너 가시성 제어 (수정)
-        fabListContainer.style.display = 'flex';
-        fabDetailContainer.style.display = 'none';
-        
-        // 컨테이너 클래스 제어 (쇼케이스 모드)
-        document.querySelector('.container').classList.remove('detail-view');
-
-        postListView.innerHTML = `
-            <div id="showcase-container" class="showcase-container">
-                <div id="showcase-wrapper" class="showcase-wrapper"></div>
-                <button id="nav-prev" class="showcase-nav prev">&lt;</button>
-                <button id="nav-next" class="showcase-nav next">&gt;</button>
-            </div>
-        `;
-        
-        const showcaseWrapper = document.getElementById('showcase-wrapper');
-        if (!posts || posts.length === 0) {
-            showcaseWrapper.innerHTML = '<p class="no-posts">아직 게시물이 없습니다.</p>';
-            return;
-        }
-
-        posts.forEach((post, index) => {
-            const card = document.createElement('div');
-            card.className = 'showcase-card';
-            card.dataset.index = index;
-
-            const imgMatch = post.content.match(/<img[^>]+src="([^">]+)"/);
-            const imageHtml = imgMatch ? `<img src="${imgMatch[1]}" alt="${post.title} 이미지" class="card-image">` : '<div class="card-image-placeholder"></div>';
-
-            card.innerHTML = `
-                ${imageHtml}
-                <div class="card-content">
-                    <h2 class="card-title">${post.title}</h2>
-                    <p class="card-meta">${post.date} by ${post.author} | 👁️ ${post.views || 0}</p>
-                    <p class="card-preview">${createTextPreview(post.content, 300)}</p>
-                </div>
-            `;
-            
-            card.addEventListener('click', () => {
-                if (!card.classList.contains('active')) return;
-                history.pushState({ id: post.id }, '', `?id=${post.id}`);
-                fetchPostDetail(post.id);
-            });
-
-            showcaseWrapper.appendChild(card);
-        });
-        
-        const renderShowcase = () => {
-            const cards = showcaseWrapper.children;
-            if (!cards.length) return;
-            for (let i = 0; i < cards.length; i++) {
-                cards[i].classList.remove('active', 'prev', 'next', 'hidden');
-                if (i === currentIndex) {
-                    cards[i].classList.add('active');
-                } else if (i === (currentIndex - 1 + cards.length) % cards.length) {
-                    cards[i].classList.add('prev');
-                } else if (i === (currentIndex + 1) % cards.length) {
-                    cards[i].classList.add('next');
-                } else {
-                    cards[i].classList.add('hidden');
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#030712',
+                        surface: '#0B1121',
+                        accent: '#6366f1',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
                 }
             }
-        };
-        
-        document.getElementById('nav-prev').addEventListener('click', () => { 
-            currentIndex = (currentIndex - 1 + posts.length) % posts.length; 
-            renderShowcase(); 
-        });
-        document.getElementById('nav-next').addEventListener('click', () => { 
-            currentIndex = (currentIndex + 1) % posts.length;
-            renderShowcase(); 
-        });
-        
-        renderShowcase();
-    };
-    // --- END: 쇼케이스(목록) 관련 로직 ---
-
-    // --- START: 상세/댓글 로직 ---
-    const fetchPostDetail = async (id) => {
-        if (id === 'local-test-post') {
-            const testPost = {
-                id: 'local-test-post',
-                title: '🚀 로컬 테스트용 게시물',
-                author: 'Live Server',
-                date: new Date().toISOString().split('T')[0],
-                views: 777,
-                content: `<img src="https://via.placeholder.com/800x400.png/333/eee?text=Test+Image" alt="테스트 이미지" style="width:100%; border-radius: 8px;"><p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서 접속했을 때만 나타나는 테스트용 데이터입니다.</p><ul><li>반응형 레이아웃 확인</li><li>카드 애니메이션 테스트</li><li>상세 페이지 라우팅 점검</li></ul>`
-            };
-            displayPostDetail(testPost);
-            return;
         }
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
-            if (!response.ok) throw new Error('Post not found');
-            const post = await response.json();
-            displayPostDetail(post);
-        } catch (error) {
-            postDetailView.innerHTML = `<p>게시물을 불러오는 데 실패했습니다.</p>`;
+    </script>
+
+    <style>
+        body {
+            background-color: #030712;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
-    };
 
-    const displayPostDetail = (post) => {
-        postListView.style.display = 'none';
-        postDetailView.style.display = 'block';
+        /* 배경 효과 */
+        .bg-grid {
+            background-size: 50px 50px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .bg-glow-blob {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+            filter: blur(80px);
+        }
+
+        /* 텍스트 그라데이션 */
+        .text-gradient {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 카드 스타일 (Spotlight 적용) */
+        .blog-card {
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            --mouse-x: 0px;
+            --mouse-y: 0px;
+        }
+
+        .blog-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.06),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .blog-card:hover::before { opacity: 1; }
+        .blog-card:hover { transform: translateY(-5px); border-color: rgba(99, 102, 241, 0.3); }
+
+        .card-image-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            overflow: hidden;
+            background: #111;
+        }
+
+        .card-image-wrapper img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            opacity: 0.8;
+        }
+
+        .blog-card:hover .card-image-wrapper img {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+
+        /* 플로팅 독 (네비게이션) */
+        .floating-dock {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            z-index: 50;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .dock-item {
+            position: relative;
+            color: #94a3b8;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .dock-item:hover {
+            color: #fff;
+            transform: translateY(-3px);
+        }
+
+        .dock-item.active {
+            color: #818cf8;
+        }
+
+        .dock-tooltip {
+            position: absolute;
+            top: -40px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .dock-item:hover .dock-tooltip { opacity: 1; }
+
+        /* 상세 페이지 스타일 */
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #d1d5db;
+        }
+        .post-content img {
+            border-radius: 0.75rem;
+            margin: 2rem auto;
+            max-width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .post-content h2 { font-size: 1.8rem; font-weight: 700; color: white; margin-top: 3rem; margin-bottom: 1.5rem; }
+        .post-content h3 { font-size: 1.4rem; font-weight: 600; color: white; margin-top: 2rem; margin-bottom: 1rem; }
+        .post-content p { margin-bottom: 1.5rem; }
+        .post-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+        .post-content strong { color: #818cf8; font-weight: 600; }
+        .post-content blockquote {
+            border-left: 4px solid #6366f1;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #9ca3af;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin: 1.5rem 0;
+        }
+
+        /* 댓글 폼 */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.2s;
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #818cf8;
+            outline: none;
+        }
+
+        /* 로딩 스피너 */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #6366f1;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    </style>
+</head>
+<body>
+
+    <!-- 배경 요소 -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow-blob"></div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="w-full max-w-5xl mx-auto px-4 py-8 pb-32 min-h-screen flex flex-col">
         
-        // FAB 컨테이너 가시성 제어 (수정)
-        fabListContainer.style.display = 'none';
-        fabDetailContainer.style.display = 'flex';
-        fabEditPost.href = `editor_login.html?id=${post.id}`; // 수정 버튼 링크 동적 할당
-        
-        // 컨테이너 클래스 제어 (상세 보기 모드)
-        document.querySelector('.container').classList.add('detail-view');
-        
-        // 현재 게시물 ID 설정
-        currentPostId = post.id;
+        <!-- 헤더 -->
+        <header class="flex justify-between items-center mb-12 animate-fade-in">
+            <div>
+                <a href="../../index.html" class="flex items-center gap-2 group cursor-pointer text-gray-400 hover:text-white transition-colors mb-2 text-sm">
+                    <i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i>
+                    Back to Home
+                </a>
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+                    Tech <span class="text-gradient">Blog</span>
+                </h1>
+                <p class="text-gray-400 mt-2 text-sm">AI, 자동화, 그리고 기술적 인사이트의 기록</p>
+            </div>
+            <!-- 글쓰기 버튼 (데스크탑) -->
+            <a href="editor_login.html" class="hidden md:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20">
+                <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                새 글 작성
+            </a>
+        </header>
 
-        const currentPostIndex = postListCache.findIndex(p => p.id === post.id);
-        const prevPost = currentPostIndex > 0 ? postListCache[currentPostIndex - 1] : null;
-        const nextPost = currentPostIndex < postListCache.length - 1 ? postListCache[currentPostIndex + 1] : null;
+        <!-- 로딩 상태 -->
+        <div id="loading-spinner" class="flex justify-center items-center py-20 hidden">
+            <div class="spinner"></div>
+        </div>
 
-        const prevButton = prevPost ? `<a href="?id=${prevPost.id}" class="nav-button prev-button" data-nav-id="${prevPost.id}">&lt; 이전 글</a>` : `<span class="nav-button disabled">&lt; 이전 글</span>`;
-        const nextButton = nextPost ? `<a href="?id=${nextPost.id}" class="nav-button next-button" data-nav-id="${nextPost.id}">다음 글 &gt;</a>` : `<span class="nav-button disabled">다음 글 &gt;</span>`;
+        <!-- 1. 게시물 목록 뷰 (Grid) -->
+        <main id="post-list-view" class="w-full animate-slide-up">
+            <div id="grid-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 자바스크립트로 카드가 여기에 추가됨 -->
+            </div>
+            <!-- 빈 상태 -->
+            <div id="empty-state" class="hidden text-center py-20">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
+                    <i data-lucide="file-x" class="w-8 h-8 text-gray-500"></i>
+                </div>
+                <p class="text-gray-400">아직 등록된 게시물이 없습니다.</p>
+            </div>
+        </main>
 
-        // 상세 보기 HTML에서 수정 버튼 삭제 (수정)
-        postDetailView.innerHTML = `
-            <div class="post-navigation">${prevButton}${nextButton}</div>
-            <h2 class="post-title">${post.title}</h2>
-            <p class="post-meta">${post.date} by ${post.author}<span style="float: right; opacity: 0.7;">👁️ ${post.views || 0}</span></p>
-            <div class="post-content">${post.content}</div>
-            <hr style="margin: 40px 0 30px; border-color: #333;">
-            <div id="comments-section">
-                <h3>댓글</h3>
-                <div id="comments-list"></div>
-                <form id="comment-form">
-                    <div class="comment-input-group">
-                        <input type="text" id="comment-author" placeholder="작성자" required>
-                        <input type="password" id="comment-password" placeholder="비밀번호" required>
+        <!-- 2. 게시물 상세 뷰 -->
+        <main id="post-detail-view" class="hidden animate-fade-in w-full max-w-3xl mx-auto">
+            <!-- 네비게이션 -->
+            <div class="flex justify-between mb-8 border-b border-white/10 pb-4">
+                <div id="prev-post-btn-container"></div>
+                <div id="next-post-btn-container"></div>
+            </div>
+
+            <!-- 본문 헤더 -->
+            <h1 id="detail-title" class="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight"></h1>
+            <div class="flex items-center gap-4 text-sm text-gray-400 mb-8">
+                <div class="flex items-center gap-1">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span id="detail-date"></span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                    <span id="detail-author"></span>
+                </div>
+                <div class="flex items-center gap-1 ml-auto">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                    <span id="detail-views"></span>
+                </div>
+            </div>
+
+            <!-- 본문 내용 -->
+            <article id="detail-content" class="post-content mb-16">
+                <!-- 내용 주입 -->
+            </article>
+
+            <!-- 구분선 -->
+            <hr class="border-white/10 mb-12">
+
+            <!-- 댓글 섹션 -->
+            <section id="comments-section" class="bg-gray-900/50 rounded-2xl p-6 border border-white/5">
+                <div class="flex items-center gap-2 mb-6">
+                    <i data-lucide="message-circle" class="text-indigo-400"></i>
+                    <h3 class="text-xl font-bold text-white">Comments</h3>
+                </div>
+
+                <!-- 댓글 목록 -->
+                <div id="comments-list" class="space-y-4 mb-8"></div>
+
+                <!-- 댓글 작성 폼 -->
+                <form id="comment-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="comment-author" placeholder="작성자 (닉네임)" required 
+                               class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-gray-500">
+                        <input type="password" id="comment-password" placeholder="비밀번호 (수정/삭제용)" required 
+                               class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-gray-500">
                     </div>
-                    <textarea id="comment-content" placeholder="댓글을 입력하세요..." required></textarea>
-                    <button type="submit" class="back-button">댓글 작성</button>
+                    <textarea id="comment-content" placeholder="댓글을 남겨주세요..." required rows="3"
+                              class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-gray-500 resize-none"></textarea>
+                    <div class="text-right">
+                        <button type="submit" class="bg-white text-black hover:bg-gray-200 px-6 py-2 rounded-lg text-sm font-bold transition-colors">
+                            댓글 등록
+                        </button>
+                    </div>
                 </form>
-            </div>`;
+            </section>
+        </main>
+    </div>
+
+    <!-- 하단 플로팅 독 (네비게이션) -->
+    <nav class="floating-dock">
+        <!-- 홈으로 -->
+        <a href="../../index.html" class="dock-item" aria-label="Home">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            <span class="dock-tooltip">Home</span>
+        </a>
         
-        postDetailView.querySelectorAll('.nav-button[data-nav-id]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+        <!-- 목록으로 (상세뷰에서만 활성화) -->
+        <a href="#" id="dock-list" class="dock-item hidden" aria-label="List">
+            <i data-lucide="layout-grid" class="w-5 h-5"></i>
+            <span class="dock-tooltip">List</span>
+        </a>
+
+        <!-- 뒤로가기 (상세뷰에서만 활성화) -->
+        <a href="#" id="dock-back" class="dock-item hidden" aria-label="Back">
+            <i data-lucide="arrow-left-circle" class="w-5 h-5"></i>
+            <span class="dock-tooltip">Back</span>
+        </a>
+
+        <!-- 구분선 -->
+        <div class="w-px h-6 bg-white/10 mx-1"></div>
+
+        <!-- 새 글 작성 -->
+        <a href="editor_login.html" class="dock-item" aria-label="New Post">
+            <i data-lucide="pen-square" class="w-5 h-5"></i>
+            <span class="dock-tooltip">Write</span>
+        </a>
+
+        <!-- 수정하기 (상세뷰에서만 활성화) -->
+        <a href="#" id="dock-edit" class="dock-item hidden text-indigo-400" aria-label="Edit">
+            <i data-lucide="edit-3" class="w-5 h-5"></i>
+            <span class="dock-tooltip">Edit Post</span>
+        </a>
+    </nav>
+
+    <script>
+        // --- 전역 설정 및 유틸리티 ---
+        lucide.createIcons();
+        
+        const API_BASE_URL = 'https://api.dreamofenc.com';
+        let currentPostId = null;
+        let postListCache = [];
+
+        // --- DOM Elements ---
+        const views = {
+            list: document.getElementById('post-list-view'),
+            detail: document.getElementById('post-detail-view'),
+            loading: document.getElementById('loading-spinner'),
+            empty: document.getElementById('empty-state')
+        };
+
+        const dock = {
+            list: document.getElementById('dock-list'),
+            back: document.getElementById('dock-back'),
+            edit: document.getElementById('dock-edit')
+        };
+
+        // --- 텍스트 미리보기 생성기 ---
+        const createTextPreview = (htmlString, maxLength = 120) => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlString;
+            const text = tempDiv.textContent || tempDiv.innerText || "";
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        };
+
+        // --- 뷰 전환 로직 ---
+        const switchView = (viewName) => {
+            if (viewName === 'list') {
+                views.list.classList.remove('hidden');
+                views.detail.classList.add('hidden');
+                
+                // Dock 상태 업데이트
+                dock.list.classList.add('hidden');
+                dock.back.classList.add('hidden');
+                dock.edit.classList.add('hidden');
+                
+                // 스크롤 최상단
+                window.scrollTo(0, 0);
+            } else if (viewName === 'detail') {
+                views.list.classList.add('hidden');
+                views.detail.classList.remove('hidden');
+
+                // Dock 상태 업데이트
+                dock.list.classList.remove('hidden');
+                dock.back.classList.remove('hidden');
+                dock.edit.classList.remove('hidden');
+
+                // 스크롤 최상단
+                window.scrollTo(0, 0);
+            }
+        };
+
+        // --- 목록 렌더링 (Grid System) ---
+        const renderBlogGrid = (posts) => {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+
+            if (!posts || posts.length === 0) {
+                views.empty.classList.remove('hidden');
+                return;
+            } else {
+                views.empty.classList.add('hidden');
+            }
+
+            posts.forEach(post => {
+                // 이미지 추출
+                const imgMatch = post.content.match(/<img[^>]+src="([^">]+)"/);
+                const imgSrc = imgMatch ? imgMatch[1] : `https://placehold.co/600x340/1f2937/e5e7eb?text=${encodeURIComponent(post.title.substring(0,2))}`;
+                const previewText = createTextPreview(post.content);
+
+                const card = document.createElement('div');
+                card.className = 'blog-card group';
+                card.innerHTML = `
+                    <div class="card-image-wrapper">
+                        <img src="${imgSrc}" alt="${post.title}" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60"></div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow relative z-10">
+                        <div class="flex items-center justify-between text-xs text-indigo-400 mb-2 font-mono">
+                            <span>${post.date}</span>
+                            <span class="flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i> ${post.views || 0}</span>
+                        </div>
+                        <h2 class="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-indigo-300 transition-colors">${post.title}</h2>
+                        <p class="text-gray-400 text-sm line-clamp-3 mb-4 flex-grow">${previewText}</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                            <span class="text-xs text-gray-500">by ${post.author}</span>
+                            <span class="text-xs font-semibold text-white group-hover:underline flex items-center gap-1">
+                                Read More <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                // 마우스 호버 Spotlight 효과
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+
+                card.addEventListener('click', () => {
+                    history.pushState({ id: post.id }, '', `?id=${post.id}`);
+                    fetchPostDetail(post.id);
+                });
+
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        };
+
+        // --- 상세 내용 렌더링 ---
+        const fetchPostDetail = async (id) => {
+            views.loading.classList.remove('hidden');
+            switchView('detail'); // 먼저 화면 전환 (로딩 표시)
+
+            // 로컬 테스트 데이터 처리
+            if (id === 'local-test-post') {
+                const testPost = postListCache.find(p => p.id === 'local-test-post');
+                if (testPost) {
+                    displayPostDetail(testPost);
+                    views.loading.classList.add('hidden');
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`);
+                if (!response.ok) throw new Error('Post not found');
+                const post = await response.json();
+                displayPostDetail(post);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('detail-content').innerHTML = `<p class="text-red-400 text-center">게시물을 불러오는데 실패했습니다.</p>`;
+            } finally {
+                views.loading.classList.add('hidden');
+            }
+        };
+
+        const displayPostDetail = (post) => {
+            currentPostId = post.id;
+            
+            // 내용 주입
+            document.getElementById('detail-title').textContent = post.title;
+            document.getElementById('detail-date').textContent = post.date;
+            document.getElementById('detail-author').textContent = post.author;
+            document.getElementById('detail-views').textContent = post.views || 0;
+            document.getElementById('detail-content').innerHTML = post.content;
+
+            // Dock 수정 버튼 링크 업데이트
+            dock.edit.href = `editor_login.html?id=${post.id}`;
+
+            // 이전/다음 글 버튼 처리
+            const currentIdx = postListCache.findIndex(p => p.id == post.id); // 타입 느슨한 비교 권장
+            
+            const prevContainer = document.getElementById('prev-post-btn-container');
+            const nextContainer = document.getElementById('next-post-btn-container');
+            
+            prevContainer.innerHTML = '';
+            nextContainer.innerHTML = '';
+
+            if (currentIdx > 0) {
+                const prevPost = postListCache[currentIdx - 1];
+                const btn = document.createElement('button');
+                btn.className = 'text-sm text-gray-400 hover:text-white flex items-center gap-1 transition-colors';
+                btn.innerHTML = `<i data-lucide="chevron-left" class="w-4 h-4"></i> Prev`;
+                btn.onclick = () => {
+                    history.pushState({ id: prevPost.id }, '', `?id=${prevPost.id}`);
+                    fetchPostDetail(prevPost.id);
+                };
+                prevContainer.appendChild(btn);
+            }
+
+            if (currentIdx !== -1 && currentIdx < postListCache.length - 1) {
+                const nextPost = postListCache[currentIdx + 1];
+                const btn = document.createElement('button');
+                btn.className = 'text-sm text-gray-400 hover:text-white flex items-center gap-1 transition-colors';
+                btn.innerHTML = `Next <i data-lucide="chevron-right" class="w-4 h-4"></i>`;
+                btn.onclick = () => {
+                    history.pushState({ id: nextPost.id }, '', `?id=${nextPost.id}`);
+                    fetchPostDetail(nextPost.id);
+                };
+                nextContainer.appendChild(btn);
+            }
+
+            // 댓글 로드
+            loadComments(post.id);
+            lucide.createIcons();
+        };
+
+        // --- 댓글 시스템 (기존 로직 유지 + UI 개선) ---
+        window.loadComments = async (postId) => {
+            const list = document.getElementById('comments-list');
+            list.innerHTML = '<div class="spinner mx-auto"></div>'; // 로딩
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/blog/posts/${postId}/comments`);
+                const comments = response.ok ? await response.json() : [];
+                
+                if (comments.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-500 text-sm py-4">첫 번째 댓글을 남겨보세요!</p>';
+                    return;
+                }
+
+                list.innerHTML = comments.map(c => {
+                    const date = new Date(c.date).toLocaleDateString('ko-KR', {
+                        month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                    });
+                    
+                    return `
+                        <div class="bg-black/30 p-4 rounded-xl border border-white/5 group">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-bold text-indigo-300 text-sm">${c.author}</span>
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    <span>${date}</span>
+                                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onclick="editComment(${c.id}, '${c.content.replace(/'/g, "\\'")}')" class="hover:text-white">수정</button>
+                                        <button onclick="deleteComment(${c.id})" class="hover:text-red-400">삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">${c.content}</p>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (e) {
+                list.innerHTML = '<p class="text-red-400 text-sm">댓글을 불러올 수 없습니다.</p>';
+            }
+        };
+
+        // 댓글 작성/수정/삭제 로직 (window 객체에 할당하여 HTML onclick에서 접근 가능하게 함)
+        window.editComment = async (commentId, currentContent) => {
+            const newContent = prompt('댓글 수정:', currentContent);
+            if (!newContent || newContent === currentContent) return;
+            const password = prompt('비밀번호 입력:');
+            if (!password) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/blog/posts/${currentPostId}/comments/${commentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: newContent, password })
+                });
+                if(res.ok) { loadComments(currentPostId); alert('수정 완료'); }
+                else { const err = await res.json(); alert(`오류: ${err.error}`); }
+            } catch(e) { alert('통신 오류'); }
+        };
+
+        window.deleteComment = async (commentId) => {
+            if (!confirm('삭제하시겠습니까?')) return;
+            const password = prompt('비밀번호 입력:');
+            if (!password) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/blog/posts/${currentPostId}/comments/${commentId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                if(res.ok) { loadComments(currentPostId); alert('삭제 완료'); }
+                else { const err = await res.json(); alert(`오류: ${err.error}`); }
+            } catch(e) { alert('통신 오류'); }
+        };
+
+        document.getElementById('comment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const author = document.getElementById('comment-author').value;
+            const password = document.getElementById('comment-password').value;
+            const content = document.getElementById('comment-content').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/blog/posts/${currentPostId}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author, password, content })
+                });
+                
+                if (res.ok) {
+                    document.getElementById('comment-content').value = '';
+                    loadComments(currentPostId);
+                } else {
+                    const err = await res.json();
+                    alert(`실패: ${err.error}`);
+                }
+            } catch(e) { alert('통신 오류'); }
+        });
+
+        // --- 초기화 및 메인 로직 ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Dock 이벤트 연결
+            dock.list.addEventListener('click', (e) => {
                 e.preventDefault();
-                const navId = e.target.dataset.navId;
-                history.pushState({ id: navId }, '', `?id=${navId}`);
-                fetchPostDetail(navId);
+                history.pushState(null, '', 'blog.html');
+                switchView('list');
+            });
+            dock.back.addEventListener('click', (e) => {
+                e.preventDefault();
+                history.back();
+            });
+
+            // 데이터 로드
+            views.loading.classList.remove('hidden');
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/blog/posts`);
+                if (!res.ok) throw new Error();
+                postListCache = await res.json();
+
+                // 로컬 테스트 데이터 주입 로직 (기존 로직 유지)
+                const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+                if (isLocal) {
+                    postListCache.unshift({
+                        id: 'local-test-post',
+                        title: '🚀 로컬 환경 테스트 게시물',
+                        author: 'Dev Admin',
+                        date: new Date().toISOString().split('T')[0],
+                        views: 999,
+                        content: `<p>로컬 환경에서만 보이는 테스트 게시물입니다. <strong>Bento Grid</strong> 레이아웃과 <strong>Glassmorphism</strong> UI를 테스트 중입니다.</p>
+                                  <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop" alt="Test">
+                                  <ul><li>Spotlight Effect 확인</li><li>Floating Dock 동작 확인</li><li>Responsiveness 확인</li></ul>`
+                    });
+                }
+            } catch (e) {
+                console.error("Load Failed");
+                // API 실패 시 로컬이면 더미라도 보여줌
+                const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+                if (isLocal && postListCache.length === 0) {
+                     postListCache.unshift({
+                        id: 'local-test-post',
+                        title: '⚠️ API Connection Failed (Test Mode)',
+                        author: 'System',
+                        date: new Date().toISOString().split('T')[0],
+                        content: '<p>API 연결에 실패했습니다. 로컬 테스트 모드로 진입합니다.</p>'
+                    });
+                }
+            } finally {
+                views.loading.classList.add('hidden');
+            }
+
+            // 초기 뷰 렌더링
+            renderBlogGrid(postListCache);
+
+            // URL 쿼리에 따른 라우팅
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+            if (postId) {
+                fetchPostDetail(postId);
+            } else {
+                switchView('list');
+            }
+
+            // 뒤로가기 이벤트 처리
+            window.addEventListener('popstate', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('id');
+                if (postId) {
+                    fetchPostDetail(postId);
+                } else {
+                    switchView('list');
+                }
             });
         });
-        
-        // 댓글 폼 이벤트 리스너 추가
-        const commentForm = postDetailView.querySelector('#comment-form');
-        if (commentForm) {
-            commentForm.addEventListener('submit', handleCommentSubmit);
-        }
-        
-        // 댓글 목록 로드
-        loadComments(post.id);
-    };
-    
-    // 댓글 제출 처리
-    const handleCommentSubmit = async (e) => {
-        e.preventDefault();
-        
-        const author = document.getElementById('comment-author').value;
-        const password = document.getElementById('comment-password').value;
-        const content = document.getElementById('comment-content').value;
-        
-        if (!author || !password || !content) {
-            alert('모든 필드를 입력해주세요.');
-            return;
-        }
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/blog/posts/${currentPostId}/comments`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    author: author,
-                    password: password,
-                    content: content
-                })
-            });
-            
-            if (response.ok) {
-                // 폼 초기화
-                document.getElementById('comment-author').value = '';
-                document.getElementById('comment-password').value = '';
-                document.getElementById('comment-content').value = '';
-                
-                // 댓글 목록 새로고침
-                loadComments(currentPostId);
-                alert('댓글이 작성되었습니다.');
-            } else {
-                const errorData = await response.json();
-                alert(`댓글 작성에 실패했습니다: ${errorData.error || '알 수 없는 오류'}`);
-            }
-        } catch (error) {
-            console.error('댓글 작성 오류:', error);
-            alert('댓글 작성 중 오류가 발생했습니다.');
-        }
-    };
-    
-
-    
-
-    
-    const createTextPreview = (htmlString, maxLength) => {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlString;
-        const text = tempDiv.textContent || tempDiv.innerText || "";
-        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-    };
-    // --- END: 상세/댓글 로직 ---
-    
-    // --- START: 메인 로직 ---
-    const renderContent = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/blog/posts`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            postListCache = await response.json();
-            
-            // ▼▼▼ 로컬 환경일 때 테스트 게시물을 추가하는 로직 ▼▼▼
-            const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-            if (isLocal) {
-                const testPost = {
-                    id: 'local-test-post',
-                    title: '🚀 로컬 테스트용 게시물',
-                    author: 'Live Server',
-                    date: new Date().toISOString().split('T')[0],
-                    views: 777,
-                    content: `
-                        <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
-                        <p>이 게시물은 <strong>localhost</strong> 또는 <strong>127.0.0.1</strong>에서만 보입니다.</p>
-                    `
-                };
-                postListCache.unshift(testPost); // 배열의 가장 앞에 테스트 게시물 추가
-            }
-            // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
-
-        } catch (error) {
-            console.error("게시물 로딩 실패:", error);
-            postListView.innerHTML = '<p>게시물을 불러오는 데 실패했습니다.</p>';
-            
-            // ▼▼▼ API 로딩 실패 시에도 로컬 테스트 게시물은 보이도록 처리 ▼▼▼
-            const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-            if (isLocal && postListCache.length === 0) {
-                    const testPost = {
-                    id: 'local-test-post',
-                    title: '🚀 로컬 테스트용 게시물 (API 실패)',
-                    author: 'Live Server',
-                    date: new Date().toISOString().split('T')[0],
-                    views: 777,
-                    content: `
-                        <img src="https://via.placeholder.com/600x400.png/333/eee?text=Test+Image" alt="테스트 이미지">
-                        <p>API 서버 연결에 실패했지만, 로컬 환경이므로 테스트용 게시물을 보여줍니다.</p>
-                    `
-                };
-                postListCache.unshift(testPost);
-            }
-            // ▲▲▲ 로컬 테스트 게시물 로직 끝 ▲▲▲
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const postId = urlParams.get('id');
-
-        if (postId) {
-            fetchPostDetail(postId);
-        } else {
-            displayShowcaseList(postListCache);
-        }
-    };
-
-    // 상세 보기용 FAB 버튼 이벤트 리스너 추가 (수정)
-    fabBackToList.addEventListener('click', (e) => {
-        e.preventDefault();
-        history.pushState(null, '', 'blog.html');
-        displayShowcaseList(postListCache);
-    });
-
-    fabHistoryBack.addEventListener('click', (e) => {
-        e.preventDefault();
-        history.back();
-    });
-    
-    window.addEventListener('popstate', (event) => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const postId = urlParams.get('id');
-        if (postId) {
-            fetchPostDetail(postId);
-        } else {
-            displayShowcaseList(postListCache);
-        }
-    });
-
-    renderContent();
-});
-</script>
+    </script>
 </body>
 </html>
