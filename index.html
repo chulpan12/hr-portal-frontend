@@ -1,131 +1,177 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DreamofEnC - Welcome</title>
-    <!-- Tailwind CSS 로드 -->
+    <title>DreamofEnC - Next Gen</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts (Inter & Noto Sans KR) 로드 -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Lucide via UNPKG) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#030712',
+                        surface: '#0B1121',
+                        accent: '#6366f1',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* 기본 폰트 및 배경 설정 */
+        /* 1. 배경 및 전역 스타일 */
         body {
-            font-family: 'Inter', 'Noto Sans KR', sans-serif;
-            background-color: #0a0a0a;
-            /* 은은한 방사형 그라데이션 배경 */
-            background-image: radial-gradient(circle at top center, #111827 0%, #0a0a0a 40%);
-            color: #e5e7eb; /* Light Gray */
+            background-color: #030712;
+            color: #e2e8f0;
             overflow-x: hidden;
+            /* 커서 커스텀 (선택사항) */
+            cursor: default;
         }
 
-        /* 커스텀 그라데이션 텍스트 */
-        .gradient-text {
-            display: inline-block;
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
+        .bg-grid {
+            background-size: 50px 50px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
         }
 
-        /* 타일 카드 기본 스타일 */
-        .card {
-            background-color: #1f2937; /* Gray 800 */
-            border: 1px solid #374151; /* Gray 700 */
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            transform-style: preserve-3d;
-            position: relative; /* 자식 요소의 absolute 포지셔닝 기준 */
-            overflow: hidden; /* 내부 요소가 카드를 벗어나지 않도록 설정 */
+        .bg-glow-blob {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+            filter: blur(100px);
+            animation: pulse-slow 10s infinite;
         }
 
-        /* 마우스 오버 시 3D 효과 및 테두리 그라데이션 */
-        .card:hover {
-            transform: translateY(-10px) rotateX(4deg) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            border-color: transparent;
-            background-image: linear-gradient(#1f2937, #1f2937), linear-gradient(135deg, #3b82f6, #8b5cf6);
-            background-origin: border-box;
-            background-clip: padding-box, border-box;
+        /* 2. 벤토 그리드 카드 (Spotlight 효과 추가) */
+        .bento-card {
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            opacity: 0; /* 애니메이션 시작 전 숨김 */
+            /* Spotlight를 위한 설정 */
+            --mouse-x: 0px;
+            --mouse-y: 0px;
         }
-        
-        /* 이미지를 담을 컨테이너, 사선으로 잘라내는 역할 */
-        .image-clipper {
+
+        /* Spotlight 레이어 */
+        .bento-card::before {
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            /* clip-path로 사선 모양 만들기: polygon(좌상단, 우상단, 좌하단) */
-            clip-path: polygon(0 0, 100% 0, 0 100%);
-            transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.06),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 2;
+            pointer-events: none;
         }
 
-        /* 카드 호버 시 이미지 클리핑 영역을 미세하게 조정해 동적인 느낌 부여 */
-        .card:hover .image-clipper {
-            clip-path: polygon(0 0, 100% 0, 0 85%);
+        .bento-card:hover::before {
+            opacity: 1;
         }
 
-        .card-image {
+        .bento-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 내부 이미지 컨테이너 */
+        .card-visual {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .card-visual img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* 카드 호버 시 이미지 확대 효과 */
-        .card:hover .card-image {
-            transform: scale(1.1);
+            transition: transform 0.7s ease, opacity 0.5s ease;
+            opacity: 0.5; 
+            mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
         }
 
-        /* 텍스트 콘텐츠 컨테이너 */
-        .card-content {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            /* 콘텐츠를 우측 하단에 정렬 */
-            justify-content: flex-end;
-            align-items: flex-end;
-            /* 텍스트를 우측 정렬 */
-            text-align: right;
-            padding: 2rem; /* 32px */
-            /* 텍스트가 이미지 위에 올라오도록 z-index 설정 */
-            z-index: 10;
-            /* 텍스트 가독성을 위한 어두운 그라데이션 추가 */
-            background: linear-gradient(to top left, rgba(10, 10, 10, 0.85) 10%, rgba(10, 10, 10, 0) 60%);
+        .bento-card:hover .card-visual img {
+            transform: scale(1.05);
+            opacity: 0.7;
         }
 
-        /* 로딩 시 타일이 순서대로 나타나는 애니메이션 */
-        .card-reveal {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: reveal 0.6s forwards;
+        /* 텍스트 그라데이션 */
+        .text-gradient {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        @keyframes reveal {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ✨ [추가] 도넛 메뉴 스타일 */
+        /* 3. 도넛 메뉴 스타일 */
         .doughnut-overlay {
             position: fixed;
             inset: 0;
-            background-color: rgba(10, 10, 10, 0.7);
-            backdrop-filter: blur(10px) saturate(150%);
-            -webkit-backdrop-filter: blur(10px) saturate(150%);
-            z-index: 50;
+            background-color: rgba(3, 7, 18, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.3s ease;
         }
 
         .doughnut-overlay.visible {
@@ -135,375 +181,316 @@
 
         .doughnut-container {
             position: relative;
-            width: 500px; /* 도넛 메뉴의 전체 크기 */
+            width: 500px;
             height: 500px;
-            transform: scale(0.8);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .doughnut-overlay.visible .doughnut-container {
-            transform: scale(1);
         }
 
         .tool-item {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 120px; /* 도넛 조각 크기 */
-            height: 120px;
-            background-color: #1f2937;
-            border: 1px solid #374151;
+            width: 100px;
+            height: 100px;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: #d1d5db;
-            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 0.75rem;
             text-decoration: none;
             transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s, border-color 0.3s;
-        }
-        
-        .tool-item:hover {
-            background-color: #374151;
-            border-color: #4f46e5;
-            color: white;
-        }
-        
-        .tool-item-icon {
-            width: 32px;
-            height: 32px;
-            margin-bottom: 8px;
-        }
-        
-        #close-doughnut {
-            position: absolute;
-            top: 40px;
-            right: 40px;
-            width: 40px;
-            height: 40px;
-            color: #9ca3af;
-            cursor: pointer;
-            transition: transform 0.3s, color 0.3s;
-        }
-        #close-doughnut:hover {
-            transform: rotate(90deg);
-            color: white;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s, border-color 0.3s, color 0.3s;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
+        .tool-item:hover {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: #818cf8;
+            color: white;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .ai-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 999px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* 딜레이 클래스 생성 (Sass/Less 없이 하드코딩 for stability) */
+        .delay-0 { animation-delay: 0ms; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+<body class="antialiased selection:bg-indigo-500 selection:text-white">
 
-    <div class="w-full max-w-7xl mx-auto">
+    <!-- 배경 요소 -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow-blob"></div>
+
+    <div class="w-full max-w-7xl mx-auto px-6 py-12 relative">
+        
         <!-- 헤더 섹션 -->
-        <header class="text-center mb-16">
-            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white">
-                Dream of <span class="gradient-text">E&C</span>
+        <header class="text-center mb-16 relative z-10 animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 mb-6 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-medium tracking-wide">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                AI Innovation Lab
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6 drop-shadow-2xl">
+                Dream of <span class="text-gradient">E&C</span>
             </h1>
-            <p class="mt-4 text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto">
-                AI를 통해 상상이 현실이 되는 공간, Dream of E&C에 오신 것을 환영합니다!
+            <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
+                AI를 통해 상상이 현실이 되는 공간.<br class="hidden md:block">
+                Dream of E&C에 오신 것을 환영합니다!
             </p>
-             <p class="mt-6 text-base text-yellow-400 font-semibold">
-                총 방문자 수: <span id="visitor-count" class="text-white font-bold">...</span>
-            </p>
+            <div class="mt-8 flex items-center justify-center gap-2 text-sm text-gray-500">
+                <i data-lucide="users" class="w-4 h-4 text-gray-600"></i>
+                <span>Total Visitors: <span id="visitor-count" class="text-indigo-400 font-mono font-bold">...</span></span>
+            </div>
         </header>
 
-        <!-- 3열 2행 그리드 레이아웃 -->
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Bento Grid 레이아웃 -->
+        <main id="card-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[320px]">
             
-            <!-- Tile 1: 바둑 메타버스 -->
-            <a href="https://baduk.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 100ms;">
-                <div class="image-clipper">
-                    <img src="./assets/baduk.png" alt="바둑 메타버스 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Baduk';">
+            <!-- Item 1: 바둑 메타버스 (baduk.png 복원) -->
+            <a href="https://baduk.dreamofenc.com" target="_blank" class="bento-card md:col-span-2 group animate-fade-in-up delay-100">
+                <div class="card-visual">
+                    <img src="./assets/baduk.png" alt="바둑 메타버스" 
+                         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1529699211952-734e80c4d42b?q=80&w=2071&auto=format&fit=crop';">
                 </div>
-                <div class="card-content">
-                    <h2 class="text-3xl font-bold text-white">바둑 메타버스</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">가상 공간에서 즐기는 온라인 바둑과 오목.<br>AI와의 대국을 통해 전략적 사고를 강화하세요.</p>
-                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                <div class="relative z-10 p-8 mt-auto">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="grid-3x3" class="text-indigo-400"></i>
+                        <span class="text-indigo-400 text-sm font-bold tracking-wider uppercase">Metaverse</span>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-2">바둑 메타버스</h2>
+                    <p class="text-gray-300 max-w-md">가상 공간에서 즐기는 온라인 바둑과 오목. AI와의 대국을 통해 전략적 사고를 강화하세요.</p>
                 </div>
             </a>
 
-            <!-- Tile 2: 도구 모음 (✨ [수정] 메뉴 트리거로 변경) -->
-            <div id="tools-trigger" class="card-reveal card rounded-2xl group aspect-[4/5] cursor-pointer" style="animation-delay: 200ms;">
-                <div class="image-clipper">
-                    <img src="./assets/tools.png" alt="도구 모음 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Tools';">
+            <!-- Item 2: 도구 모음 (tools.png 복원) -->
+            <div id="tools-trigger" class="bento-card cursor-pointer group md:col-span-1 border-indigo-500/30 animate-fade-in-up delay-200">
+                <div class="card-visual">
+                     <img src="./assets/tools.png" alt="도구 모음" class="opacity-30 group-hover:opacity-40"
+                          onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop';">
                 </div>
-                <div class="card-content">
-                    <h2 class="text-3xl font-bold text-white">도구 모음</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">업무 효율을 높여주는 다양한 AI 기반 도구들.<br>반복적인 작업을 자동화하고 시간을 절약하세요.</p>
-                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 메뉴 열기</span>
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-purple-900/40 opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div class="relative z-10 p-8 flex flex-col h-full items-center justify-center text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-6 text-white border border-white/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="wrench" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">도구 모음</h2>
+                    <p class="text-gray-300 text-sm mb-6">업무 효율을 높여주는<br>다양한 AI 기반 도구들</p>
+                    <span class="px-5 py-2.5 rounded-full bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/30">
+                        메뉴 열기
+                    </span>
                 </div>
             </div>
 
-            <!-- Tile 3: 횡스크롤 퀴즈게임 -->
-            <a href="quiz_info.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 300ms;">
-                <div class="image-clipper">
-                    <img src="./assets/game.png" alt="횡스크롤 퀴즈게임 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Game';">
+            <!-- Item 3: 퀴즈 어드벤처 (game.png 복원) -->
+            <a href="quiz_info.html" class="bento-card group md:col-span-1 animate-fade-in-up delay-300">
+                <div class="card-visual">
+                    <img src="./assets/game.png" alt="퀴즈 어드벤처"
+                         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071&auto=format&fit=crop';">
                 </div>
-                <div class="card-content">
-                    <h2 class="text-3xl font-bold text-white">퀴즈 어드벤처</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">캐릭터를 조종하며 즐기는 신개념 퀴즈 게임.<br>영어 및 다양한 시사상식을 테스트해보세요.</p>
-                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
-                </div>
-            </a>
-
-            <!-- Tile 4: 기술 블로그 -->
-            <a href="./app/blog/blog.html" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 400ms;">
-                <div class="image-clipper">
-                    <img src="./assets/blog.png" alt="기술 블로그 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Blog';">
-                </div>
-                <div class="card-content">
-                    <h2 class="text-3xl font-bold text-white">기술 블로그</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">AI활용 컨텐츠 개발, 업무자동화에 대한<br> 제작자의 기술적 인사이트를 공유합니다.</p>
-                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                <div class="relative z-10 p-6 mt-auto bg-gradient-to-t from-black/80 to-transparent pt-20">
+                    <h2 class="text-xl font-bold text-white">퀴즈 어드벤처</h2>
+                    <p class="text-sm text-gray-300 mt-1">캐릭터를 조종하며 즐기는<br>신개념 퀴즈 게임</p>
                 </div>
             </a>
 
-            <!-- Tile 5: 사내 위키 -->
-            <a href="https://wiki.dreamofenc.com" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 500ms;">
-                <div class="image-clipper">
-                    <img src="./assets/wiki.png" alt="사내 위키 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Wiki';">
+            <!-- Item 4: 기술 블로그 (blog.png 복원) -->
+            <a href="./app/blog/blog.html" class="bento-card group md:col-span-1 animate-fade-in-up delay-400">
+                <div class="card-visual">
+                    <img src="./assets/blog.png" alt="기술 블로그"
+                         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=2072&auto=format&fit=crop';">
                 </div>
-                <div class="card-content">
-                    <h2 class="text-3xl font-bold text-white">사내 위키</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">AI, IT기술, 통계지식을 비롯한 지식과 정보를<br> 축적하고 공유하는 협업 시스템입니다.</p>
-                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                <div class="relative z-10 p-6 mt-auto bg-gradient-to-t from-black/80 to-transparent pt-20">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">기술 블로그</h2>
+                            <p class="text-sm text-gray-300 mt-1">제작자의 기술적 인사이트 공유</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/20 transition-colors">
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 text-white"></i>
+                        </div>
+                    </div>
                 </div>
             </a>
 
-            <!-- Tile 6: AI 특강 -->
-            <a href="lecture.html" target="_blank" class="card-reveal card rounded-2xl group aspect-[4/5]" style="animation-delay: 600ms;">
-                <div class="image-clipper">
-                    <img src="./assets/pt.png" alt="AI 특강 이미지" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/600x750/1f2937/e5e7eb?text=Lecture';">
+             <!-- Item 5: 사내 위키 (wiki.png 복원) -->
+             <a href="https://wiki.dreamofenc.com" target="_blank" class="bento-card group md:col-span-1 animate-fade-in-up delay-500">
+                <div class="card-visual">
+                    <img src="./assets/wiki.png" alt="사내 위키"
+                         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2190&auto=format&fit=crop';">
                 </div>
-                <div class="card-content">
-                    <h2 class="text-3xl font-bold text-white">AI 특강</h2>
-                    <p class="mt-2 text-gray-300 max-w-xs">비전문가의 AI 기술 활용을 위한<br> 제작자의 영혼이 담긴 특별 강의 자료.</p>
-                    <span class="mt-6 inline-block text-blue-400 font-semibold">&larr; 바로가기</span>
+                <div class="relative z-10 p-6 mt-auto bg-gradient-to-t from-black/80 to-transparent pt-20">
+                    <div class="flex items-center gap-3 mb-1">
+                        <i data-lucide="book" class="text-indigo-400 w-4 h-4"></i>
+                        <span class="text-indigo-400 text-xs font-bold uppercase">Knowledge Base</span>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">사내 위키</h2>
+                    <p class="text-sm text-gray-300 mt-1">지식과 정보를 축적하고 공유하는 협업 시스템</p>
                 </div>
+            </a>
+            
+            <!-- Item 6: AI 특강 (pt.png 복원) -->
+            <a href="lecture.html" target="_blank" class="bento-card group md:col-span-3 lg:col-span-3 flex-row items-center overflow-hidden h-[200px] md:h-auto animate-fade-in-up delay-500">
+                 <div class="card-visual">
+                    <!-- 이미지를 배경으로 깔되, 가로로 넓게 보이도록 -->
+                    <img src="./assets/pt.png" alt="AI 특강" class="opacity-40"
+                         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop';">
+                 </div>
+                 <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent"></div>
+                 
+                 <div class="relative z-10 p-8 w-full flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-start md:items-center gap-6">
+                        <div class="hidden md:flex w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 items-center justify-center shadow-lg shadow-indigo-500/20 flex-shrink-0">
+                            <i data-lucide="presentation" class="w-10 h-10 text-white"></i>
+                        </div>
+                        <div>
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-2">SPECIAL LECTURE</span>
+                            <h2 class="text-2xl md:text-4xl font-bold text-white mb-2">AI 특강 자료</h2>
+                            <p class="text-gray-300 text-sm md:text-base max-w-xl">비전문가의 AI 기술 활용을 위한 제작자의 영혼이 담긴 특별 강의 자료.<br>지금 바로 확인해보세요.</p>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-gray-100 transition-colors shadow-xl">
+                            강의 보러가기 <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
+                 </div>
             </a>
 
         </main>
-        <footer class="text-center py-8 text-xs" style="color: var(--text-secondary);">
-            <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:underline text-indigo-400">https://dreamofenc.com</a> All right reserved.</p>
-            <p class="mt-1">문의/건의사항 : 노무후생그룹 장세융 차장</p>
+
+        <footer class="text-center py-12 text-xs text-gray-500 animate-fade-in-up delay-500">
+            <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:text-indigo-400 transition-colors">https://dreamofenc.com</a> All right reserved.</p>
+            <p class="mt-2">문의/건의사항 : 노무후생그룹 장세융 차장</p>
         </footer>
     </div>
 
-    <!-- ✨ [추가] 도넛 메뉴 HTML -->
+    <!-- 도넛 메뉴 오버레이 (동일 유지) -->
     <div id="doughnut-menu" class="doughnut-overlay">
-        <!-- 닫기 버튼 -->
-        <svg id="close-doughnut" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <button id="close-doughnut" class="absolute top-8 right-8 text-gray-400 hover:text-white transition-colors transform hover:rotate-90 duration-300">
+            <i data-lucide="x" class="w-10 h-10"></i>
+        </button>
 
         <div class="doughnut-container">
-            <!-- 
-                새로운 도구를 추가하려면 아래와 같이 a 태그를 복사하여 붙여넣고
-                href, 아이콘, 텍스트만 수정하면 됩니다.
-                스크립트가 자동으로 위치와 애니메이션을 계산합니다.
-            -->
             <a href="./app/tools/chart_maker.html" class="tool-item">
-                <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                </svg>
+                <i data-lucide="bar-chart-2" class="w-6 h-6 mb-2"></i>
                 <span>차트생성기</span>
             </a>
             <a href="./app/tools/flowchart_maker.html" class="tool-item">
-                <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.186 2.25 2.25 0 00-3.933 2.186z" />
-                </svg>
-                <span>순서도생성기</span>
+                <i data-lucide="workflow" class="w-6 h-6 mb-2"></i>
+                <span>순서도</span>
             </a>
             <a href="./app/tools/text_analysis.html" class="tool-item">
-                <!-- ✨ [수정] 아이콘 컨테이너 및 AI 배지 추가 -->
-                <div class="relative">
-                    <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
-                    </svg>
-                    <!-- ✨ [수정] 새로운 AI 뱃지 아이콘 -->
-                    <div class="absolute -top-4 -right-4 h-6 w-6">
-                        <svg viewBox="0 0 24 24">
-                            <defs>
-                                <linearGradient id="ai-badge-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#a855f7;" />
-                                    <stop offset="100%" style="stop-color:#ec4899;" />
-                                </linearGradient>
-                            </defs>
-                            <circle cx="12" cy="12" r="12" fill="url(#ai-badge-gradient-1)" />
-                            <text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-                        </svg>
-                    </div>
-                </div>
-                <span>텍스트분석기</span>
+                <div class="ai-badge">AI</div>
+                <i data-lucide="file-text" class="w-6 h-6 mb-2"></i>
+                <span>텍스트분석</span>
             </a>
             <a href="./app/tools/survey_analyzer.html" class="tool-item">
-                <!-- ✨ [수정] 아이콘 컨테이너 및 AI 배지 추가 -->
-                <div class="relative">
-                    <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                    </svg>
-                     <!-- ✨ [수정] 새로운 AI 뱃지 아이콘 -->
-                     <div class="absolute -top-4 -right-4 h-6 w-6">
-                        <svg viewBox="0 0 24 24">
-                            <defs>
-                                <linearGradient id="ai-badge-gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#a855f7;" />
-                                    <stop offset="100%" style="stop-color:#ec4899;" />
-                                </linearGradient>
-                            </defs>
-                            <circle cx="12" cy="12" r="12" fill="url(#ai-badge-gradient-2)" />
-                            <text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-                        </svg>
-                    </div>
-                </div>
-                <span>설문조사분석기</span>
+                <div class="ai-badge">AI</div>
+                <i data-lucide="clipboard-list" class="w-6 h-6 mb-2"></i>
+                <span>설문분석</span>
             </a>
             <a href="./app/tools/market_analyzer.html" class="tool-item">
-                <!-- 아이콘 변경: 동향 분석을 상징하는 아이콘으로 교체 -->
-                <div class="relative">
-                    <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75l-2.489-2.489m0 0a3.375 3.375 0 10-4.773-4.773 3.375 3.375 0 004.774 4.774zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l1.5-1.5 1.5 1.5" />
-                    </svg>
-                     <!-- AI 뱃지 아이콘 -->
-                     <div class="absolute -top-4 -right-4 h-6 w-6">
-                        <svg viewBox="0 0 24 24">
-                            <defs>
-                                <linearGradient id="ai-badge-gradient-3" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#a855f7;" />
-                                    <stop offset="100%" style="stop-color:#ec4899;" />
-                                </linearGradient>
-                            </defs>
-                            <circle cx="12" cy="12" r="12" fill="url(#ai-badge-gradient-3)" />
-                            <text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-                        </svg>
-                    </div>
-                </div>
-                <span>동향분석기</span>
+                <div class="ai-badge">AI</div>
+                <i data-lucide="trending-up" class="w-6 h-6 mb-2"></i>
+                <span>동향분석</span>
             </a>
             <a href="./app/tools/saju_analyzer.html" class="tool-item">
-                <!-- ✨ [추가] SAJU 분석기 아이콘 -->
-                <div class="relative">
-                    <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-                    </svg>
-                     <!-- AI 뱃지 아이콘 -->
-                     <div class="absolute -top-4 -right-4 h-6 w-6">
-                        <svg viewBox="0 0 24 24">
-                            <defs>
-                                <linearGradient id="ai-badge-gradient-4" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#a855f7;" />
-                                    <stop offset="100%" style="stop-color:#ec4899;" />
-                                </linearGradient>
-                            </defs>
-                            <circle cx="12" cy="12" r="12" fill="url(#ai-badge-gradient-4)" />
-                            <text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-                        </svg>
-                    </div>
-                </div>
-                <span>사주분석기</span>
+                <div class="ai-badge">AI</div>
+                <i data-lucide="moon" class="w-6 h-6 mb-2"></i>
+                <span>사주분석</span>
             </a>
             <a href="./app/tools/culture_analyzer.html" class="tool-item">
-                <!-- ✨ [추가] AI 조직문화 진단기 아이콘 -->
-                <div class="relative">
-                    <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                    </svg>
-                     <!-- AI 뱃지 아이콘 -->
-                     <div class="absolute -top-4 -right-4 h-6 w-6">
-                        <svg viewBox="0 0 24 24">
-                            <defs>
-                                <linearGradient id="ai-badge-gradient-5" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#a855f7;" />
-                                    <stop offset="100%" style="stop-color:#ec4899;" />
-                                </linearGradient>
-                            </defs>
-                            <circle cx="12" cy="12" r="12" fill="url(#ai-badge-gradient-5)" />
-                            <text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-                        </svg>
-                    </div>
-                </div>
-                <span>조직문화진단기</span>
+                <div class="ai-badge">AI</div>
+                <i data-lucide="users" class="w-6 h-6 mb-2"></i>
+                <span>조직문화</span>
             </a>
             <a href="./app/tools/tbm_simulator.html" class="tool-item">
-                <!-- ✨ [추가] TBM 시뮬레이터 아이콘 -->
-                <div class="relative">
-                    <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-                    </svg>
-                     <!-- AI 뱃지 아이콘 -->
-                     <div class="absolute -top-4 -right-4 h-6 w-6">
-                        <svg viewBox="0 0 24 24">
-                            <defs>
-                                <linearGradient id="ai-badge-gradient-6" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#a855f7;" />
-                                    <stop offset="100%" style="stop-color:#ec4899;" />
-                                </linearGradient>
-                            </defs>
-                            <circle cx="12" cy="12" r="12" fill="url(#ai-badge-gradient-6)" />
-                            <text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-                        </svg>
-                    </div>
-                </div>
-                <span>TBM시뮬레이터</span>
+                <div class="ai-badge">AI</div>
+                <i data-lucide="shield-check" class="w-6 h-6 mb-2"></i>
+                <span>TBM시뮬</span>
             </a>
-
-
-            <!-- <a href="tool4.html" class="tool-item">
-                 <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" /></svg>
-                <span>보고서 작성</span>
-            </a>
-             <a href="tool5.html" class="tool-item">
-                <svg class="tool-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-                <span>AI 챗봇</span>
-            </a> -->
         </div>
     </div>
 
     <script>
+        // Lucide 아이콘 초기화
+        lucide.createIcons();
+
         document.addEventListener('DOMContentLoaded', () => {
-            // 기존 방문자 수 로직
+            // 1. Spotlight Effect (마우스 조명 효과)
+            const cards = document.querySelectorAll('.bento-card');
+            const mainGrid = document.getElementById('card-grid');
+
+            mainGrid.addEventListener('mousemove', (e) => {
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+            });
+
+            // 2. 방문자 수 Fetch 로직 (API 링크 복원 완료)
             const visitorCountElement = document.getElementById('visitor-count');
             const API_ENDPOINT = 'https://api.dreamofenc.com/api/blog/site-info';
 
             const fetchVisitorCount = async () => {
                 try {
                     const response = await fetch(API_ENDPOINT);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
                     if (visitorCountElement) {
-                        visitorCountElement.textContent = data.total_visitors.toLocaleString();
+                         visitorCountElement.textContent = data.total_visitors.toLocaleString();
                     }
                 } catch (error) {
-                    console.error('Error fetching visitor count:', error);
-                    if (visitorCountElement) visitorCountElement.textContent = 'N/A';
+                    console.log('API Error or Offline');
+                    // 오류 시 표기 (실 서버에서는 API가 동작하면 정상 출력)
+                    if (visitorCountElement) visitorCountElement.textContent = "Offline"; 
                 }
             };
             fetchVisitorCount();
 
-            // ✨ [추가] 도넛 메뉴 스크립트
+            // 3. 도넛 메뉴 로직
             const toolsTrigger = document.getElementById('tools-trigger');
             const doughnutMenu = document.getElementById('doughnut-menu');
             const closeButton = document.getElementById('close-doughnut');
             const toolItems = doughnutMenu.querySelectorAll('.tool-item');
-            const radius = 200; // 도넛 반지름 (px)
+            const radius = 220;
 
             const openMenu = () => {
                 doughnutMenu.classList.add('visible');
                 const angleStep = 360 / toolItems.length;
 
                 toolItems.forEach((item, index) => {
-                    const angle = angleStep * index - 90; // -90도 부터 시작 (상단)
-                    const x = radius * Math.cos(angle * Math.PI / 180);
-                    const y = radius * Math.sin(angle * Math.PI / 180);
+                    const angle = angleStep * index - 90; 
+                    const radian = angle * Math.PI / 180;
+                    const x = radius * Math.cos(radian);
+                    const y = radius * Math.sin(radian);
                     
-                    // 순차적 애니메이션을 위한 딜레이
                     item.style.transitionDelay = `${index * 50}ms`;
-                    
-                    // 최종 위치로 이동
                     item.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1)`;
                 });
             };
@@ -511,22 +498,17 @@
             const closeMenu = () => {
                 doughnutMenu.classList.remove('visible');
                 toolItems.forEach((item) => {
-                    // 딜레이 초기화 및 중앙으로 복귀
                     item.style.transitionDelay = '0ms';
                     item.style.transform = 'translate(-50%, -50%) scale(0)';
                 });
             };
 
-            toolsTrigger.addEventListener('click', openMenu);
-            closeButton.addEventListener('click', closeMenu);
-            // 배경 클릭 시 닫기
+            if(toolsTrigger) toolsTrigger.addEventListener('click', openMenu);
+            if(closeButton) closeButton.addEventListener('click', closeMenu);
             doughnutMenu.addEventListener('click', (e) => {
-                if (e.target === doughnutMenu) {
-                    closeMenu();
-                }
+                if (e.target === doughnutMenu) closeMenu();
             });
         });
     </script>
-
 </body>
 </html>
