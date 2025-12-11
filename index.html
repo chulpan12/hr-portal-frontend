@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DreamofEnC - Next Gen</title>
+    <title>DreamofEnC - Next Gen & LUNA</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;500;700;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
     
     <!-- Icons (Lucide via UNPKG) -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,16 +21,20 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
                     },
                     colors: {
                         background: '#030712',
                         surface: '#0B1121',
                         accent: '#6366f1',
+                        luna: '#00ffff', // LUNA Key Color
                     },
                     animation: {
                         'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'float': 'float 6s ease-in-out infinite',
                         'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'spin-slow': 'spin 8s linear infinite', // LUNA Border Effect
+                        'shimmer': 'shimmer 2s linear infinite',
                     },
                     keyframes: {
                         float: {
@@ -40,6 +44,10 @@
                         fadeInUp: {
                             '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '200% 0' },
+                            '100%': { backgroundPosition: '-200% 0' }
                         }
                     }
                 }
@@ -53,7 +61,6 @@
             background-color: #030712;
             color: #e2e8f0;
             overflow-x: hidden;
-            /* 커서 커스텀 (선택사항) */
             cursor: default;
         }
 
@@ -83,7 +90,7 @@
             animation: pulse-slow 10s infinite;
         }
 
-        /* 2. 벤토 그리드 카드 (Spotlight 효과 추가) */
+        /* 2. 벤토 그리드 카드 */
         .bento-card {
             background: rgba(17, 24, 39, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -93,8 +100,7 @@
             transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
-            opacity: 0; /* 애니메이션 시작 전 숨김 */
-            /* Spotlight를 위한 설정 */
+            opacity: 0;
             --mouse-x: 0px;
             --mouse-y: 0px;
         }
@@ -228,13 +234,23 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* 딜레이 클래스 생성 (Sass/Less 없이 하드코딩 for stability) */
+        /* 딜레이 클래스 */
         .delay-0 { animation-delay: 0ms; }
         .delay-100 { animation-delay: 100ms; }
         .delay-200 { animation-delay: 200ms; }
         .delay-300 { animation-delay: 300ms; }
         .delay-400 { animation-delay: 400ms; }
         .delay-500 { animation-delay: 500ms; }
+        .delay-700 { animation-delay: 700ms; }
+
+        /* LUNA Card Specific Styles */
+        .luna-text-glow {
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .luna-border-gradient {
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 340deg, #00ffff 360deg);
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-indigo-500 selection:text-white">
@@ -267,7 +283,63 @@
         <!-- Bento Grid 레이아웃 -->
         <main id="card-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[320px]">
             
-            <!-- Item 1: 바둑 메타버스 (baduk.png 복원) -->
+            <!-- [NEW] LUNA HERO SECTION: 압도적인 디자인, 최상단 배치 -->
+            <a href="https://dreamofenc.com/app/luna/intro.html" class="bento-card col-span-1 md:col-span-3 h-[400px] md:h-[420px] group relative overflow-hidden border-0 animate-fade-in-up delay-0">
+                <!-- 1. Animated Border Beam -->
+                <div class="absolute inset-[-50%] animate-spin-slow luna-border-gradient opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
+                <!-- 2. Dark Inner Background with rounding to create border effect -->
+                <div class="absolute inset-[1.5px] bg-[#050508] rounded-[1.4rem] z-10 overflow-hidden">
+                    <!-- Tech Grid Background -->
+                    <div class="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30"></div>
+                    <!-- Radial Glow -->
+                    <div class="absolute -right-20 -bottom-20 w-[400px] h-[400px] bg-cyan-500/20 blur-[100px] rounded-full"></div>
+                </div>
+
+                <!-- 3. Content -->
+                <div class="relative z-20 w-full h-full p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+                    
+                    <div class="flex flex-col items-start space-y-4 max-w-2xl">
+                        <!-- Badge -->
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-400/30 bg-cyan-950/50 text-cyan-300 text-[10px] md:text-xs font-mono font-bold tracking-[0.2em] shadow-[0_0_10px_rgba(0,255,255,0.2)]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                            NEW ARRIVAL
+                        </div>
+                        
+                        <!-- Typography -->
+                        <h2 class="text-6xl md:text-8xl font-black text-white tracking-tighter opacity-90 group-hover:opacity-100 transition-opacity">
+                            L.U.N.A
+                        </h2>
+                        
+                        <div>
+                            <p class="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-cyan-400 luna-text-glow font-sans mb-2">
+                                Logic Unified Neural Advisor
+                            </p>
+                            <p class="text-gray-400 text-sm md:text-lg leading-relaxed font-light">
+                                당신의 코딩 논리를 깨우는, <span class="text-cyan-200 font-medium">AI 학습 어드바이저.</span><br>
+                                지금 바로 차세대 코딩 튜터와 연결하세요.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right Side Visual / Button Interaction -->
+                    <div class="mt-auto md:mt-0 flex items-center justify-end w-full md:w-auto">
+                        <div class="relative group-hover:scale-110 transition-transform duration-500 ease-out">
+                            <!-- Button Circle -->
+                            <div class="w-16 h-16 md:w-24 md:h-24 rounded-full border border-cyan-500/30 bg-cyan-950/30 backdrop-blur-sm flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(0,255,255,0.15)] group-hover:shadow-[0_0_50px_rgba(0,255,255,0.4)] transition-shadow">
+                                <i data-lucide="cpu" class="w-8 h-8 md:w-10 md:h-10 text-cyan-200 group-hover:text-white transition-colors"></i>
+                                <!-- Shimmer overlay on button -->
+                                <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer"></div>
+                            </div>
+                            <!-- Orbit Ring -->
+                            <div class="absolute inset-[-10px] border border-cyan-500/20 rounded-full animate-[spin_10s_linear_infinite]">
+                                <div class="absolute top-0 left-1/2 w-2 h-2 bg-cyan-400 rounded-full blur-[1px] shadow-[0_0_10px_#00ffff]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Item 1: 바둑 메타버스 (기존 col-span-2 유지 및 배치 순서 조정) -->
             <a href="https://baduk.dreamofenc.com" target="_blank" class="bento-card md:col-span-2 group animate-fade-in-up delay-100">
                 <div class="card-visual">
                     <img src="./assets/baduk.png" alt="바둑 메타버스" 
@@ -283,7 +355,7 @@
                 </div>
             </a>
 
-            <!-- Item 2: 도구 모음 (tools.png 복원) -->
+            <!-- Item 2: 도구 모음 -->
             <div id="tools-trigger" class="bento-card cursor-pointer group md:col-span-1 border-indigo-500/30 animate-fade-in-up delay-200">
                 <div class="card-visual">
                      <img src="./assets/tools.png" alt="도구 모음" class="opacity-30 group-hover:opacity-40"
@@ -302,7 +374,7 @@
                 </div>
             </div>
 
-            <!-- Item 3: 퀴즈 어드벤처 (game.png 복원) -->
+            <!-- Item 3: 퀴즈 어드벤처 -->
             <a href="quiz_info.html" class="bento-card group md:col-span-1 animate-fade-in-up delay-300">
                 <div class="card-visual">
                     <img src="./assets/game.png" alt="퀴즈 어드벤처"
@@ -314,7 +386,7 @@
                 </div>
             </a>
 
-            <!-- Item 4: 기술 블로그 (blog.png 복원) -->
+            <!-- Item 4: 기술 블로그 -->
             <a href="./app/blog/blog.html" class="bento-card group md:col-span-1 animate-fade-in-up delay-400">
                 <div class="card-visual">
                     <img src="./assets/blog.png" alt="기술 블로그"
@@ -333,7 +405,7 @@
                 </div>
             </a>
 
-             <!-- Item 5: 사내 위키 (wiki.png 복원) -->
+             <!-- Item 5: 사내 위키 -->
              <a href="https://wiki.dreamofenc.com" target="_blank" class="bento-card group md:col-span-1 animate-fade-in-up delay-500">
                 <div class="card-visual">
                     <img src="./assets/wiki.png" alt="사내 위키"
@@ -349,8 +421,8 @@
                 </div>
             </a>
             
-            <!-- Item 6: AI 특강 (pt.png 복원) -->
-            <a href="lecture.html" target="_blank" class="bento-card group md:col-span-3 lg:col-span-3 flex-row items-center overflow-hidden h-[200px] md:h-auto animate-fade-in-up delay-500">
+            <!-- Item 6: AI 특강 -->
+            <a href="lecture.html" target="_blank" class="bento-card group md:col-span-3 lg:col-span-3 flex-row items-center overflow-hidden h-[200px] md:h-auto animate-fade-in-up delay-700">
                  <div class="card-visual">
                     <!-- 이미지를 배경으로 깔되, 가로로 넓게 보이도록 -->
                     <img src="./assets/pt.png" alt="AI 특강" class="opacity-40"
@@ -379,13 +451,13 @@
 
         </main>
 
-        <footer class="text-center py-12 text-xs text-gray-500 animate-fade-in-up delay-500">
+        <footer class="text-center py-12 text-xs text-gray-500 animate-fade-in-up delay-700">
             <p>Copyright &copy; Seyoong Jang, <a href="https://dreamofenc.com" target="_blank" class="hover:text-indigo-400 transition-colors">https://dreamofenc.com</a> All right reserved.</p>
             <p class="mt-2">문의/건의사항 : 노무후생그룹 장세융 차장</p>
         </footer>
     </div>
 
-    <!-- 도넛 메뉴 오버레이 (동일 유지) -->
+    <!-- 도넛 메뉴 오버레이 -->
     <div id="doughnut-menu" class="doughnut-overlay">
         <button id="close-doughnut" class="absolute top-8 right-8 text-gray-400 hover:text-white transition-colors transform hover:rotate-90 duration-300">
             <i data-lucide="x" class="w-10 h-10"></i>
@@ -453,7 +525,7 @@
                 });
             });
 
-            // 2. 방문자 수 Fetch 로직 (API 링크 복원 완료)
+            // 2. 방문자 수 Fetch 로직
             const visitorCountElement = document.getElementById('visitor-count');
             const API_ENDPOINT = 'https://api.dreamofenc.com/api/blog/site-info';
 
@@ -467,7 +539,6 @@
                     }
                 } catch (error) {
                     console.log('API Error or Offline');
-                    // 오류 시 표기 (실 서버에서는 API가 동작하면 정상 출력)
                     if (visitorCountElement) visitorCountElement.textContent = "Offline"; 
                 }
             };
