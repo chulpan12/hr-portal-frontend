@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUNA - AI Coding Tutor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Space Mono 폰트 추가 -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* 1. Base Setup */
+    body, html {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background-color: #030305;
+      background: radial-gradient(circle at 50% 50%, #111118 0%, #030305 80%);
+      font-family: 'Outfit', sans-serif;
+    }
+
+    #canvas-container {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; z-index: 1;
+      mix-blend-mode: screen; 
+    }
+
+    .noise-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 2; opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    .vignette {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 3;
+      background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.9) 100%);
+    }
+
+    /* 2. Grid System */
+    .grid-lines {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 4;
+    }
+    
+    .center-line {
+      position: absolute; left: 50%; top: 0; height: 100%; width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent);
+      transform: translateX(-50%);
+    }
+
+    .crosshair {
+      position: absolute; width: 20px; height: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-right: none; border-bottom: none;
+    }
+    .ch-tl { top: 2rem; left: 2rem; }
+    .ch-tr { top: 2rem; right: 2rem; transform: rotate(90deg); }
+    .ch-bl { bottom: 2rem; left: 2rem; transform: rotate(-90deg); }
+    .ch-br { bottom: 2rem; right: 2rem; transform: rotate(180deg); }
+
+    /* 3. UI Elements Layout */
+    #ui-layer {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex; flex-direction: column;
+      justify-content: space-between; 
+      align-items: center;
+      padding: 3rem 0;
+    }
+
+    .top-label {
+      margin-top: 5rem;
+      font-family: 'Syncopate', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeInDown 1.5s ease forwards 2s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    
+    .status-dot {
+      width: 6px; height: 6px; background-color: #00ffff;
+      border-radius: 50%; box-shadow: 0 0 10px #00ffff;
+    }
+
+    .bottom-container {
+      margin-bottom: 5vh;
+      display: flex; flex-direction: column; align-items: center; gap: 3rem;
+      pointer-events: auto;
+    }
+
+    .arch-line-container {
+      display: flex; align-items: center; gap: 1.5rem;
+      opacity: 0;
+      animation: fadeInUp 1.5s ease forwards 2.2s;
+    }
+
+    .arch-line {
+      width: 60px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+    }
+    .arch-line.right { transform: scaleX(-1); }
+
+    .acronym-text {
+      font-family: 'JetBrains Mono', monospace; 
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      display: flex; gap: 1.5rem;
+    }
+    
+    .acronym-text span b {
+      color: #fff; font-weight: 500;
+      text-shadow: 0 0 8px rgba(0,255,255,0.5);
+    }
+    
+    @media (max-width: 768px) {
+      .acronym-text { font-size: 0.6rem; gap: 0.8rem; letter-spacing: 0.05em; }
+      .arch-line { width: 20px; }
+    }
+
+    .init-btn {
+      background: transparent; border: none;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      padding: 10px 30px;
+      letter-spacing: 0.05em;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+    }
+
+    .init-btn:hover {
+      border-color: rgba(0,255,255,0.5);
+      background: rgba(0,255,255,0.05);
+      letter-spacing: 0.15em;
+      box-shadow: 0 0 30px rgba(0,255,255,0.1);
+    }
+
+    .btn-wrapper {
+      opacity: 0;
+      animation: fadeInUp 1.5s ease forwards 2.5s;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .warp-transition {
+      animation: warpEffect 1.2s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+      pointer-events: none;
+    }
+    @keyframes warpEffect {
+      0% { transform: scale(1); filter: brightness(1) blur(0); opacity: 1; }
+      100% { transform: scale(5); filter: brightness(5) blur(20px); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+  <div class="noise-overlay"></div>
+  <div class="vignette"></div>
+
+  <div class="grid-lines">
+    <div class="center-line"></div>
+    <div class="crosshair ch-tl"></div>
+    <div class="crosshair ch-tr"></div>
+    <div class="crosshair ch-bl"></div>
+    <div class="crosshair ch-br"></div>
+  </div>
+
+  <div id="ui-layer">
+    <div class="top-label">
+      <div class="status-dot"></div>
+      AI CODING TUTOR
+    </div>
+
+    <div class="bottom-container">
+      <div class="arch-line-container">
+        <div class="arch-line"></div>
+        <div class="acronym-text">
+          <span><b>L</b>ANGUAGE</span>
+          <span><b>U</b>NDERSTANDING</span>
+          <span><b>N</b>ATIVE</span>
+          <span><b>A</b>SSISTANT</span>
+        </div>
+        <div class="arch-line right"></div>
+      </div>
+
+      <div class="btn-wrapper">
+        <button id="start-trigger" class="init-btn">
+          INITIALIZE_WORKSPACE
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      text: "LUNA",
+      baseParticleCount: 3000, // [FIX] 기본 파티클 수 증가
+      starCount: 400,
+      mouseRadius: 180,
+      starSpeedBase: 1.0, 
+      starSpeedWarp: 80,
+      colors: [
+        [0, 255, 255],    // Cyan
+        [100, 100, 255],  // Soft Blue
+        [255, 0, 255],    // Magenta
+        [255, 200, 0]     // Gold
+      ]
+    };
+
+    let particles = [];
+    let stars = [];
+    let mode = 'intro'; 
+    let warpFactor = 0;
+    let minX, maxX;
+    let systemInitialized = false;
+
+    function setup() {
+      let canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent('canvas-container');
+      pixelDensity(min(window.devicePixelRatio, 2));
+      
+      // 명시적으로 'Space Mono' 폰트가 로드되었는지 확인 후 실행
+      document.fonts.load("700 100px 'Space Mono'").then(() => {
+        console.log("Space Mono loaded successfully.");
+        setTimeout(() => {
+          initSystem();
+          systemInitialized = true;
+        }, 100);
+      }).catch(err => {
+          console.log("Font load failed, initializing fallback", err);
+          initSystem();
+          systemInitialized = true;
+      });
+    }
+
+    function initSystem() {
+      particles = [];
+      stars = [];
+
+      let pg = createGraphics(width, height);
+      pg.background(0);
+      
+      pg.textFont('Space Mono'); 
+      pg.textStyle(BOLD);
+      pg.textAlign(CENTER, CENTER);
+      
+      let fontSize = min(width * 0.28, 450); 
+      pg.textSize(fontSize);
+      pg.fill(255);
+      pg.text(CONFIG.text, width/2, height/2); 
+
+      pg.loadPixels();
+      
+      // [FIX] 스캔 스텝을 줄여 빽빽하게 (2로 설정)
+      let step = 2; 
+      if (width < 800) step = 3; 
+
+      minX = width; maxX = 0;
+      let tempPoints = [];
+
+      for (let y = 0; y < height; y += step) {
+        for (let x = 0; x < width; x += step) {
+          let index = (x + y * width) * 4;
+          if (pg.pixels[index] > 128) {
+            // [FIX] 랜덤 확률을 높여 더 많은 포인트 수집
+            if (random(1) < 0.9) {
+              tempPoints.push(createVector(x, y));
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+            }
+          }
+        }
+      }
+      pg.remove();
+
+      if (tempPoints.length > 0) {
+        let textBoundingCenter = (minX + maxX) / 2;
+        let screenCenter = width / 2;
+        // [FIX] 오프셋 값 조정: +13px
+        let offsetX = screenCenter - textBoundingCenter + 13;
+        
+        for (let pt of tempPoints) {
+          pt.x += offsetX;
+        }
+        
+        minX += offsetX;
+        maxX += offsetX;
+      }
+
+      // [FIX] 최대 파티클 제한을 3500으로 상향
+      let maxP = width < 800 ? 1500 : 3500;
+      let count = min(tempPoints.length, maxP);
+      
+      for (let i = 0; i < count; i++) {
+        let rndIdx = floor(random(tempPoints.length));
+        let pt = tempPoints[rndIdx];
+        tempPoints.splice(rndIdx, 1);
+
+        let t = map(pt.x, minX, maxX, 0, 1);
+        let c = getGradientColor(t);
+        particles.push(new GlowParticle(pt.x, pt.y, c));
+      }
+
+      for (let i = 0; i < CONFIG.starCount; i++) {
+        stars.push(new Star());
+      }
+    }
+
+    function getGradientColor(t) {
+      let segments = CONFIG.colors.length - 1;
+      let idx = floor(t * segments);
+      let amt = (t * segments) - idx;
+      if (idx < 0) idx = 0;
+      if (idx >= segments) { idx = segments - 1; amt = 1; }
+      let c1 = color(CONFIG.colors[idx]);
+      let c2 = color(CONFIG.colors[idx + 1]);
+      return lerpColor(c1, c2, amt);
+    }
+
+    function draw() {
+      if (mode === 'warping') background(0, 40);
+      else clear();
+
+      if (!systemInitialized) return;
+
+      let mouse = createVector(mouseX, mouseY);
+      
+      blendMode(ADD); 
+
+      push();
+      translate(width/2, height/2);
+      let targetSpeed = (mode === 'warping') ? CONFIG.starSpeedWarp : CONFIG.starSpeedBase;
+      if (mode !== 'warping') targetSpeed += map(mouseY, 0, height, 0, 2);
+      
+      for (let star of stars) {
+        star.update(targetSpeed);
+        star.show();
+      }
+      pop();
+
+      for (let p of particles) {
+        p.behavior(mouse);
+        p.update();
+        p.show();
+      }
+
+      blendMode(BLEND);
+    }
+
+    class GlowParticle {
+      constructor(tx, ty, col) {
+        this.target = createVector(tx, ty);
+        this.pos = createVector(random(width), random(height));
+        this.vel = createVector(0, 0);
+        this.acc = createVector(0, 0);
+        this.baseColor = col;
+        this.r = random(1.8, 3.8);
+        this.maxSpeed = 15;
+        this.maxForce = 0.9;
+        this.noiseOffset = createVector(random(1000), random(1000));
+      }
+
+      behavior(mouse) {
+        let arrive = this.arrive(this.target);
+        let dx = this.pos.x - mouse.x;
+        let dy = this.pos.y - mouse.y;
+        let distSq = dx*dx + dy*dy;
+        let rSq = CONFIG.mouseRadius * CONFIG.mouseRadius;
+
+        if (distSq < rSq) {
+          let f = createVector(dx, dy);
+          f.setMag(this.maxSpeed);
+          f.sub(this.vel);
+          f.limit(this.maxForce * 2.5);
+          f.mult(4); 
+          this.applyForce(f);
+        }
+
+        if (mode === 'warping') {
+          let center = createVector(width/2, height/2);
+          let dir = p5.Vector.sub(this.pos, center);
+          dir.normalize();
+          dir.mult(random(30, 80)); 
+          this.applyForce(dir);
+        } else {
+          this.applyForce(arrive);
+          let nX = (noise(this.noiseOffset.x + frameCount * 0.01) - 0.5) * 0.5;
+          let nY = (noise(this.noiseOffset.y + frameCount * 0.01) - 0.5) * 0.5;
+          this.applyForce(createVector(nX, nY));
+        }
+      }
+
+      applyForce(f) { this.acc.add(f); }
+
+      arrive(target) {
+        let desired = p5.Vector.sub(target, this.pos);
+        let d = desired.mag();
+        let speed = this.maxSpeed;
+        if (d < 100) speed = map(d, 0, 100, 0, this.maxSpeed);
+        desired.setMag(speed);
+        let steer = p5.Vector.sub(desired, this.vel);
+        steer.limit(this.maxForce);
+        return steer;
+      }
+
+      update() {
+        this.pos.add(this.vel);
+        this.vel.add(this.acc);
+        this.acc.mult(0);
+      }
+
+      show() {
+        // [FIX] Glow 효과 강화: 크기 증가 및 투명도 상향
+        
+        // 1. Halo (넓고 은은한 빛)
+        strokeWeight(this.r * 2.5); 
+        stroke(red(this.baseColor), green(this.baseColor), blue(this.baseColor), 60); // 50 -> 60
+        point(this.pos.x, this.pos.y);
+
+        // 2. Core (강렬한 중심 빛)
+        strokeWeight(this.r * 1.0); // 0.8 -> 1.0
+        // 코어를 거의 흰색에 가깝고 불투명하게
+        stroke(red(this.baseColor)+100, green(this.baseColor)+100, blue(this.baseColor)+100, 255); 
+        point(this.pos.x, this.pos.y);
+      }
+    }
+
+    class Star {
+      constructor() {
+        this.reset();
+        this.z = random(width); 
+      }
+      reset() {
+        this.x = random(-width, width);
+        this.y = random(-height, height);
+        this.z = random(width, width * 2);
+        this.pz = this.z;
+        let r = random(200, 255);
+        let g = random(230, 255);
+        let b = 255;
+        this.color = color(r, g, b);
+      }
+      update(speed) {
+        this.z -= speed;
+        if (this.z < 1) {
+          this.reset();
+          this.z = width;
+          this.pz = this.z;
+        }
+      }
+      show() {
+        let sx = map(this.x / this.z, 0, 1, 0, width);
+        let sy = map(this.y / this.z, 0, 1, 0, height);
+        let tailFactor = mode === 'warping' ? 2.5 : 0.6; 
+        let pz_calc = this.z + (this.pz - this.z) * tailFactor + (mode==='warping'?50:10); 
+        let px = map(this.x / pz_calc, 0, 1, 0, width);
+        let py = map(this.y / pz_calc, 0, 1, 0, height);
+        let alpha = map(this.z, 0, width, 255, 0);
+        if (mode !== 'warping' && random(1) < 0.05) alpha = random(150, 255);
+
+        strokeWeight(map(this.z, 0, width, 2.5, 0.1));
+        stroke(red(this.color), green(this.color), blue(this.color), alpha);
+        line(px, py, sx, sy);
+        this.pz = this.z;
+      }
+    }
+
+    const triggerBtn = document.getElementById('start-trigger');
+    triggerBtn.addEventListener('click', () => {
+      mode = 'warping';
+      document.body.classList.add('warp-transition');
+      document.getElementById('ui-layer').style.transition = 'opacity 0.2s';
+      document.getElementById('ui-layer').style.opacity = 0;
+      setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+    });
+    
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      initSystem();
+    }
+  </script>
+</body>
+</html>

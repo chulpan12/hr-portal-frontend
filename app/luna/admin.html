@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 코딩 튜터 - 관리자</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <style>
+    .glass-card {
+      background: rgba(15, 18, 25, 0.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+    .btn-approve {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      transition: all 0.2s;
+    }
+    .btn-approve:hover {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+    .btn-revoke {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transition: all 0.2s;
+    }
+    .btn-revoke:hover {
+      background: linear-gradient(135deg, #f87171, #ef4444);
+    }
+    .btn-admin {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      transition: all 0.2s;
+    }
+    .btn-admin:hover {
+      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+    }
+    .btn-delete {
+      background: linear-gradient(135deg, #64748b, #475569);
+      transition: all 0.2s;
+    }
+    .btn-delete:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    .status-approved {
+      color: #4ade80;
+      background: rgba(34, 197, 94, 0.1);
+    }
+    .status-pending {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.1);
+    }
+    .status-admin {
+      color: #a78bfa;
+      background: rgba(139, 92, 246, 0.1);
+    }
+    .table-row {
+      transition: background 0.2s;
+    }
+    .table-row:hover {
+      background: rgba(51, 65, 85, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-[#0B0E14] text-slate-200 min-h-screen flex flex-col font-sans">
+
+  <!-- 배경 효과 -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[150px] opacity-10"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500 rounded-full blur-[150px] opacity-10"></div>
+  </div>
+
+  <!-- 헤더 -->
+  <header class="flex items-center justify-between px-6 py-4 bg-[#0f1219]/80 border-b border-slate-800 shrink-0 z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+        <i class="fas fa-cog text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-white">관리자 대시보드</h1>
+        <p class="text-xs text-slate-500">AI Coding Tutor - User Management</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <div id="current-user" class="text-sm text-slate-400">
+        <i class="fas fa-user-shield mr-1"></i>
+        <span id="admin-username">관리자</span>
+      </div>
+      <a href="admin_analytics.html" class="text-sm text-emerald-400 hover:text-emerald-300 transition-colors px-3 py-2 rounded hover:bg-slate-800">
+        <i class="fas fa-chart-bar mr-1"></i>인사이트
+      </a>
+      <a href="index.html" class="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+        <i class="fas fa-home mr-1"></i>메인으로
+      </a>
+      <button id="logout-btn" class="text-sm text-slate-400 hover:text-red-400 transition-colors">
+        <i class="fas fa-sign-out-alt mr-1"></i>로그아웃
+      </button>
+    </div>
+  </header>
+
+  <!-- 메인 컨텐츠 -->
+  <main class="flex-grow p-6 relative z-10">
+    <div class="max-w-6xl mx-auto">
+      
+      <!-- 통계 카드 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card rounded-xl p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <i class="fas fa-users text-blue-400"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-white" id="stat-total">0</p>
+              <p class="text-xs text-slate-500">전체 사용자</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+              <i class="fas fa-user-check text-green-400"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-white" id="stat-approved">0</p>
+              <p class="text-xs text-slate-500">승인된 사용자</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+              <i class="fas fa-user-clock text-yellow-400"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-white" id="stat-pending">0</p>
+              <p class="text-xs text-slate-500">승인 대기</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <i class="fas fa-user-shield text-purple-400"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-white" id="stat-admins">0</p>
+              <p class="text-xs text-slate-500">관리자</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 사용자 테이블 -->
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-white">
+            <i class="fas fa-list mr-2 text-cyan-400"></i>사용자 목록
+          </h2>
+          <button id="refresh-btn" class="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+            <i class="fas fa-sync-alt mr-1"></i>새로고침
+          </button>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-slate-800/50 text-xs text-slate-400 uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">No.</th>
+                <th class="px-4 py-3 text-left">ID</th>
+                <th class="px-4 py-3 text-left">직번</th>
+                <th class="px-4 py-3 text-left">성명</th>
+                <th class="px-4 py-3 text-center">상태</th>
+                <th class="px-4 py-3 text-center">권한</th>
+                <th class="px-4 py-3 text-right">API 사용량</th>
+                <th class="px-4 py-3 text-left">가입일</th>
+                <th class="px-4 py-3 text-left">최근 로그인</th>
+                <th class="px-4 py-3 text-center">작업</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body" class="divide-y divide-slate-800">
+              <!-- 동적으로 채워짐 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div id="empty-state" class="hidden p-8 text-center text-slate-500">
+          <i class="fas fa-users-slash text-4xl mb-4"></i>
+          <p>등록된 사용자가 없습니다.</p>
+        </div>
+
+        <!-- 로딩 상태 -->
+        <div id="loading-state" class="p-8 text-center text-slate-500">
+          <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+          <p>사용자 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 푸터 -->
+  <footer class="text-center py-4 text-xs text-slate-500 bg-[#0f1219]/50 border-t border-slate-800 relative z-10">
+    © 2025 <strong class="text-slate-400">Dream of ENC</strong>, Seyoong Jang. All Rights Reserved.
+  </footer>
+
+  <!-- ES6 모듈로 config.js 사용 -->
+  <script type="module">
+    // config.js에서 API 설정 가져오기
+    import { API_BASE, FETCH_OPTIONS, postJSON, getJSON } from './assets/js/config.js';
+    
+    console.log('[API] API_BASE:', API_BASE);
+
+    // DOM 요소
+    const usersTableBody = document.getElementById('users-table-body');
+    const emptyState = document.getElementById('empty-state');
+    const loadingState = document.getElementById('loading-state');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    // 날짜 포맷팅
+    function formatDate(isoString) {
+      if (!isoString) return '-';
+      const date = new Date(isoString);
+      return date.toLocaleDateString('ko-KR', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // 사용자 목록 로드
+    async function loadUsers() {
+      loadingState.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      usersTableBody.innerHTML = '';
+
+      try {
+        const response = await fetch(`${API_BASE}/admin/users`, {
+          ...FETCH_OPTIONS
+        });
+
+        if (response.status === 401) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        if (response.status === 403) {
+          alert('관리자 권한이 필요합니다.');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        const data = await response.json();
+        loadingState.classList.add('hidden');
+
+        if (!data.users || data.users.length === 0) {
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        // 통계 업데이트
+        document.getElementById('stat-total').textContent = data.users.length;
+        document.getElementById('stat-approved').textContent = data.users.filter(u => u.is_approved && !u.is_admin).length;
+        document.getElementById('stat-pending').textContent = data.users.filter(u => !u.is_approved).length;
+        document.getElementById('stat-admins').textContent = data.users.filter(u => u.is_admin).length;
+
+        // 테이블 렌더링
+        data.users.forEach(user => {
+          const row = document.createElement('tr');
+          row.className = 'table-row';
+          row.innerHTML = `
+            <td class="px-4 py-3 text-sm text-slate-400">${user.id}</td>
+            <td class="px-4 py-3 text-sm font-medium text-white">${user.username}</td>
+            <td class="px-4 py-3 text-sm text-cyan-400">${user.employee_number || '-'}</td>
+            <td class="px-4 py-3 text-sm text-slate-300">${user.name || '-'}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="px-2 py-1 rounded-full text-xs font-medium ${user.is_approved ? 'status-approved' : 'status-pending'}">
+                ${user.is_approved ? '승인됨' : '대기중'}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center">
+              ${user.is_admin ? '<span class="px-2 py-1 rounded-full text-xs font-medium status-admin"><i class="fas fa-crown mr-1"></i>관리자</span>' : '<span class="text-slate-500 text-xs">일반</span>'}
+            </td>
+            <td class="px-4 py-3 text-right text-sm text-slate-400">${(user.api_usage_count || 0).toLocaleString()}</td>
+            <td class="px-4 py-3 text-xs text-slate-500">${formatDate(user.created_at)}</td>
+            <td class="px-4 py-3 text-xs text-slate-500">${formatDate(user.last_login)}</td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex items-center justify-center gap-2">
+                ${!user.is_approved ? 
+                  `<button data-action="approve" data-user-id="${user.id}" class="btn-approve px-2 py-1 rounded text-xs text-white">
+                    <i class="fas fa-check mr-1"></i>승인
+                  </button>` : 
+                  (!user.is_admin ? 
+                    `<button data-action="revoke" data-user-id="${user.id}" class="btn-revoke px-2 py-1 rounded text-xs text-white">
+                      <i class="fas fa-times mr-1"></i>취소
+                    </button>` : ''
+                  )
+                }
+                ${!user.is_admin ? 
+                  `<button data-action="toggle-admin" data-user-id="${user.id}" class="btn-admin px-2 py-1 rounded text-xs text-white">
+                    <i class="fas fa-crown mr-1"></i>관리자
+                  </button>` : ''
+                }
+                ${!user.is_admin ? 
+                  `<button data-action="delete" data-user-id="${user.id}" class="btn-delete px-2 py-1 rounded text-xs text-white">
+                    <i class="fas fa-trash mr-1"></i>삭제
+                  </button>` : ''
+                }
+              </div>
+            </td>
+          `;
+          usersTableBody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error('사용자 목록 로드 실패:', err);
+        loadingState.classList.add('hidden');
+        emptyState.textContent = '사용자 목록을 불러올 수 없습니다.';
+        emptyState.classList.remove('hidden');
+      }
+    }
+
+    // 사용자 승인
+    async function approveUser(userId) {
+      try {
+        const result = await postJSON('/admin/approve', { user_id: userId });
+        if (result.status === 'success') {
+          loadUsers();
+        } else {
+          alert(result.error || '승인에 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('승인 실패:', err);
+        alert('서버와 연결할 수 없습니다.');
+      }
+    }
+
+    // 승인 취소
+    async function revokeUser(userId) {
+      if (!confirm('이 사용자의 승인을 취소하시겠습니까?')) return;
+
+      try {
+        const result = await postJSON('/admin/revoke', { user_id: userId });
+        if (result.status === 'success') {
+          loadUsers();
+        } else {
+          alert(result.error || '승인 취소에 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('승인 취소 실패:', err);
+        alert('서버와 연결할 수 없습니다.');
+      }
+    }
+
+    // 관리자 권한 토글
+    async function toggleAdmin(userId) {
+      if (!confirm('이 사용자에게 관리자 권한을 부여하시겠습니까?')) return;
+
+      try {
+        const result = await postJSON('/admin/toggle_admin', { user_id: userId });
+        if (result.status === 'success') {
+          loadUsers();
+        } else {
+          alert(result.error || '권한 변경에 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('권한 변경 실패:', err);
+        alert('서버와 연결할 수 없습니다.');
+      }
+    }
+
+    // 사용자 삭제
+    async function deleteUser(userId) {
+      if (!confirm('정말로 이 사용자를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+
+      try {
+        const result = await postJSON('/admin/delete', { user_id: userId });
+        if (result.status === 'success') {
+          alert(result.message);
+          loadUsers();
+        } else {
+          alert(result.error || '삭제에 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('삭제 실패:', err);
+        alert('서버와 연결할 수 없습니다.');
+      }
+    }
+
+    // 이벤트 위임 - 테이블 버튼 클릭 처리
+    usersTableBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      
+      const action = btn.dataset.action;
+      const userId = parseInt(btn.dataset.userId);
+      
+      if (action === 'approve') approveUser(userId);
+      else if (action === 'revoke') revokeUser(userId);
+      else if (action === 'toggle-admin') toggleAdmin(userId);
+      else if (action === 'delete') deleteUser(userId);
+    });
+
+    // 로그아웃
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch(`${API_BASE}/logout`, {
+          method: 'POST',
+          ...FETCH_OPTIONS
+        });
+        window.location.href = 'login.html';
+      } catch (err) {
+        console.error('로그아웃 실패:', err);
+        window.location.href = 'login.html';
+      }
+    });
+
+    // 새로고침
+    refreshBtn.addEventListener('click', loadUsers);
+
+    // 페이지 로드 시 권한 확인 및 사용자 목록 로드
+    async function init() {
+      try {
+        const response = await fetch(`${API_BASE}/check_auth`, {
+          ...FETCH_OPTIONS
+        });
+        const data = await response.json();
+
+        if (!data.authenticated) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        if (!data.user.is_admin) {
+          alert('관리자 권한이 필요합니다.');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        // 관리자 이름 표시
+        document.getElementById('admin-username').textContent = data.user.username;
+        
+        // 사용자 목록 로드
+        loadUsers();
+
+      } catch (err) {
+        console.error('인증 확인 실패:', err);
+        window.location.href = 'login.html';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

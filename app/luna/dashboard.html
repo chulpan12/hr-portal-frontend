@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>마이 대시보드 - AI 코딩 튜터</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- [보안] XSS 방지를 위한 DOMPurify -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  
+  <style>
+    /* 대시보드 전용 스타일 */
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .glass-panel:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(6, 182, 212, 0.1);
+    }
+    
+    .stat-card {
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+    
+    .stat-value {
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* 타임라인 스타일 */
+    .timeline-container {
+      position: relative;
+    }
+    
+    .timeline-line {
+      position: absolute;
+      left: 23px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #06b6d4, #8b5cf6, #06b6d4, transparent);
+      opacity: 0.6;
+    }
+    
+    .timeline-item {
+      transition: all 0.3s ease;
+    }
+    
+    .timeline-item:hover {
+      transform: translateX(4px);
+    }
+    
+    .timeline-dot {
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+    }
+    
+    /* XP 바 애니메이션 */
+    .xp-bar {
+      background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+      transition: width 1s ease-out;
+    }
+    
+    /* 코드 블록 스타일 */
+    .code-preview {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      background: #0d1117;
+      border: 1px solid #30363d;
+    }
+    
+    /* 스크롤바 커스텀 */
+    .dashboard-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .dashboard-scroll::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+    
+    .dashboard-scroll::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 3px;
+    }
+    
+    .dashboard-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.7);
+    }
+    
+    /* 로딩 스피너 */
+    .loading-spinner {
+      border: 3px solid rgba(6, 182, 212, 0.1);
+      border-top-color: #06b6d4;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 빈 상태 아이콘 애니메이션 */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .empty-icon {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-[#0B0E14] text-slate-200 font-sans min-h-screen">
+  <!-- 배경 그라데이션 -->
+  <div class="fixed inset-0 bg-gradient-to-br from-[#0B0E14] via-[#0f1629] to-[#0B0E14] -z-10"></div>
+  <div class="fixed inset-0 opacity-30 -z-10" style="background-image: radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);"></div>
+
+  <!-- 헤더 -->
+  <header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[#0f1219]/80 backdrop-blur-lg border-b border-slate-800/50">
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-shadow">
+          <i class="fas fa-code text-white text-sm"></i>
+        </div>
+        <span class="text-lg font-bold text-white">AI Coding Tutor</span>
+      </a>
+      <div class="w-px h-6 bg-slate-700"></div>
+      <h1 class="text-lg font-semibold text-slate-300">
+        <i class="fas fa-chart-line text-cyan-400 mr-2"></i>마이 대시보드
+      </h1>
+    </div>
+    
+    <a href="index.html" class="flex items-center gap-2 px-4 py-2 text-sm text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10 rounded-lg transition-all">
+      <i class="fas fa-arrow-left"></i>
+      <span>학습 화면으로</span>
+    </a>
+  </header>
+
+  <!-- 로딩 상태 -->
+  <div id="loading-state" class="flex flex-col items-center justify-center min-h-[60vh]">
+    <div class="loading-spinner mb-4"></div>
+    <p class="text-slate-400">대시보드 데이터를 불러오는 중...</p>
+  </div>
+
+  <!-- 메인 콘텐츠 -->
+  <main id="dashboard-content" class="hidden max-w-7xl mx-auto px-6 py-8 space-y-8">
+    
+    <!-- 상단: 핵심 통계 카드 -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <!-- 레벨 카드 -->
+      <div class="glass-panel stat-card p-6 rounded-2xl">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center">
+            <i class="fas fa-crown text-2xl text-purple-400"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm text-slate-400 mb-1">현재 레벨</div>
+            <div class="text-4xl font-bold stat-value" id="stat-level">-</div>
+          </div>
+        </div>
+        <!-- XP 진행 바 -->
+        <div class="mt-4">
+          <div class="flex justify-between text-xs text-slate-500 mb-1">
+            <span>다음 레벨까지</span>
+            <span><span id="current-xp">0</span> / <span id="required-xp">100</span> XP</span>
+          </div>
+          <div class="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+            <div id="xp-progress" class="xp-bar h-full rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 총 XP 카드 -->
+      <div class="glass-panel stat-card p-6 rounded-2xl">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 flex items-center justify-center">
+            <i class="fas fa-bolt text-2xl text-cyan-400"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm text-slate-400 mb-1">누적 경험치</div>
+            <div class="text-4xl font-bold stat-value" id="stat-xp">-</div>
+          </div>
+        </div>
+        <div class="mt-4 text-xs text-slate-500">
+          <i class="fas fa-info-circle mr-1"></i>
+          레슨 완료, 문제 해결 시 XP 획득
+        </div>
+      </div>
+      
+      <!-- 스트릭 카드 -->
+      <div class="glass-panel stat-card p-6 rounded-2xl">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center">
+            <i class="fas fa-fire text-2xl text-orange-400"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm text-slate-400 mb-1">연속 학습</div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-4xl font-bold stat-value" id="stat-streak">-</span>
+              <span class="text-lg text-slate-500">일</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 text-xs text-slate-500">
+          <i class="fas fa-calendar-check mr-1"></i>
+          매일 학습하면 스트릭이 유지돼요!
+        </div>
+      </div>
+    </section>
+
+    <!-- [신규] 커리어 로드맵 프리뷰 -->
+    <section class="glass-panel p-6 rounded-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold flex items-center gap-2">
+          <i class="fas fa-map text-purple-400"></i>
+          <span>커리어 로드맵</span>
+        </h3>
+        <a href="roadmap.html" class="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
+          로드맵 보기 <i class="fas fa-arrow-right text-xs"></i>
+        </a>
+      </div>
+      
+      <div id="roadmap-preview" class="flex items-center gap-4">
+        <!-- JavaScript로 내용 채움 -->
+        <div class="text-sm text-slate-500">로드맵 정보를 불러오는 중...</div>
+      </div>
+    </section>
+
+    <!-- 중단: 차트 섹션 -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 활동 차트 (2칸) -->
+      <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
+        <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+          <i class="fas fa-calendar-alt text-cyan-400"></i>
+          <span>최근 학습 활동</span>
+          <span class="text-xs text-slate-500 font-normal ml-2">(최근 14일)</span>
+        </h3>
+        <div class="h-64 relative">
+          <canvas id="activityChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- 스킬 레이더 (1칸) -->
+      <div class="glass-panel p-6 rounded-2xl">
+        <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+          <i class="fas fa-radar text-purple-400"></i>
+          <span>학습 능력치</span>
+        </h3>
+        <div class="h-64 relative flex items-center justify-center">
+          <canvas id="skillChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 하단: 타임라인 -->
+    <section class="glass-panel p-8 rounded-2xl">
+      <h3 class="text-xl font-bold mb-8 flex items-center gap-3">
+        <i class="fas fa-history text-cyan-400"></i>
+        <span>학습 발자취</span>
+        <span id="timeline-count" class="text-sm font-normal text-slate-500"></span>
+      </h3>
+      
+      <div id="timeline-container" class="timeline-container relative pl-4 max-h-[600px] overflow-y-auto dashboard-scroll">
+        <div class="timeline-line"></div>
+        <!-- 타임라인 아이템들이 여기에 동적 삽입됩니다 -->
+      </div>
+      
+      <!-- 빈 상태 -->
+      <div id="timeline-empty" class="hidden text-center py-16">
+        <div class="empty-icon text-6xl text-slate-600 mb-4">
+          <i class="fas fa-book-open"></i>
+        </div>
+        <h4 class="text-lg font-medium text-slate-400 mb-2">아직 기록된 학습 이력이 없어요</h4>
+        <p class="text-sm text-slate-500 mb-6">첫 레슨을 완료하면 여기에 발자취가 남아요!</p>
+        <a href="index.html" class="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors">
+          <i class="fas fa-rocket"></i>
+          <span>학습 시작하기</span>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 에러 상태 -->
+  <div id="error-state" class="hidden flex flex-col items-center justify-center min-h-[60vh]">
+    <div class="text-6xl text-red-400 mb-4">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h2 class="text-xl font-bold text-white mb-2">데이터를 불러올 수 없어요</h2>
+    <p id="error-message" class="text-slate-400 mb-6">로그인이 필요하거나 서버에 문제가 있어요.</p>
+    <div class="flex gap-3">
+      <button onclick="location.reload()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+        <i class="fas fa-redo mr-2"></i>다시 시도
+      </button>
+      <a href="login.html" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors">
+        <i class="fas fa-sign-in-alt mr-2"></i>로그인
+      </a>
+    </div>
+  </div>
+
+  <script type="module" src="./assets/js/dashboard.js"></script>
+</body>
+</html>
