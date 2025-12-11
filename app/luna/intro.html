@@ -1,17 +1,45 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUNA - Logic Unified Neural Advisor</title>
+  <title>LUNA - System Initialization</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   
-  <!-- 폰트 로드: Noto Sans KR (한글용) 및 영문 폰트들 -->
+  <!-- Fonts: Next Gen 페이지와 통일 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&family=Outfit:wght@300;500;700;900&family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <script>
+      tailwind.config = {
+          darkMode: 'class',
+          theme: {
+              extend: {
+                  fontFamily: {
+                      sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                      mono: ['Space Mono', 'monospace'],
+                  },
+                  colors: {
+                      background: '#030712', // Next Gen Background
+                      luna: '#00ffff',
+                  },
+                  animation: {
+                      'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      'shimmer': 'shimmer 2s linear infinite',
+                  },
+                  keyframes: {
+                      shimmer: {
+                          '0%': { backgroundPosition: '200% 0' },
+                          '100%': { backgroundPosition: '-200% 0' }
+                      }
+                  }
+              }
+          }
+      }
+  </script>
 
   <style>
     /* 1. Base Setup */
@@ -19,50 +47,32 @@
       margin: 0; padding: 0;
       width: 100%; height: 100%;
       overflow: hidden;
-      background-color: #030305;
-      background: radial-gradient(circle at 50% 50%, #111118 0%, #030305 80%);
-      font-family: 'Outfit', sans-serif;
+      background-color: #030712; /* Deep Dark Blue */
+      color: white;
+    }
+
+    /* Next Gen Background Grid */
+    .bg-grid {
+        background-size: 50px 50px;
+        background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+        -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+        position: fixed; inset: 0; z-index: 0;
+        pointer-events: none;
     }
 
     #canvas-container {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%; z-index: 1;
-      mix-blend-mode: screen; 
-    }
-
-    .noise-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 2; opacity: 0.04;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      /* mix-blend-mode 삭제: p5 clear() 사용으로 투명 배경 유지 */
     }
 
     .vignette {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 3;
-      background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.9) 100%);
+      pointer-events: none; z-index: 2;
+      background: radial-gradient(circle, transparent 40%, #030712 100%);
     }
-
-    /* 2. Grid System */
-    .grid-lines {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 4;
-    }
-    
-    .center-line {
-      position: absolute; left: 50%; top: 0; height: 100%; width: 1px;
-      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent);
-      transform: translateX(-50%);
-    }
-
-    .crosshair {
-      position: absolute; width: 20px; height: 20px;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-right: none; border-bottom: none;
-    }
-    .ch-tl { top: 2rem; left: 2rem; }
-    .ch-tr { top: 2rem; right: 2rem; transform: rotate(90deg); }
-    .ch-bl { bottom: 2rem; left: 2rem; transform: rotate(-90deg); }
-    .ch-br { bottom: 2rem; right: 2rem; transform: rotate(180deg); }
 
     /* 3. UI Elements Layout */
     #ui-layer {
@@ -75,30 +85,21 @@
       padding: 3rem 0;
     }
 
-    .top-label {
-      margin-top: 5rem;
-      font-family: 'Syncopate', sans-serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.4em;
-      color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
+    /* Top Badge Style (Next Gen Style) */
+    .top-badge {
+      margin-top: 4rem;
       opacity: 0;
       animation: fadeInDown 1.5s ease forwards 2s;
-      display: flex; align-items: center; gap: 10px;
-    }
-    
-    .status-dot {
-      width: 6px; height: 6px; background-color: #00ffff;
-      border-radius: 50%; box-shadow: 0 0 10px #00ffff;
     }
 
-    /* --- Bottom Area Styling --- */
+    /* Bottom Area Styling */
     .bottom-container {
-      margin-bottom: 5vh;
+      margin-bottom: 8vh;
       display: flex; flex-direction: column; align-items: center; 
-      gap: 1.5rem; /* 간격 조정 */
+      gap: 2rem;
       pointer-events: auto;
       width: 100%;
+      z-index: 20;
     }
 
     /* Korean Slogan Style */
@@ -106,104 +107,89 @@
       opacity: 0;
       animation: fadeInUp 1.5s ease forwards 1.8s;
       text-align: center;
-      margin-bottom: 1rem;
       padding: 0 20px;
     }
 
     .korean-slogan {
       font-family: 'Noto Sans KR', sans-serif;
-      font-weight: 900; /* Extra Bold */
-      color: #ffffff;
+      font-weight: 900;
       line-height: 1.3;
       letter-spacing: -0.02em;
-      
-      /* 고급스러운 텍스트 그라디언트 & 그림자 */
       background: linear-gradient(135deg, #ffffff 0%, #cffafe 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.15));
+      filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.2));
     }
+    
+    @media (min-width: 1024px) { .korean-slogan { font-size: 2.2rem; } }
+    @media (max-width: 1023px) { .korean-slogan { font-size: 1.5rem; } }
 
-    /* Responsive Slogan Size */
-    @media (min-width: 1024px) {
-      .korean-slogan { font-size: 2.2rem; }
-    }
-    @media (min-width: 768px) and (max-width: 1023px) {
-      .korean-slogan { font-size: 1.8rem; }
-    }
-    @media (max-width: 767px) {
-      .korean-slogan { font-size: 1.25rem; word-break: keep-all; }
-    }
-
-    .arch-line-container {
+    /* Acronym Style */
+    .acronym-container {
       display: flex; align-items: center; gap: 1.5rem;
       opacity: 0;
       animation: fadeInUp 1.5s ease forwards 2.2s;
     }
-
     .arch-line {
-      width: 60px; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+      width: 40px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.5));
     }
     .arch-line.right { transform: scaleX(-1); }
-
+    
     .acronym-text {
-      font-family: 'JetBrains Mono', monospace; 
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.4);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
       letter-spacing: 0.15em;
-      text-transform: uppercase;
-      display: flex; gap: 1.5rem;
     }
-    
-    .acronym-text span b {
-      color: #fff; font-weight: 500;
-      text-shadow: 0 0 8px rgba(0,255,255,0.5);
-    }
-    
-    @media (max-width: 768px) {
-      .acronym-text { font-size: 0.6rem; gap: 0.8rem; letter-spacing: 0.05em; }
-      .arch-line { width: 20px; }
-    }
+    .acronym-text b { color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.6); }
 
-    .init-btn {
-      background: transparent; border: none;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 800;
-      font-size: 1.2rem;
-      color: #fff;
-      cursor: pointer;
-      position: relative;
-      padding: 10px 30px;
-      letter-spacing: 0.05em;
-      transition: all 0.3s ease;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(5px);
-      margin-top: 1rem;
-    }
-
-    .init-btn:hover {
-      border-color: rgba(0,255,255,0.5);
-      background: rgba(0,255,255,0.05);
-      letter-spacing: 0.15em;
-      box-shadow: 0 0 30px rgba(0,255,255,0.1);
-    }
-
+    /* Modern Button Style */
     .btn-wrapper {
       opacity: 0;
       animation: fadeInUp 1.5s ease forwards 2.5s;
     }
 
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .luna-btn {
+        position: relative;
+        background: rgba(0, 255, 255, 0.05);
+        border: 1px solid rgba(0, 255, 255, 0.2);
+        color: #00ffff;
+        font-family: 'Space Mono', monospace;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 16px 40px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        letter-spacing: 0.1em;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
     }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+
+    .luna-btn::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+        transition: 0.5s;
     }
+
+    .luna-btn:hover {
+        background: rgba(0, 255, 255, 0.15);
+        border-color: rgba(0, 255, 255, 0.6);
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .luna-btn:hover::before {
+        left: 100%;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .warp-transition {
       animation: warpEffect 1.2s cubic-bezier(0.7, 0, 0.84, 0) forwards;
@@ -217,27 +203,24 @@
 </head>
 <body>
 
+  <!-- Background Grid -->
+  <div class="bg-grid"></div>
+  
   <div id="canvas-container"></div>
-  <div class="noise-overlay"></div>
   <div class="vignette"></div>
 
-  <div class="grid-lines">
-    <div class="center-line"></div>
-    <div class="crosshair ch-tl"></div>
-    <div class="crosshair ch-tr"></div>
-    <div class="crosshair ch-bl"></div>
-    <div class="crosshair ch-br"></div>
-  </div>
-
   <div id="ui-layer">
-    <div class="top-label">
-      <div class="status-dot"></div>
-      SYSTEM ONLINE
+    <!-- Top Badge -->
+    <div class="top-badge">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-950/30 text-cyan-300 text-xs font-mono tracking-widest backdrop-blur-sm shadow-[0_0_15px_rgba(0,255,255,0.1)]">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            SYSTEM ONLINE
+        </div>
     </div>
 
     <div class="bottom-container">
       
-      <!-- New Korean Slogan -->
+      <!-- Slogan -->
       <div class="slogan-wrapper">
         <h1 class="korean-slogan">
           당신의 코딩 논리를 깨우는,<br class="md:hidden"/>
@@ -245,20 +228,25 @@
         </h1>
       </div>
 
-      <div class="arch-line-container">
+      <!-- Acronym -->
+      <div class="acronym-container">
         <div class="arch-line"></div>
         <div class="acronym-text">
-          <span><b>L</b>OGIC</span>
-          <span><b>U</b>NIFIED</span>
-          <span><b>N</b>EURAL</span>
+          <span><b>L</b>OGIC</span> &nbsp;
+          <span><b>U</b>NIFIED</span> &nbsp;
+          <span><b>N</b>EURAL</span> &nbsp;
           <span><b>A</b>DVISOR</span>
         </div>
         <div class="arch-line right"></div>
       </div>
 
+      <!-- Button -->
       <div class="btn-wrapper">
-        <button id="start-trigger" class="init-btn">
-          INITIALIZE_WORKSPACE
+        <button id="start-trigger" class="luna-btn group">
+          <span class="relative z-10">INITIALIZE_WORKSPACE</span>
+          <!-- Corner Accents -->
+          <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+          <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
         </button>
       </div>
 
@@ -271,20 +259,20 @@
       baseParticleCount: 3000, 
       starCount: 400,
       mouseRadius: 180,
-      starSpeedBase: 1.0, 
+      starSpeedBase: 0.5, // 조금 더 차분하게 조정
       starSpeedWarp: 80,
+      // Colors adjusted to match Next Gen Theme (Cyan, Indigo, Purple)
       colors: [
         [0, 255, 255],    // Cyan
-        [100, 100, 255],  // Soft Blue
-        [255, 0, 255],    // Magenta
-        [255, 200, 0]     // Gold
+        [99, 102, 241],   // Indigo (Next Gen Accent)
+        [192, 132, 252],  // Purple
+        [255, 255, 255]   // White
       ]
     };
 
     let particles = [];
     let stars = [];
     let mode = 'intro'; 
-    let warpFactor = 0;
     let minX, maxX;
     let systemInitialized = false;
 
@@ -293,15 +281,13 @@
       canvas.parent('canvas-container');
       pixelDensity(min(window.devicePixelRatio, 2));
       
-      // Space Mono 폰트 로드 대기
+      // Space Mono 로드 대기
       document.fonts.load("700 100px 'Space Mono'").then(() => {
-        console.log("Space Mono loaded successfully.");
         setTimeout(() => {
           initSystem();
           systemInitialized = true;
         }, 100);
       }).catch(err => {
-          console.log("Font load failed, initializing fallback", err);
           initSystem();
           systemInitialized = true;
       });
@@ -311,26 +297,23 @@
       particles = [];
       stars = [];
 
-      // 임시 그래픽 버퍼 생성
       let pg = createGraphics(width, height);
       pg.pixelDensity(1); 
-      
       pg.background(0);
-      
       pg.textFont('Space Mono'); 
       pg.textStyle(BOLD);
       pg.textAlign(CENTER, CENTER);
       
-      // 텍스트 위치: 살짝 위로 올려서 아래 슬로건 공간 확보
-      pg.text(CONFIG.text, width/2, height/2 - 20); 
+      // 텍스트 위치: 중앙보다 살짝 위 (UI 공간 확보)
+      pg.text(CONFIG.text, width/2, height/2 - 40); 
 
-      // 텍스트 크기 반응형
-      let fontSize = min(width * 0.2, 450); 
-      if (width < 600) fontSize = width * 0.25; 
+      // 텍스트 크기
+      let fontSize = min(width * 0.22, 500); 
+      if (width < 600) fontSize = width * 0.28; 
       
       pg.textSize(fontSize);
       pg.fill(255);
-      pg.text(CONFIG.text, width/2, height/2 - 20); 
+      pg.text(CONFIG.text, width/2, height/2 - 40); 
 
       pg.loadPixels();
       
@@ -340,7 +323,6 @@
       minX = width; maxX = 0;
       let tempPoints = [];
 
-      // 픽셀 스캔
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
           let index = (x + y * width) * 4;
@@ -358,7 +340,7 @@
       if (tempPoints.length > 0) {
         let textBoundingCenter = (minX + maxX) / 2;
         let screenCenter = width / 2;
-        let offsetX = screenCenter - textBoundingCenter + 13;
+        let offsetX = screenCenter - textBoundingCenter; // 중앙 정렬 보정
         
         for (let pt of tempPoints) {
           pt.x += offsetX;
@@ -397,8 +379,11 @@
     }
 
     function draw() {
-      if (mode === 'warping') background(0, 40);
-      else clear();
+      if (mode === 'warping') {
+          background(3, 7, 18, 40); // #030712 with alpha for trail
+      } else {
+          clear(); // 투명하게 처리하여 CSS 배경(Grid)이 보이도록 함
+      }
 
       if (!systemInitialized) return;
 
@@ -409,7 +394,7 @@
       push();
       translate(width/2, height/2);
       let targetSpeed = (mode === 'warping') ? CONFIG.starSpeedWarp : CONFIG.starSpeedBase;
-      if (mode !== 'warping') targetSpeed += map(mouseY, 0, height, 0, 2);
+      if (mode !== 'warping') targetSpeed += map(mouseY, 0, height, 0, 1.5);
       
       for (let star of stars) {
         star.update(targetSpeed);
@@ -433,7 +418,7 @@
         this.vel = createVector(0, 0);
         this.acc = createVector(0, 0);
         this.baseColor = col;
-        this.r = random(1.8, 3.8);
+        this.r = random(1.5, 3.5);
         this.maxSpeed = 15;
         this.maxForce = 0.9;
         this.noiseOffset = createVector(random(1000), random(1000));
@@ -489,6 +474,7 @@
       }
 
       show() {
+        // 색상 톤을 Next Gen 페이지에 맞춰 조금 더 선명하게 조정
         strokeWeight(this.r * 2.5); 
         stroke(red(this.baseColor), green(this.baseColor), blue(this.baseColor), 60); 
         point(this.pos.x, this.pos.y);
