@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUNA - AI Coding Tutor</title>
+  <title>LUNA - Logic Unified Neural Advisor</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Space Mono 폰트 추가 -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+  
+  <!-- 폰트 로드: Noto Sans KR (한글용) 및 영문 폰트들 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&family=Outfit:wght@300;500;700;900&family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
 
   <style>
     /* 1. Base Setup */
@@ -89,10 +92,47 @@
       border-radius: 50%; box-shadow: 0 0 10px #00ffff;
     }
 
+    /* --- Bottom Area Styling --- */
     .bottom-container {
       margin-bottom: 5vh;
-      display: flex; flex-direction: column; align-items: center; gap: 3rem;
+      display: flex; flex-direction: column; align-items: center; 
+      gap: 1.5rem; /* 간격 조정 */
       pointer-events: auto;
+      width: 100%;
+    }
+
+    /* Korean Slogan Style */
+    .slogan-wrapper {
+      opacity: 0;
+      animation: fadeInUp 1.5s ease forwards 1.8s;
+      text-align: center;
+      margin-bottom: 1rem;
+      padding: 0 20px;
+    }
+
+    .korean-slogan {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 900; /* Extra Bold */
+      color: #ffffff;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      
+      /* 고급스러운 텍스트 그라디언트 & 그림자 */
+      background: linear-gradient(135deg, #ffffff 0%, #cffafe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.15));
+    }
+
+    /* Responsive Slogan Size */
+    @media (min-width: 1024px) {
+      .korean-slogan { font-size: 2.2rem; }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .korean-slogan { font-size: 1.8rem; }
+    }
+    @media (max-width: 767px) {
+      .korean-slogan { font-size: 1.25rem; word-break: keep-all; }
     }
 
     .arch-line-container {
@@ -141,6 +181,7 @@
       border: 1px solid rgba(255,255,255,0.1);
       background: rgba(0,0,0,0.3);
       backdrop-filter: blur(5px);
+      margin-top: 1rem;
     }
 
     .init-btn:hover {
@@ -191,17 +232,26 @@
   <div id="ui-layer">
     <div class="top-label">
       <div class="status-dot"></div>
-      AI CODING TUTOR
+      SYSTEM ONLINE
     </div>
 
     <div class="bottom-container">
+      
+      <!-- New Korean Slogan -->
+      <div class="slogan-wrapper">
+        <h1 class="korean-slogan">
+          당신의 코딩 논리를 깨우는,<br class="md:hidden"/>
+          AI 학습 어드바이저
+        </h1>
+      </div>
+
       <div class="arch-line-container">
         <div class="arch-line"></div>
         <div class="acronym-text">
-          <span><b>L</b>ANGUAGE</span>
-          <span><b>U</b>NDERSTANDING</span>
-          <span><b>N</b>ATIVE</span>
-          <span><b>A</b>SSISTANT</span>
+          <span><b>L</b>OGIC</span>
+          <span><b>U</b>NIFIED</span>
+          <span><b>N</b>EURAL</span>
+          <span><b>A</b>DVISOR</span>
         </div>
         <div class="arch-line right"></div>
       </div>
@@ -218,7 +268,7 @@
   <script>
     const CONFIG = {
       text: "LUNA",
-      baseParticleCount: 3000, // [FIX] 기본 파티클 수 증가
+      baseParticleCount: 3000, 
       starCount: 400,
       mouseRadius: 180,
       starSpeedBase: 1.0, 
@@ -243,7 +293,7 @@
       canvas.parent('canvas-container');
       pixelDensity(min(window.devicePixelRatio, 2));
       
-      // 명시적으로 'Space Mono' 폰트가 로드되었는지 확인 후 실행
+      // Space Mono 폰트 로드 대기
       document.fonts.load("700 100px 'Space Mono'").then(() => {
         console.log("Space Mono loaded successfully.");
         setTimeout(() => {
@@ -261,12 +311,8 @@
       particles = [];
       stars = [];
 
-      // 1. 임시 그래픽 버퍼 생성
+      // 임시 그래픽 버퍼 생성
       let pg = createGraphics(width, height);
-      
-      // [중요/수정] 맥/모바일(Retina) 호환성 수정
-      // 화면은 고화질이어도, 텍스트 위치 계산용 버퍼는 1배율로 고정해야
-      // 픽셀 스캔 좌표가 어긋나지 않습니다.
       pg.pixelDensity(1); 
       
       pg.background(0);
@@ -275,17 +321,16 @@
       pg.textStyle(BOLD);
       pg.textAlign(CENTER, CENTER);
       
-      // [수정] Y값 조정: - 50 제거하여 정중앙 배치
-      // pg.text(CONFIG.text, width/2, height/2 - 50); // 기존
-      pg.text(CONFIG.text, width/2, height/2);         // 변경 (정중앙)
+      // 텍스트 위치: 살짝 위로 올려서 아래 슬로건 공간 확보
+      pg.text(CONFIG.text, width/2, height/2 - 20); 
 
-      // 텍스트 크기 반응형 (모바일에서 너무 작아지지 않게 조정)
-      let fontSize = min(width * 0.2, 450); // 비율을 0.28 -> 0.2로 살짝 줄여 모바일 줄바꿈 방지
-      if (width < 600) fontSize = width * 0.25; // 모바일 전용 크기
+      // 텍스트 크기 반응형
+      let fontSize = min(width * 0.2, 450); 
+      if (width < 600) fontSize = width * 0.25; 
       
       pg.textSize(fontSize);
       pg.fill(255);
-      pg.text(CONFIG.text, width/2, height/2); 
+      pg.text(CONFIG.text, width/2, height/2 - 20); 
 
       pg.loadPixels();
       
@@ -295,11 +340,10 @@
       minX = width; maxX = 0;
       let tempPoints = [];
 
-      // 픽셀 스캔 로직 (이제 pg.pixelDensity(1) 덕분에 모든 기기에서 동일하게 작동)
+      // 픽셀 스캔
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
           let index = (x + y * width) * 4;
-          // 배열 범위를 벗어나지 않는지 체크 (안전장치)
           if (index < pg.pixels.length && pg.pixels[index] > 128) {
             if (random(1) < 0.9) {
               tempPoints.push(createVector(x, y));
@@ -309,19 +353,16 @@
           }
         }
       }
-      pg.remove(); // 메모리 해제
+      pg.remove(); 
 
       if (tempPoints.length > 0) {
         let textBoundingCenter = (minX + maxX) / 2;
         let screenCenter = width / 2;
-        
-        // 오프셋 적용 (+13px)
         let offsetX = screenCenter - textBoundingCenter + 13;
         
         for (let pt of tempPoints) {
           pt.x += offsetX;
         }
-        
         minX += offsetX;
         maxX += offsetX;
       }
@@ -448,16 +489,11 @@
       }
 
       show() {
-        // [FIX] Glow 효과 강화: 크기 증가 및 투명도 상향
-        
-        // 1. Halo (넓고 은은한 빛)
         strokeWeight(this.r * 2.5); 
-        stroke(red(this.baseColor), green(this.baseColor), blue(this.baseColor), 60); // 50 -> 60
+        stroke(red(this.baseColor), green(this.baseColor), blue(this.baseColor), 60); 
         point(this.pos.x, this.pos.y);
 
-        // 2. Core (강렬한 중심 빛)
-        strokeWeight(this.r * 1.0); // 0.8 -> 1.0
-        // 코어를 거의 흰색에 가깝고 불투명하게
+        strokeWeight(this.r * 1.0); 
         stroke(red(this.baseColor)+100, green(this.baseColor)+100, blue(this.baseColor)+100, 255); 
         point(this.pos.x, this.pos.y);
       }
