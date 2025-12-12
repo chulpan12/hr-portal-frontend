@@ -78,6 +78,107 @@ function renderExcelTable(tableData, options = {}) {
   return tableContainer;
 }
 
+/**
+ * [신규] 텍스트에서 테이블 데이터를 자동 추출
+ * "데이터:" 또는 유사한 패턴 뒤에 오는 정렬된 텍스트를 테이블로 변환
+ * @param {string} text - 원본 description 텍스트
+ * @returns {{tableData: Object|null, cleanedText: string}} 추출된 테이블 데이터와 정리된 텍스트
+ */
+function extractTableFromText(text) {
+  if (!text) return { tableData: null, cleanedText: text };
+  
+  // "데이터:" 패턴 찾기 (다양한 형태 지원)
+  const dataPatterns = [
+    /데이터\s*:\s*\n([\s\S]*?)(?=\n\n|\n[A-Z가-힣]|\n\d+\.|$)/i,
+    /\*\*데이터\*\*\s*:\s*\n([\s\S]*?)(?=\n\n|\n[A-Z가-힣]|\n\d+\.|$)/i,
+    /표\s*:\s*\n([\s\S]*?)(?=\n\n|\n[A-Z가-힣]|\n\d+\.|$)/i,
+  ];
+  
+  let tableText = null;
+  let matchObj = null;
+  
+  for (const pattern of dataPatterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      tableText = match[1].trim();
+      matchObj = match;
+      break;
+    }
+  }
+  
+  if (!tableText) {
+    return { tableData: null, cleanedText: text };
+  }
+  
+  // 테이블 텍스트를 행으로 분리
+  const lines = tableText.split('\n').filter(line => line.trim());
+  if (lines.length < 2) {
+    return { tableData: null, cleanedText: text };
+  }
+  
+  // 각 행을 열로 분리 (공백 또는 탭으로 구분된 데이터)
+  const parseRow = (line) => {
+    const parts = [];
+    let current = '';
+    let inParens = 0;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '(') {
+        inParens++;
+        current += char;
+      } else if (char === ')') {
+        inParens--;
+        current += char;
+      } else if ((char === ' ' || char === '\t') && inParens === 0) {
+        if (current.trim()) {
+          parts.push(current.trim());
+        }
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    if (current.trim()) {
+      parts.push(current.trim());
+    }
+    
+    return parts;
+  };
+  
+  const rows = lines.map(parseRow);
+  
+  // 최소 2개 열, 2개 행이 있어야 테이블로 인식
+  if (rows.length < 2 || rows[0].length < 2) {
+    return { tableData: null, cleanedText: text };
+  }
+  
+  // 첫 행이 헤더인지 확인
+  const firstRow = rows[0];
+  const headerKeywords = ['이름', '열', 'ID', 'Name', '번호', '항목', '구분', 'A', 'B', 'C', 'D'];
+  const isHeaderRow = firstRow.some(cell => 
+    headerKeywords.some(kw => cell.includes(kw))
+  );
+  
+  let headers, dataRows;
+  if (isHeaderRow) {
+    headers = firstRow;
+    dataRows = rows.slice(1);
+  } else {
+    headers = firstRow.map((_, i) => String.fromCharCode(65 + i));
+    dataRows = rows;
+  }
+  
+  const tableData = {
+    headers: headers,
+    rows: dataRows
+  };
+  
+  const cleanedText = text.replace(matchObj[0], '\n[📊 데이터 테이블은 아래에 표시됩니다]\n');
+  
+  return { tableData, cleanedText };
+}
+
 // 빈칸 마커를 HTML input으로 변환하는 헬퍼 함수
 function convertBlanksToInputs(html) {
   // __BLANK_N__ 형식을 입력 필드로 변환
@@ -1527,24 +1628,49 @@ function renderFillInBlankStep(step, skipMessage = false) {
     dom.activityText.after(hintBox);
   }
   
-  // [신규] fill_in_blank 단계에 table 필드가 있으면 엑셀 스타일 표로 렌더링
-  if (step.table && dom.activityText) {
-    const tableData = step.table;
-    if (tableData.headers && tableData.rows) {
-      // 기존 테이블이 있으면 제거
-      const existingTable = dom.activityText.parentElement?.querySelector('.problem-data-table-container');
-      if (existingTable) existingTable.remove();
-      
-      // 테이블 컨테이너 생성
-      const tableContainer = renderExcelTable(tableData, { className: 'problem-data-table-container' });
-      
-      // 힌트 박스가 있으면 그 뒤에, 없으면 activityText 뒤에 삽입
-      const hintBox = dom.activityText.parentElement?.querySelector('.blank-hint-box');
-      if (hintBox) {
-        hintBox.after(tableContainer);
-      } else {
-        dom.activityText.after(tableContainer);
+  // [신규] fill_in_blank 단계에 table 필드가 있거나 텍스트에서 추출 가능하면 엑셀 스타일 표로 렌더링
+  let extractedTableData = null;
+  
+  // 1. step.table 필드 확인
+  if (step.table && step.table.headers && step.table.rows) {
+    extractedTableData = step.table;
+  }
+  
+  // 2. table 필드가 없으면 step.text에서 자동 추출 시도
+  if (!extractedTableData && step.text) {
+    const { tableData, cleanedText } = extractTableFromText(step.text);
+    if (tableData) {
+      extractedTableData = tableData;
+      // 정리된 텍스트로 activityText 업데이트
+      if (dom.activityText) {
+        try {
+          if (window.marked) {
+            dom.activityText.innerHTML = marked.parse(cleanedText);
+          } else {
+            dom.activityText.textContent = cleanedText;
+          }
+        } catch (e) {
+          // 실패 시 원본 유지
+        }
       }
+    }
+  }
+  
+  // 3. 테이블 렌더링
+  if (extractedTableData && dom.activityText) {
+    // 기존 테이블이 있으면 제거
+    const existingTable = dom.activityText.parentElement?.querySelector('.problem-data-table-container');
+    if (existingTable) existingTable.remove();
+    
+    // 테이블 컨테이너 생성
+    const tableContainer = renderExcelTable(extractedTableData, { className: 'problem-data-table-container' });
+    
+    // 힌트 박스가 있으면 그 뒤에, 없으면 activityText 뒤에 삽입
+    const hintBox = dom.activityText.parentElement?.querySelector('.blank-hint-box');
+    if (hintBox) {
+      hintBox.after(tableContainer);
+    } else {
+      dom.activityText.after(tableContainer);
     }
   }
 
