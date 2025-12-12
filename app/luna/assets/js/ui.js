@@ -769,11 +769,13 @@ async function recordLessonCompletion() {
     }
     
     // [구조적 개선] 로드맵 모드에서 Step 완료 API 호출
+    // 🔧 [버그 수정] state.currentStepIndex = 커리큘럼 내 현재 단원 인덱스 사용
+    // (state.currentLessonStepIndex는 레슨 플랜 내 스텝 인덱스로 의미가 다름)
     const steps = Array.isArray(state.currentCurriculum?.curriculum) ? state.currentCurriculum.curriculum : [];
-    const currentStepIdx = state.currentLessonStepIndex ?? 0;
+    const currentStepIdx = state.currentStepIndex ?? 0;
     const isLastStep = currentStepIdx >= steps.length - 1;
     
-    console.log('[UI] recordLessonCompletion - steps:', steps.length, 'currentStepIdx:', currentStepIdx, 'isLastStep:', isLastStep);
+    console.log('[UI] recordLessonCompletion - steps:', steps.length, 'currentStepIdx (curriculum):', currentStepIdx, 'isLastStep:', isLastStep);
     
     if (state.isRoadmapMode) {
       try {

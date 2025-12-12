@@ -675,6 +675,34 @@ async function init() {
     }
     
     if (sessionData && sessionData.status === 'resume' && sessionData.state) {
+      // ============================================================
+      // 🔥 [핵심 수정] URL 파라미터 없이 index.html로 접근해도
+      // 저장된 상태에 로드맵 컨텍스트가 있으면 강제로 로드맵 모드 활성화
+      // ============================================================
+      const savedRoadmapContext = sessionData.state.roadmapContext;
+      const savedIsRoadmapMode = sessionData.state.isRoadmapMode;
+      
+      if ((savedRoadmapContext || savedIsRoadmapMode) && mode !== 'roadmap') {
+        console.log('[INIT] 🚀 저장된 로드맵 컨텍스트 감지 -> 로드맵 모드 자동 활성화');
+        console.log('[INIT] savedRoadmapContext:', savedRoadmapContext);
+        
+        // state에 먼저 반영
+        state.isRoadmapMode = true;
+        state.roadmapContext = savedRoadmapContext;
+        
+        // UI에 로드맵 위젯 표시
+        setRoadmapMode(true);
+        
+        // 로드맵 데이터 로드 및 위젯 업데이트
+        await loadAndUpdateRoadmapWidget();
+        
+        // localStorage에도 동기화 (다른 페이지에서 참조용)
+        if (savedRoadmapContext) {
+          localStorage.setItem('roadmap_context', JSON.stringify(savedRoadmapContext));
+        }
+      }
+      // ============================================================
+      
       // 🔥 [신규] 로드맵 모드에서 토픽 변경 감지
       const savedTopic = sessionData.state.intendedTopic || sessionData.state.currentCurriculum?.topic;
       const isTopicChanged = mode === 'roadmap' && topicFromUrl && savedTopic && 
