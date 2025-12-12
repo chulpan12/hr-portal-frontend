@@ -8,6 +8,76 @@ import { handleRunAndGrade } from './runner.js';
 // [신규] 효과음 모듈 import
 import { SFX } from './sound.js';
 
+/**
+ * [공통 유틸리티] 엑셀 스타일 테이블 렌더링 함수
+ * MCQ, fill_in_blank, final_code 등 여러 단계에서 재사용 가능
+ * @param {Object} tableData - {headers: string[], rows: string[][]}
+ * @param {Object} options - {className?: string, showRowNumbers?: boolean}
+ * @returns {HTMLElement} 테이블 컨테이너 요소
+ */
+function renderExcelTable(tableData, options = {}) {
+  const { className = 'mcq-excel-table-container', showRowNumbers = true } = options;
+  
+  const tableContainer = document.createElement('div');
+  tableContainer.className = `${className} mb-4`;
+  
+  const table = document.createElement('table');
+  table.className = 'mcq-excel-table';
+  
+  const headers = tableData.headers || [];
+  const rows = tableData.rows || [];
+  
+  // 헤더 행 (A, B, C, ...)
+  if (headers.length > 0) {
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    
+    // 행 번호 칸 추가 (선택적)
+    if (showRowNumbers) {
+      const cornerCell = document.createElement('th');
+      cornerCell.textContent = '';
+      headerRow.appendChild(cornerCell);
+    }
+    
+    headers.forEach(h => {
+      const th = document.createElement('th');
+      th.textContent = h;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+  }
+  
+  // 데이터 행
+  const tbody = document.createElement('tbody');
+  rows.forEach((row, rowIdx) => {
+    const tr = document.createElement('tr');
+    
+    // 행 번호 (선택적)
+    if (showRowNumbers) {
+      const rowNumCell = document.createElement('th');
+      rowNumCell.textContent = String(rowIdx + 1);
+      tr.appendChild(rowNumCell);
+    }
+    
+    row.forEach(cell => {
+      const td = document.createElement('td');
+      const cellValue = String(cell);
+      // 수식인지 체크 (=로 시작)
+      if (cellValue.startsWith('=')) {
+        td.className = 'formula';
+      }
+      td.textContent = cellValue;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  
+  tableContainer.appendChild(table);
+  return tableContainer;
+}
+
 // 빈칸 마커를 HTML input으로 변환하는 헬퍼 함수
 function convertBlanksToInputs(html) {
   // __BLANK_N__ 형식을 입력 필드로 변환
@@ -1292,59 +1362,8 @@ function renderMcqStep(step) {
     const renderType = step.render_type || (step.language?.toLowerCase() === 'excel' ? 'table' : 'code');
     
     if (renderType === 'table' && step.table) {
-      // 엑셀 표 형태로 렌더링
-      const tableContainer = document.createElement('div');
-      tableContainer.className = 'mcq-excel-table-container mb-4';
-      
-      const table = document.createElement('table');
-      table.className = 'mcq-excel-table';
-      
-      const tableData = step.table;
-      const headers = tableData.headers || [];
-      const rows = tableData.rows || [];
-      
-      // 헤더 행 (A, B, C, ...)
-      if (headers.length > 0) {
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        // 행 번호 칸 추가
-        const cornerCell = document.createElement('th');
-        cornerCell.textContent = '';
-        headerRow.appendChild(cornerCell);
-        
-        headers.forEach(h => {
-          const th = document.createElement('th');
-          th.textContent = h;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-      }
-      
-      // 데이터 행
-      const tbody = document.createElement('tbody');
-      rows.forEach((row, rowIdx) => {
-        const tr = document.createElement('tr');
-        // 행 번호
-        const rowNumCell = document.createElement('th');
-        rowNumCell.textContent = String(rowIdx + 1);
-        tr.appendChild(rowNumCell);
-        
-        row.forEach(cell => {
-          const td = document.createElement('td');
-          const cellValue = String(cell);
-          // 수식인지 체크 (=로 시작)
-          if (cellValue.startsWith('=')) {
-            td.className = 'formula';
-          }
-          td.textContent = cellValue;
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-      table.appendChild(tbody);
-      
-      tableContainer.appendChild(table);
+      // [리팩토링] 공통 테이블 렌더링 함수 사용
+      const tableContainer = renderExcelTable(step.table);
       content.appendChild(tableContainer);
     } else if (step.code_snippet) {
       // 코드 블록으로 렌더링
@@ -1506,6 +1525,27 @@ function renderFillInBlankStep(step, skipMessage = false) {
       <div class="text-slate-300">${blankHints}</div>
     `;
     dom.activityText.after(hintBox);
+  }
+  
+  // [신규] fill_in_blank 단계에 table 필드가 있으면 엑셀 스타일 표로 렌더링
+  if (step.table && dom.activityText) {
+    const tableData = step.table;
+    if (tableData.headers && tableData.rows) {
+      // 기존 테이블이 있으면 제거
+      const existingTable = dom.activityText.parentElement?.querySelector('.problem-data-table-container');
+      if (existingTable) existingTable.remove();
+      
+      // 테이블 컨테이너 생성
+      const tableContainer = renderExcelTable(tableData, { className: 'problem-data-table-container' });
+      
+      // 힌트 박스가 있으면 그 뒤에, 없으면 activityText 뒤에 삽입
+      const hintBox = dom.activityText.parentElement?.querySelector('.blank-hint-box');
+      if (hintBox) {
+        hintBox.after(tableContainer);
+      } else {
+        dom.activityText.after(tableContainer);
+      }
+    }
   }
 
   // CodeMirror IDE로 일관 표시: step 기반으로 직접 렌더
