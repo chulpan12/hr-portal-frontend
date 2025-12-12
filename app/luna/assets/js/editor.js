@@ -96,7 +96,7 @@ export function renderEditor() {
   });
   setTimeout(() => state.editorInstance?.refresh?.(), 0);
   
-  // [신규] 에디터 파일명 동적 업데이트
+  // [신규] 에디터 파일명 동적 업데이트 (다양한 언어 지원)
   const filenameEl = document.getElementById('editor-filename');
   if (filenameEl) {
     const filenameMap = {
@@ -104,6 +104,16 @@ export function renderEditor() {
       'javascript': 'main.js',
       'htmlmixed': 'index.html',
       'shell': 'script.sh',
+      'clike': 'main.c',        // C/C++
+      'text/x-csrc': 'main.c',  // C
+      'text/x-c++src': 'main.cpp', // C++
+      'r': 'main.R',
+      'sql': 'query.sql',
+      'java': 'Main.java',
+      'css': 'style.css',
+      'xml': 'data.xml',
+      'markdown': 'README.md',
+      'excel': 'formula.xlsx',  // 엑셀 (표시용)
     };
     filenameEl.textContent = filenameMap[mode] || 'main.py';
   }
@@ -261,7 +271,7 @@ export function renderEditorForStep(step, stepType, codeSnapshot = null) {
   
   const isWeb = String(state.problemJSON?.type || '').toLowerCase() === 'web' || lang === 'html';
   
-  // [수정] JavaScript, Shell 모드 추가
+  // [수정] 다양한 언어 모드 지원 (C, R, SQL, Java, Excel 등)
   let mode = 'python';  // 기본값
   if (isWeb) {
     mode = 'htmlmixed';
@@ -269,8 +279,20 @@ export function renderEditorForStep(step, stepType, codeSnapshot = null) {
     mode = 'python';
   } else if (['javascript', 'js'].includes(lang)) {
     mode = 'javascript';
-  } else if (['bash', 'shell', 'sh', 'linux'].includes(lang)) {  // 'linux' 키워드 추가
+  } else if (['bash', 'shell', 'sh', 'linux'].includes(lang)) {
     mode = 'shell';
+  } else if (['c', 'cpp', 'c++'].includes(lang)) {
+    mode = 'clike';
+  } else if (lang === 'r') {
+    mode = 'r';
+  } else if (lang === 'sql') {
+    mode = 'sql';
+  } else if (lang === 'java') {
+    mode = 'clike';  // Java도 clike 모드 사용
+  } else if (lang === 'css') {
+    mode = 'css';
+  } else if (lang === 'excel') {
+    mode = 'excel';  // 엑셀은 별도 표시용
   }
 
   state.editorInstance = CodeMirror(dom.codeEditor, {
@@ -288,7 +310,7 @@ export function renderEditorForStep(step, stepType, codeSnapshot = null) {
   });
   setTimeout(() => state.editorInstance?.refresh?.(), 0);
   
-  // [신규] 에디터 파일명 동적 업데이트
+  // [신규] 에디터 파일명 동적 업데이트 (다양한 언어 지원)
   const filenameEl = document.getElementById('editor-filename');
   if (filenameEl) {
     const filenameMap = {
@@ -296,6 +318,16 @@ export function renderEditorForStep(step, stepType, codeSnapshot = null) {
       'javascript': 'main.js',
       'htmlmixed': 'index.html',
       'shell': 'script.sh',
+      'clike': 'main.c',        // C/C++
+      'text/x-csrc': 'main.c',  // C
+      'text/x-c++src': 'main.cpp', // C++
+      'r': 'main.R',
+      'sql': 'query.sql',
+      'java': 'Main.java',
+      'css': 'style.css',
+      'xml': 'data.xml',
+      'markdown': 'README.md',
+      'excel': 'formula.xlsx',  // 엑셀 (표시용)
     };
     filenameEl.textContent = filenameMap[mode] || 'main.py';
   }

@@ -1286,16 +1286,99 @@ function renderMcqStep(step) {
   content.appendChild(q);
 
   // [신규] MCQ에 코드 스니펫이 있으면 코드 블록으로 렌더링
-  if (step.code_snippet) {
-    const codeBlock = document.createElement('div');
-    codeBlock.className = 'mcq-code-block mb-4 rounded-lg overflow-hidden';
-    const codeContent = String(step.code_snippet).replace(/\\n/g, '\n');
-    // 마크다운 코드 블록으로 렌더링
-    const codeHtml = window.marked 
-      ? window.marked.parse('```python\n' + codeContent + '\n```') 
-      : `<pre><code>${codeContent}</code></pre>`;
-    codeBlock.innerHTML = codeHtml;
-    content.appendChild(codeBlock);
+  // [개선] 언어별 동적 처리 및 엑셀 표 지원
+  if (step.code_snippet || step.table) {
+    // 렌더 타입 결정: table이 명시되었거나 language가 excel이면 표로
+    const renderType = step.render_type || (step.language?.toLowerCase() === 'excel' ? 'table' : 'code');
+    
+    if (renderType === 'table' && step.table) {
+      // 엑셀 표 형태로 렌더링
+      const tableContainer = document.createElement('div');
+      tableContainer.className = 'mcq-excel-table-container mb-4';
+      
+      const table = document.createElement('table');
+      table.className = 'mcq-excel-table';
+      
+      const tableData = step.table;
+      const headers = tableData.headers || [];
+      const rows = tableData.rows || [];
+      
+      // 헤더 행 (A, B, C, ...)
+      if (headers.length > 0) {
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        // 행 번호 칸 추가
+        const cornerCell = document.createElement('th');
+        cornerCell.textContent = '';
+        headerRow.appendChild(cornerCell);
+        
+        headers.forEach(h => {
+          const th = document.createElement('th');
+          th.textContent = h;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+      }
+      
+      // 데이터 행
+      const tbody = document.createElement('tbody');
+      rows.forEach((row, rowIdx) => {
+        const tr = document.createElement('tr');
+        // 행 번호
+        const rowNumCell = document.createElement('th');
+        rowNumCell.textContent = String(rowIdx + 1);
+        tr.appendChild(rowNumCell);
+        
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          const cellValue = String(cell);
+          // 수식인지 체크 (=로 시작)
+          if (cellValue.startsWith('=')) {
+            td.className = 'formula';
+          }
+          td.textContent = cellValue;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      
+      tableContainer.appendChild(table);
+      content.appendChild(tableContainer);
+    } else if (step.code_snippet) {
+      // 코드 블록으로 렌더링
+      const codeBlock = document.createElement('div');
+      codeBlock.className = 'mcq-code-block mb-4 rounded-lg overflow-hidden';
+      const codeContent = String(step.code_snippet).replace(/\\n/g, '\n');
+      
+      // 언어 감지 (step.language 또는 state에서)
+      const lang = (step.language || state.currentLessonPlan?.language || 'python').toLowerCase();
+      const langMap = {
+        'python': 'python',
+        'c': 'c',
+        'cpp': 'cpp',
+        'c++': 'cpp',
+        'javascript': 'javascript',
+        'js': 'javascript',
+        'bash': 'bash',
+        'shell': 'bash',
+        'r': 'r',
+        'html': 'html',
+        'css': 'css',
+        'sql': 'sql',
+        'java': 'java',
+        'excel': 'excel',
+      };
+      const highlightLang = langMap[lang] || 'plaintext';
+      
+      // 마크다운 코드 블록으로 렌더링
+      const codeHtml = window.marked 
+        ? window.marked.parse('```' + highlightLang + '\n' + codeContent + '\n```') 
+        : `<pre><code>${codeContent}</code></pre>`;
+      codeBlock.innerHTML = codeHtml;
+      content.appendChild(codeBlock);
+    }
   }
 
   // HTML 이스케이프 헬퍼 함수
