@@ -45,6 +45,8 @@ export const state = {
   pendingRegenerateType: null,
   // [신규] 채팅 입력 금지 상태
   chatInputLocked: false,
+  // [신규] 우측 카드에서 미리 선택한 학습 타입 ('roadmap' | 'curriculum' | null)
+  preselectedLearningType: null,
 };
 
 export const dom = {

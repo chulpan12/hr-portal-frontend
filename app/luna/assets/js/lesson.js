@@ -1,7 +1,7 @@
 // 수업 진행 엔진: Lesson Plan 기반 활동 렌더러
 import { state, dom } from './state.js';
 import { requestLessonPlan, saveStateToServer, gradeCode } from './api.js';
-import { addChatMessage, addChatMessageWithTyping, setLoading, displayCodingView, showChoiceMenu, renderSidebarCurriculum } from './ui.js';
+import { addChatMessage, addChatMessageWithTyping, setLoading, displayCodingView, showChoiceMenu, renderSidebarCurriculum, setChatInputLocked } from './ui.js';
 import { renderProblem } from './flow.js';
 import { renderEditor, getCurrentCode, renderEditorForStep } from './editor.js';
 import { handleRunAndGrade } from './runner.js';
@@ -212,6 +212,10 @@ function ensureActivityDom() {
 
 export async function startLesson(topic, lessonTitle) {
   console.log('[LESSON] startLesson 시작 - topic:', topic, 'lessonTitle:', lessonTitle);
+  
+  // [중요] 레슨 시작 시 채팅 입력 활성화 (학습 중 질문 가능하도록)
+  setChatInputLocked(false);
+  
   setLoading(true, '수업 계획을 생성 중입니다...');
   try {
     // [Scaffolding] 이전 단계 학습 정보 수집 - 커리큘럼 중복 방지
@@ -287,6 +291,9 @@ export async function startLesson(topic, lessonTitle) {
 // [신규] 사이드바 커리큘럼 단계 클릭 핸들러
 export async function handleSidebarStepClick(stepIndex, step) {
   console.log('[LESSON] 사이드바 클릭 - stepIndex:', stepIndex, 'step:', step.title);
+  
+  // [중요] 단계 클릭 시 채팅 입력 활성화
+  setChatInputLocked(false);
   
   // 현재 단계와 같으면 무시
   if (stepIndex === state.currentStepIndex) {
