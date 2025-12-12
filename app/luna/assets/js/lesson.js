@@ -936,6 +936,9 @@ export function renderCurrentStep(skipMessage = false) {
   const existingHintBox = document.querySelector('.blank-hint-box');
   if (existingHintBox) existingHintBox.remove();
   
+  // [신규] 이전 단계에서 남아있는 테이블 컨테이너 모두 제거
+  document.querySelectorAll('.problem-data-table-container, .mcq-excel-table-container').forEach(el => el.remove());
+  
   // [신규] activity-section 초기화 (이전 단계에서 숨겨졌을 수 있음)
   const activitySection = document.getElementById('activity-section');
   activitySection?.classList?.remove('hidden');
@@ -1657,11 +1660,11 @@ function renderFillInBlankStep(step, skipMessage = false) {
   }
   
   // 3. 테이블 렌더링
+  // [수정] 기존 테이블을 모두 제거 (누적 방지)
+  const existingTables = dom.activityText?.parentElement?.querySelectorAll('.problem-data-table-container');
+  existingTables?.forEach(table => table.remove());
+  
   if (extractedTableData && dom.activityText) {
-    // 기존 테이블이 있으면 제거
-    const existingTable = dom.activityText.parentElement?.querySelector('.problem-data-table-container');
-    if (existingTable) existingTable.remove();
-    
     // 테이블 컨테이너 생성
     const tableContainer = renderExcelTable(extractedTableData, { className: 'problem-data-table-container' });
     
