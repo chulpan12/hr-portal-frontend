@@ -8,6 +8,10 @@
  * ============================================================
  */
 
+// ========== 버전 정보 (캐시 버스팅용) ==========
+export const APP_VERSION = '20251212';
+console.log(`[LUNA] Version: ${APP_VERSION}`);
+
 // ========== 환경 설정 ==========
 // 개발 환경: http://localhost:8000/api/luna (hr-portal 백엔드 포트)
 // 운영 환경: https://api.dreamofenc.com/api/luna
