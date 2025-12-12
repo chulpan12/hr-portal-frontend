@@ -98,6 +98,77 @@ export async function logout() {
   window.location.href = 'login.html';
 }
 
+// ========== [신규] 네비게이션 버튼 비활성화 (비로그인 시) ==========
+/**
+ * 헤더의 대시보드/로드맵/랭킹 버튼을 비활성화하고 로그인 유도 UI로 변경합니다.
+ */
+function disableNavButtonsForGuest() {
+  const dashboardBtn = document.getElementById('dashboard-nav-btn');
+  const roadmapBtn = document.getElementById('roadmap-nav-btn');
+  const leaderboardBtn = document.getElementById('leaderboard-nav-btn');
+  
+  const buttonsToDisable = [
+    { el: dashboardBtn, label: '대시보드', icon: 'fa-chart-line', color: 'cyan' },
+    { el: roadmapBtn, label: '로드맵', icon: 'fa-map', color: 'purple' },
+    { el: leaderboardBtn, label: '랭킹', icon: 'fa-trophy', color: 'amber' }
+  ];
+  
+  buttonsToDisable.forEach(({ el, label, icon, color }) => {
+    if (!el) return;
+    
+    // href 제거하고 클릭 이벤트로 변경
+    el.removeAttribute('href');
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-disabled', 'true');
+    
+    // 스타일 변경: 비활성화 상태 + 잠금 아이콘
+    el.className = `text-xs font-medium bg-slate-800/50 text-slate-500 px-3 py-1.5 rounded border border-slate-700/50 cursor-not-allowed opacity-60 flex items-center gap-1`;
+    el.innerHTML = `<i class="fas ${icon} text-slate-600"></i><span class="hidden sm:inline">${label}</span><i class="fas fa-lock text-[8px] text-slate-600 ml-1"></i>`;
+    el.title = `로그인 후 이용 가능`;
+    
+    // 클릭 시 로그인 안내 토스트/모달 표시
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showLoginRequiredToast(label);
+    });
+  });
+}
+
+/**
+ * 로그인 필요 토스트 메시지 표시
+ * @param {string} featureName - 기능 이름
+ */
+function showLoginRequiredToast(featureName) {
+  // 기존 토스트가 있으면 제거
+  const existingToast = document.querySelector('.login-required-toast');
+  if (existingToast) existingToast.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'login-required-toast fixed top-20 left-1/2 -translate-x-1/2 z-[100] animate-fade-in-up';
+  toast.innerHTML = `
+    <div class="bg-slate-800/95 backdrop-blur-sm border border-slate-700 rounded-xl shadow-2xl px-5 py-3 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+        <i class="fas fa-lock text-amber-400 text-sm"></i>
+      </div>
+      <div>
+        <p class="text-sm text-white font-medium">${featureName} 기능은 로그인이 필요해요</p>
+        <p class="text-xs text-slate-400">로그인하고 학습 기록을 저장하세요!</p>
+      </div>
+      <a href="login.html" class="ml-2 px-3 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium rounded-lg transition-all">
+        로그인
+      </a>
+    </div>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  // 3초 후 자동 제거
+  setTimeout(() => {
+    toast.classList.add('animate-fade-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 // ========== 비밀번호 변경 ==========
 /**
  * 비밀번호 변경 요청
@@ -351,6 +422,9 @@ export function setupUserMenu(user) {
     adminLink?.classList.add('hidden');               // 관리자 숨기기
     adminDivider?.classList.add('hidden');
     logoutBtn?.classList.add('hidden');               // 로그아웃 숨기기
+    
+    // [신규] 헤더 네비게이션 버튼 비활성화 (비로그인 시)
+    disableNavButtonsForGuest();
   }
 
   // 드롭다운 토글 (중복 방지)
