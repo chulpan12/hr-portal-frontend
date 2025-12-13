@@ -256,13 +256,27 @@ export function setupEditableBlankEnhancer() {
 // skipHistory: true이면 state.chatHistory에 추가하지 않음 (복원 시 사용)
 export function addChatMessage(role, message, skipHistory = false) {
   const messageEl = document.createElement('div');
-  messageEl.className = 'flex items-start gap-3';
+  messageEl.className = `flex items-start gap-3 ${role === 'user' ? 'flex-row-reverse' : ''}`;
 
-  const iconEl = document.createElement('i');
-  iconEl.className = `fas ${role === 'user' ? 'fa-user text-blue-400' : 'fa-user-astronaut text-purple-400'} mt-1 flex-shrink-0`;
+  // [개선] 더 세련된 아이콘으로 변경
+  const iconWrapper = document.createElement('div');
+  if (role === 'user') {
+    // 사용자: 심플한 원형 아바타
+    iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30';
+    iconWrapper.innerHTML = '<i class="fas fa-user text-white text-sm"></i>';
+  } else {
+    // 루나: 신경망/AI 느낌의 아이콘
+    iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30';
+    iconWrapper.innerHTML = '<i class="fas fa-brain text-white text-sm"></i>';
+  }
 
   const contentContainerEl = document.createElement('div');
-  contentContainerEl.className = 'p-3 rounded-lg bg-slate-700 flex-1';
+  // [개선] 사용자 메시지는 다른 색상으로 구분
+  contentContainerEl.className = `p-3 rounded-lg flex-1 ${
+    role === 'user' 
+      ? 'bg-gradient-to-br from-blue-600/30 to-cyan-600/30 border border-blue-500/30' 
+      : 'bg-slate-700/80 border border-slate-600/30'
+  }`;
 
   const messageContentEl = document.createElement('div');
   messageContentEl.className = 'text-sm';
@@ -301,7 +315,7 @@ export function addChatMessage(role, message, skipHistory = false) {
   }
 
   contentContainerEl.appendChild(messageContentEl);
-  messageEl.appendChild(iconEl);
+  messageEl.appendChild(iconWrapper);
   messageEl.appendChild(contentContainerEl);
 
   dom.chatLog.appendChild(messageEl);
@@ -325,11 +339,13 @@ export function createStreamingMessage() {
   const messageEl = document.createElement('div');
   messageEl.className = 'flex items-start gap-3 streaming-message';
 
-  const iconEl = document.createElement('i');
-  iconEl.className = 'fas fa-user-astronaut text-purple-400 mt-1 flex-shrink-0';
+  // [개선] 루나 아이콘을 세련된 스타일로 변경
+  const iconWrapper = document.createElement('div');
+  iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30';
+  iconWrapper.innerHTML = '<i class="fas fa-brain text-white text-sm"></i>';
 
   const contentContainerEl = document.createElement('div');
-  contentContainerEl.className = 'p-3 rounded-lg bg-slate-700 flex-1';
+  contentContainerEl.className = 'p-3 rounded-lg bg-slate-700/80 border border-slate-600/30 flex-1';
 
   const messageContentEl = document.createElement('div');
   messageContentEl.className = 'text-sm';
@@ -341,7 +357,7 @@ export function createStreamingMessage() {
   
   messageContentEl.appendChild(proseEl);
   contentContainerEl.appendChild(messageContentEl);
-  messageEl.appendChild(iconEl);
+  messageEl.appendChild(iconWrapper);
   messageEl.appendChild(contentContainerEl);
 
   dom.chatLog.appendChild(messageEl);
@@ -415,11 +431,13 @@ export function addChatMessageWithTyping(message, options = {}) {
     const messageEl = document.createElement('div');
     messageEl.className = 'flex items-start gap-3 streaming-message';
 
-    const iconEl = document.createElement('i');
-    iconEl.className = 'fas fa-user-astronaut text-purple-400 mt-1 flex-shrink-0';
+    // [개선] 루나 아이콘을 세련된 스타일로 변경
+    const iconWrapper = document.createElement('div');
+    iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30';
+    iconWrapper.innerHTML = '<i class="fas fa-brain text-white text-sm"></i>';
 
     const contentContainerEl = document.createElement('div');
-    contentContainerEl.className = 'p-3 rounded-lg bg-slate-700 flex-1';
+    contentContainerEl.className = 'p-3 rounded-lg bg-slate-700/80 border border-slate-600/30 flex-1';
 
     const messageContentEl = document.createElement('div');
     messageContentEl.className = 'text-sm';
@@ -430,7 +448,7 @@ export function addChatMessageWithTyping(message, options = {}) {
     
     messageContentEl.appendChild(proseEl);
     contentContainerEl.appendChild(messageContentEl);
-    messageEl.appendChild(iconEl);
+    messageEl.appendChild(iconWrapper);
     messageEl.appendChild(contentContainerEl);
 
     dom.chatLog.appendChild(messageEl);
