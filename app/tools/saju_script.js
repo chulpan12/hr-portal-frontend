@@ -146,15 +146,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!validateDOMElements()) return;
 
-    // 차트 생성 함수들
+    // 차트 생성 함수들 - 2025 Cyber-Mystic 스타일
     function createFiveElementsChart(fiveElements) {
         const ctx = document.getElementById('fiveElementsChart');
         if (!ctx) return null;
         
+        const isLightTheme = document.documentElement.classList.contains('light');
+        
         return new Chart(ctx, {
-            type: 'bar',
+            type: 'doughnut', // ✨ Bar에서 Doughnut으로 변경
             data: {
-                labels: ['木 (목)', '火 (화)', '土 (토)', '金 (금)', '水 (수)'],
+                labels: ['木 (성장)', '火 (열정)', '土 (중용)', '金 (결실)', '水 (지혜)'],
                 datasets: [{
                     label: '오행 분포',
                     data: [
@@ -165,46 +167,59 @@ document.addEventListener('DOMContentLoaded', function() {
                         fiveElements['水'] || 0
                     ],
                     backgroundColor: [
-                        'rgba(34, 197, 94, 0.8)',
-                        'rgba(239, 68, 68, 0.8)',
-                        'rgba(245, 158, 11, 0.8)',
-                        'rgba(59, 130, 246, 0.8)',
-                        'rgba(147, 51, 234, 0.8)'
+                        'rgba(34, 197, 94, 0.7)',   // 木 - Green
+                        'rgba(239, 68, 68, 0.7)',   // 火 - Red
+                        'rgba(245, 158, 11, 0.7)',  // 土 - Yellow
+                        'rgba(203, 213, 225, 0.9)', // 金 - Silver/White
+                        'rgba(59, 130, 246, 0.7)'   // 水 - Blue
                     ],
                     borderColor: [
                         'rgba(34, 197, 94, 1)',
                         'rgba(239, 68, 68, 1)',
                         'rgba(245, 158, 11, 1)',
-                        'rgba(59, 130, 246, 1)',
-                        'rgba(147, 51, 234, 1)'
+                        'rgba(203, 213, 225, 1)',
+                        'rgba(59, 130, 246, 1)'
                     ],
-                    borderWidth: 2
+                    borderWidth: 2,
+                    hoverOffset: 15, // ✨ 호버 시 돌출 효과
+                    spacing: 2
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '60%', // ✨ 도넛 두께 조절
                 plugins: {
                     legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: '#9CA3AF'
-                        },
-                        grid: {
-                            color: '#374151'
+                        position: 'right',
+                        labels: {
+                            color: isLightTheme ? '#1f2937' : '#cbd5e1',
+                            font: {
+                                family: 'Pretendard, Noto Sans KR',
+                                size: 13,
+                                weight: '500'
+                            },
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
                         }
                     },
-                    x: {
-                        ticks: {
-                            color: '#9CA3AF'
-                        },
-                        grid: {
-                            color: '#374151'
+                    tooltip: {
+                        backgroundColor: isLightTheme ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.95)',
+                        titleColor: isLightTheme ? '#1f2937' : '#f8fafc',
+                        bodyColor: isLightTheme ? '#374151' : '#cbd5e1',
+                        borderColor: isLightTheme ? '#e5e7eb' : 'rgba(99, 102, 241, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${label}: ${value}개 (${percentage}%)`;
+                            }
                         }
                     }
                 }
@@ -215,6 +230,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function createCoreCompetenciesChart(competencies) {
         const ctx = document.getElementById('coreCompetenciesChart');
         if (!ctx) return null;
+        
+        const isLightTheme = document.documentElement.classList.contains('light');
         
         return new Chart(ctx, {
             type: 'radar',
@@ -229,13 +246,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         competencies.analytical || 0,
                         competencies.execution || 0
                     ],
-                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
-                    borderColor: 'rgba(79, 70, 229, 1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                    backgroundColor: isLightTheme ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.25)',
+                    borderColor: '#6366f1',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#6366f1',
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(79, 70, 229, 1)'
+                    pointHoverBorderColor: '#6366f1',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBorderWidth: 2
                 }]
             },
             options: {
@@ -244,28 +264,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        backgroundColor: isLightTheme ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.95)',
+                        titleColor: isLightTheme ? '#1f2937' : '#f8fafc',
+                        bodyColor: isLightTheme ? '#374151' : '#cbd5e1',
+                        borderColor: isLightTheme ? '#e5e7eb' : 'rgba(99, 102, 241, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.parsed.r}/10`;
+                            }
+                        }
                     }
                 },
                 scales: {
                     r: {
                         beginAtZero: true,
                         max: 10,
+                        min: 0,
                         ticks: {
                             stepSize: 2,
-                            color: '#9CA3AF',
+                            color: isLightTheme ? '#6b7280' : '#9CA3AF',
                             font: {
-                                size: 12
+                                size: 11,
+                                family: 'Pretendard, Noto Sans KR'
                             },
-                            backdropColor: 'transparent'
+                            backdropColor: 'transparent',
+                            showLabelBackdrop: false
                         },
                         grid: {
-                            color: '#374151'
+                            color: isLightTheme ? '#e5e7eb' : '#374151',
+                            circular: true
+                        },
+                        angleLines: {
+                            color: isLightTheme ? '#e5e7eb' : '#374151'
                         },
                         pointLabels: {
-                            color: '#E5E7EB',
+                            color: isLightTheme ? '#1f2937' : '#E5E7EB',
                             font: {
-                                size: 14,
-                                weight: 'bold'
+                                size: 13,
+                                weight: '600',
+                                family: 'Pretendard, Noto Sans KR'
                             },
                             padding: 15
                         }
@@ -849,6 +890,61 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('✅ 최고 재능 렌더링 완료');
                 } catch (e) {
                     console.error('❌ 최고 재능 렌더링 오류:', e);
+                }
+            }
+
+            // ✨ [신규] 6-1. 신살 분석 렌더링
+            console.log('6-1. 신살 분석 렌더링 시도...');
+            if (data.shinsal_analysis) {
+                try {
+                    const shinsalSection = document.getElementById('shinsalSection');
+                    const shinsalSummary = document.getElementById('shinsalSummary');
+                    const shinsalDetails = document.getElementById('shinsalDetails');
+                    
+                    if (shinsalSection && shinsalSummary && shinsalDetails) {
+                        // 섹션 표시
+                        shinsalSection.style.display = 'block';
+                        
+                        // 요약 렌더링
+                        if (data.shinsal_analysis.summary) {
+                            shinsalSummary.querySelector('p').textContent = data.shinsal_analysis.summary;
+                        }
+                        
+                        // 상세 신살 카드 렌더링
+                        if (data.shinsal_analysis.details && Array.isArray(data.shinsal_analysis.details)) {
+                            const shinsalIcons = {
+                                '도화살': '🌸',
+                                '역마살': '🐎',
+                                '화개살': '🎭',
+                                '천을귀인': '👼',
+                                '천덕귀인': '✨',
+                                '문창귀인': '📚',
+                                '학당귀인': '🎓',
+                                '공망': '🌑',
+                                '원진': '⚔️',
+                                '육해': '🌊'
+                            };
+                            
+                            const shinsalHtml = data.shinsal_analysis.details.map(item => {
+                                const icon = shinsalIcons[item.name] || '⭐';
+                                return `
+                                    <div class="talent-card talent-card-purple p-5 rounded-xl">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <span class="text-3xl">${icon}</span>
+                                            <h4 class="font-bold text-lg text-purple-300">${item.name}</h4>
+                                        </div>
+                                        <p class="text-gray-300 text-sm leading-relaxed">${item.effect}</p>
+                                    </div>
+                                `;
+                            }).join('');
+                            
+                            shinsalDetails.innerHTML = shinsalHtml;
+                        }
+                        
+                        console.log('✅ 신살 분석 렌더링 완료');
+                    }
+                } catch (e) {
+                    console.error('❌ 신살 분석 렌더링 오류:', e);
                 }
             }
 
