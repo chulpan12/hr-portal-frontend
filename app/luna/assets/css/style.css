@@ -1475,3 +1475,83 @@ input:focus, textarea:focus {
 .mirror-example-container {
   animation: slide-in-right 0.4s ease-out;
 }
+
+/* ============================================
+   엑셀 스타일 테이블 (MCQ/데이터 분석용)
+   ============================================ */
+.mcq-excel-table-container {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #1e293b;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.mcq-excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+/* 헤더 행 (A, B, C...) */
+.mcq-excel-table thead tr {
+  background-color: #0f172a;
+  border-bottom: 2px solid #475569;
+}
+
+.mcq-excel-table thead th {
+  padding: 8px 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+  border-right: 1px solid #334155;
+  min-width: 40px;
+}
+
+/* 행 번호 열 (1, 2, 3...) */
+.mcq-excel-table tbody th {
+  background-color: #0f172a;
+  color: #94a3b8;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px;
+  border-right: 2px solid #475569;
+  border-bottom: 1px solid #334155;
+  min-width: 30px;
+}
+
+/* 데이터 셀 */
+.mcq-excel-table tbody td {
+  padding: 8px 12px;
+  border-right: 1px solid #334155;
+  border-bottom: 1px solid #334155;
+  text-align: center;
+}
+
+/* 데이터 헤더 (1행) 강조 */
+.mcq-excel-table tbody tr:first-child td {
+  background-color: #334155;
+  font-weight: bold;
+  color: #f1f5f9;
+  border-bottom: 2px solid #475569;
+}
+
+/* 짝수 행 배경색 (가독성) */
+.mcq-excel-table tbody tr:nth-child(even) td {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+/* 호버 효과 */
+.mcq-excel-table tbody tr:hover td {
+  background-color: rgba(51, 65, 85, 0.5);
+}
+
+/* 수식 셀 스타일 */
+.mcq-excel-table td.formula {
+  font-family: 'JetBrains Mono', monospace;
+  color: #a78bfa;
+  background-color: rgba(139, 92, 246, 0.1);
+}
