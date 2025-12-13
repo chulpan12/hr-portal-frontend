@@ -116,8 +116,17 @@ function extractTableFromText(text) {
     return { tableData: null, cleanedText: text };
   }
   
-  // 각 행을 열로 분리 (공백 또는 탭으로 구분된 데이터)
+  // 각 행을 열로 분리 (Markdown 테이블 또는 공백/탭 구분)
   const parseRow = (line) => {
+    // Markdown 테이블 형식인지 확인 (| 문자가 포함되어 있는지)
+    if (line.includes('|')) {
+      // | 로 분리하고 앞뒤 공백 및 빈 문자열 제거
+      return line.split('|')
+        .map(item => item.trim())
+        .filter(item => item !== ''); // 양끝의 | 로 인해 생기는 빈 문자열 제거
+    }
+
+    // 기존 로직: 공백/탭으로 구분
     const parts = [];
     let current = '';
     let inParens = 0;
@@ -146,7 +155,13 @@ function extractTableFromText(text) {
     return parts;
   };
   
-  const rows = lines.map(parseRow);
+  let rows = lines.map(parseRow);
+  
+  // Markdown 구분선(---) 제거
+  rows = rows.filter(row => {
+    // 모든 셀이 - 또는 : 로만 구성되어 있으면 구분선으로 간주
+    return !row.every(cell => /^[\s\-:]+$/.test(cell));
+  });
   
   // 최소 2개 열, 2개 행이 있어야 테이블로 인식
   if (rows.length < 2 || rows[0].length < 2) {
