@@ -265,9 +265,9 @@ export function addChatMessage(role, message, skipHistory = false) {
     iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30';
     iconWrapper.innerHTML = '<i class="fas fa-user text-white text-sm"></i>';
   } else {
-    // 루나: 신경망/AI 느낌의 아이콘
+    // 루나: 초승달 아이콘 (Luna = Moon)
     iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30';
-    iconWrapper.innerHTML = '<i class="fas fa-brain text-white text-sm"></i>';
+    iconWrapper.innerHTML = '<i class="fas fa-moon text-white text-sm"></i>';
   }
 
   const contentContainerEl = document.createElement('div');
@@ -339,10 +339,10 @@ export function createStreamingMessage() {
   const messageEl = document.createElement('div');
   messageEl.className = 'flex items-start gap-3 streaming-message';
 
-  // [개선] 루나 아이콘을 세련된 스타일로 변경
+  // [개선] 루나 아이콘을 초승달 모양으로 변경 (Luna = Moon)
   const iconWrapper = document.createElement('div');
   iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30';
-  iconWrapper.innerHTML = '<i class="fas fa-brain text-white text-sm"></i>';
+  iconWrapper.innerHTML = '<i class="fas fa-moon text-white text-sm"></i>';
 
   const contentContainerEl = document.createElement('div');
   contentContainerEl.className = 'p-3 rounded-lg bg-slate-700/80 border border-slate-600/30 flex-1';
@@ -431,10 +431,10 @@ export function addChatMessageWithTyping(message, options = {}) {
     const messageEl = document.createElement('div');
     messageEl.className = 'flex items-start gap-3 streaming-message';
 
-    // [개선] 루나 아이콘을 세련된 스타일로 변경
+    // [개선] 루나 아이콘을 초승달 모양으로 변경 (Luna = Moon)
     const iconWrapper = document.createElement('div');
     iconWrapper.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30';
-    iconWrapper.innerHTML = '<i class="fas fa-brain text-white text-sm"></i>';
+    iconWrapper.innerHTML = '<i class="fas fa-moon text-white text-sm"></i>';
 
     const contentContainerEl = document.createElement('div');
     contentContainerEl.className = 'p-3 rounded-lg bg-slate-700/80 border border-slate-600/30 flex-1';
