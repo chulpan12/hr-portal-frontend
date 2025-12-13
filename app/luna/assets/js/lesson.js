@@ -986,7 +986,11 @@ export function renderCurrentStep(skipMessage = false) {
     return renderMirrorExampleStep(step);
   }
   
-  // 텍스트 영역 (마크다운 렌더링 + 커스텀 스타일 적용) - final_code 외 단계만
+  // [수정] MCQ와 fill_in_blank는 자체 렌더 함수에서 step.text를 처리하므로 여기서 제외
+  if (t === 'mcq') return renderMcqStep(step);
+  if (t === 'fill_in_blank') return renderFillInBlankStep(step, skipMessage);
+  
+  // 텍스트 영역 (마크다운 렌더링 + 커스텀 스타일 적용) - final_code, mcq, fill_in_blank 외 단계만
   if (step.text && dom.activityText) {
     console.log('[RENDER] step.text:', step.text.substring(0, 100));
     // [신규] 이스케이프된 줄바꿈 문자를 실제 줄바꿈으로 변환
@@ -1011,8 +1015,6 @@ export function renderCurrentStep(skipMessage = false) {
 
   // [Engine 2.0] context 단계는 concept과 동일하게 처리
   if (t === 'concept' || t === 'context') return renderConceptStep();
-  if (t === 'mcq') return renderMcqStep(step);
-  if (t === 'fill_in_blank') return renderFillInBlankStep(step, skipMessage);
   return renderConceptStep();
 }
 
