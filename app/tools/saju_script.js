@@ -118,6 +118,38 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 초기 차트 기본값 설정
     updateChartDefaults();
+    
+    // ✨ 2025 스크롤 애니메이션 - Intersection Observer
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                // 섹션 내의 카드들을 순차적으로 애니메이션
+                const cards = entry.target.querySelectorAll('.card, .bg-white\\/5, [class*="bg-gradient"]');
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }
+        });
+    }, observerOptions);
+    
+    // 결과 섹션들에 reveal 클래스 추가 및 관찰 시작
+    function initScrollAnimations() {
+        const sections = document.querySelectorAll('#resultDashboard > section');
+        sections.forEach((section, index) => {
+            section.classList.add('reveal-section');
+            section.style.transitionDelay = `${index * 0.1}s`;
+            revealObserver.observe(section);
+        });
+    }
 
     // DOM 요소 검증 함수
     function validateDOMElements() {
@@ -524,7 +556,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     saju_pillars: sajuData.saju_pillars,
                     sipsin: sajuData.sipsin,
                     jijanggan: sajuData.jijanggan,
-                    daewoon_flow: sajuData.daewoon_flow
+                    daewoon_flow: sajuData.daewoon_flow,
+                    // ✨ [추가] 명리학 상세 데이터 전달
+                    saju_strength: sajuData.saju_strength,
+                    yongsin: sajuData.yongsin,
+                    oheng_counts: sajuData.oheng_counts,
+                    twelve_stages: sajuData.twelve_stages,
+                    shinsal: sajuData.shinsal,
+                    gyeokguk: sajuData.gyeokguk
                 })
             });
 
@@ -597,6 +636,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     renderDashboard(finalAnalysisData);
                     dom.resultDashboard.classList.remove('hidden');
                     dom.downloadBtn.classList.remove('hidden');
+                    
+                    // ✨ 스크롤 애니메이션 초기화
+                    setTimeout(() => {
+                        initScrollAnimations();
+                        // 결과 섹션으로 부드럽게 스크롤
+                        dom.resultDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
                 } else {
                     throw new Error("최종 분석 데이터를 받지 못했습니다.");
                 }
@@ -867,19 +913,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         const talentName = talent.talent || '분석 중...';
                         const description = talent.description || '상세 설명을 불러오는 중입니다.';
                         
+                        // ✨ 2025 스타일 - 더 화려한 그라디언트
                         const colors = [
-                            'from-purple-500/20 to-purple-900/20 text-purple-300 talent-card-purple',
-                            'from-blue-500/20 to-blue-900/20 text-blue-300 talent-card-blue',
-                            'from-green-500/20 to-green-900/20 text-green-300 talent-card-green'
+                            'from-purple-500/30 via-violet-500/20 to-purple-900/30 border-purple-500/40',
+                            'from-blue-500/30 via-cyan-500/20 to-blue-900/30 border-blue-500/40',
+                            'from-emerald-500/30 via-teal-500/20 to-green-900/30 border-emerald-500/40'
                         ];
+                        const icons = ['🎯', '💡', '🚀'];
                         const colorClass = colors[index % colors.length];
+                        const icon = icons[index % icons.length];
                         
                         return `
-                            <div class="mb-4 p-4 rounded-lg bg-gradient-to-br ${colorClass}">
-                                <h4 class="font-bold text-lg talent-title">${talentName}</h4>
-                                <p class="mt-2 text-gray-300 talent-description">${description}</p>
+                            <div class="p-6 rounded-2xl bg-gradient-to-br ${colorClass} border backdrop-blur-sm transition-all duration-300 hover:scale-102 hover:shadow-lg">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <span class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl">${icon}</span>
+                                    <h4 class="font-bold text-xl text-white">${talentName}</h4>
+                                </div>
+                                <p class="text-gray-300 leading-relaxed">${description}</p>
                             </div>
                         `;
+                    }).join('');
                     }).join('');
                     
                     dom.topTalents.innerHTML = `
@@ -907,10 +960,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // 요약 렌더링
                         if (data.shinsal_analysis.summary) {
-                            shinsalSummary.querySelector('p').textContent = data.shinsal_analysis.summary;
+                            const summaryP = shinsalSummary.querySelector('p');
+                            if (summaryP) summaryP.textContent = data.shinsal_analysis.summary;
                         }
                         
-                        // 상세 신살 카드 렌더링
+                        // 상세 신살 카드 렌더링 - ✨ 2025 스타일
                         if (data.shinsal_analysis.details && Array.isArray(data.shinsal_analysis.details)) {
                             const shinsalIcons = {
                                 '도화살': '🌸',
@@ -925,13 +979,22 @@ document.addEventListener('DOMContentLoaded', function() {
                                 '육해': '🌊'
                             };
                             
+                            const shinsalColors = {
+                                '도화살': 'from-pink-500/20 to-rose-500/20 border-pink-500/30',
+                                '역마살': 'from-amber-500/20 to-orange-500/20 border-amber-500/30',
+                                '화개살': 'from-violet-500/20 to-purple-500/20 border-violet-500/30',
+                                '천을귀인': 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30',
+                                '공망': 'from-gray-500/20 to-slate-500/20 border-gray-500/30'
+                            };
+                            
                             const shinsalHtml = data.shinsal_analysis.details.map(item => {
                                 const icon = shinsalIcons[item.name] || '⭐';
+                                const colorClass = shinsalColors[item.name] || 'from-indigo-500/20 to-purple-500/20 border-indigo-500/30';
                                 return `
-                                    <div class="talent-card talent-card-purple p-5 rounded-xl">
+                                    <div class="bg-gradient-to-br ${colorClass} p-5 rounded-2xl border backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/10">
                                         <div class="flex items-center gap-3 mb-3">
-                                            <span class="text-3xl">${icon}</span>
-                                            <h4 class="font-bold text-lg text-purple-300">${item.name}</h4>
+                                            <span class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl">${icon}</span>
+                                            <h4 class="font-bold text-lg text-white">${item.name}</h4>
                                         </div>
                                         <p class="text-gray-300 text-sm leading-relaxed">${item.effect}</p>
                                     </div>
@@ -948,23 +1011,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // 7. 인생 경로 타임라인
+            // 7. 인생 경로 타임라인 - ✨ 2025 Premium Style
             console.log('7. 인생 경로 타임라인 렌더링 시도...');
             if (data.life_path_timeline && Array.isArray(data.life_path_timeline) && data.life_path_timeline.length > 0 && dom.lifePathTimeline) {
                 try {
-                    const timelineHtml = data.life_path_timeline.map(item => {
+                    const timelineColors = [
+                        'from-cyan-500/20 to-blue-500/20 border-cyan-500/30',
+                        'from-emerald-500/20 to-teal-500/20 border-emerald-500/30',
+                        'from-amber-500/20 to-orange-500/20 border-amber-500/30',
+                        'from-violet-500/20 to-purple-500/20 border-violet-500/30',
+                        'from-rose-500/20 to-pink-500/20 border-rose-500/30'
+                    ];
+                    
+                    const timelineHtml = data.life_path_timeline.map((item, index) => {
                         const age = item.age || '시기 미상';
                         const summary = item.summary || '분석 정보가 없습니다.';
                         const opportunity = item.opportunity || '분석 정보가 없습니다.';
                         const risk = item.risk || '분석 정보가 없습니다.';
+                        const colorClass = timelineColors[index % timelineColors.length];
                         
                         return `
-                            <div class="border-l-4 border-indigo-500/80 pl-3 py-2 mb-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-all timeline-card">
-                                <h4 class="font-bold text-lg text-purple-400 mb-2">${age}</h4>
-                                <p class="mt-2 text-gray-300 timeline-content">${summary}</p>
-                                <div class="space-y-1">
-                                    <p class="text-sm"><strong class="text-green-400 timeline-opportunity">기회:</strong> <span class="text-gray-400 timeline-content">${opportunity}</span></p>
-                                    <p class="text-sm"><strong class="text-red-400 timeline-risk">주의:</strong> <span class="text-gray-400 timeline-content">${risk}</span></p>
+                            <div class="bg-gradient-to-br ${colorClass} border backdrop-blur-sm rounded-2xl p-5 transition-all duration-300 hover:scale-102 hover:shadow-lg">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <span class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-xl font-bold text-white">${index + 1}</span>
+                                    <h4 class="font-bold text-xl text-white">${age}</h4>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">${summary}</p>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex items-start gap-2 bg-emerald-500/10 rounded-lg p-3">
+                                        <span class="text-emerald-400 font-semibold">✨ 기회:</span>
+                                        <span class="text-gray-300">${opportunity}</span>
+                                    </div>
+                                    <div class="flex items-start gap-2 bg-rose-500/10 rounded-lg p-3">
+                                        <span class="text-rose-400 font-semibold">⚠️ 주의:</span>
+                                        <span class="text-gray-300">${risk}</span>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -982,34 +1063,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentYear = new Date().getFullYear();
             const nextYear = currentYear + 1;
 
-            // 올해 운세
+            // 올해 운세 - ✨ 2025 Premium Style
             const currentFortuneData = data[`new_year_fortune_${currentYear}`];
             if (currentFortuneData && dom.currentYearTitle && dom.currentYearSummary && dom.currentMonthlyFortuneContainer) {
                 try {
-                    dom.currentYearTitle.textContent = `${currentYear}년 올해의 운세`;
-                    dom.currentYearSummary.innerHTML = `<p>${currentFortuneData.summary || '분석 중...'}</p>`;
+                    dom.currentYearTitle.innerHTML = `<span class="text-lg">📅</span> ${currentYear}년 올해의 운세`;
+                    dom.currentYearSummary.innerHTML = `<p class="leading-relaxed">${currentFortuneData.summary || '분석 중...'}</p>`;
                     
-                    // monthly_fortune 배열 안전 처리
+                    // monthly_fortune 배열 안전 처리 - 개선된 카드 스타일
                     const monthlyFortune = currentFortuneData.monthly_fortune || [];
+                    const renderMonthCard = (m) => `
+                        <div class="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl text-center border border-amber-500/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-amber-500/10">
+                            <p class="font-bold text-lg text-amber-300">${m.month}월</p>
+                            <p class="text-xs mt-2 text-gray-400 leading-relaxed">${m.fortune}</p>
+                        </div>
+                    `;
+                    
                     if (Array.isArray(monthlyFortune) && monthlyFortune.length > 0) {
-                        dom.currentMonthlyFortuneContainer.innerHTML = monthlyFortune.map(m => `
-                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
-                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
-                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
-                            </div>
-                        `).join('');
+                        dom.currentMonthlyFortuneContainer.innerHTML = monthlyFortune.map(renderMonthCard).join('');
                     } else {
                         // 기본 월별 운세 생성
                         const defaultMonthlyFortune = Array.from({length: 12}, (_, i) => ({
                             month: i + 1,
                             fortune: `${i + 1}월 운세 분석 중...`
                         }));
-                        dom.currentMonthlyFortuneContainer.innerHTML = defaultMonthlyFortune.map(m => `
-                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
-                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
-                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
-                            </div>
-                        `).join('');
+                        dom.currentMonthlyFortuneContainer.innerHTML = defaultMonthlyFortune.map(renderMonthCard).join('');
                     }
                     console.log(`✅ ${currentYear}년 운세 렌더링 완료`);
                 } catch (e) {
@@ -1017,34 +1095,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // 내년 운세
+            // 내년 운세 - ✨ 2025 Premium Style
             const nextFortuneData = data[`new_year_fortune_${nextYear}`];
             if (nextFortuneData && dom.nextYearTitle && dom.nextYearSummary && dom.nextMonthlyFortuneContainer) {
                 try {
-                    dom.nextYearTitle.textContent = `${nextYear}년 내년 운세`;
-                    dom.nextYearSummary.innerHTML = `<p>${nextFortuneData.summary || '분석 중...'}</p>`;
+                    dom.nextYearTitle.innerHTML = `<span class="text-lg">🌟</span> ${nextYear}년 내년 운세`;
+                    dom.nextYearSummary.innerHTML = `<p class="leading-relaxed">${nextFortuneData.summary || '분석 중...'}</p>`;
                     
-                    // monthly_fortune 배열 안전 처리
+                    // monthly_fortune 배열 안전 처리 - 개선된 카드 스타일
                     const monthlyFortune = nextFortuneData.monthly_fortune || [];
+                    const renderMonthCard = (m) => `
+                        <div class="p-4 bg-gradient-to-br from-orange-500/10 to-rose-500/10 rounded-xl text-center border border-orange-500/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/10">
+                            <p class="font-bold text-lg text-orange-300">${m.month}월</p>
+                            <p class="text-xs mt-2 text-gray-400 leading-relaxed">${m.fortune}</p>
+                        </div>
+                    `;
+                    
                     if (Array.isArray(monthlyFortune) && monthlyFortune.length > 0) {
-                        dom.nextMonthlyFortuneContainer.innerHTML = monthlyFortune.map(m => `
-                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
-                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
-                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
-                            </div>
-                        `).join('');
+                        dom.nextMonthlyFortuneContainer.innerHTML = monthlyFortune.map(renderMonthCard).join('');
                     } else {
                         // 기본 월별 운세 생성
                         const defaultMonthlyFortune = Array.from({length: 12}, (_, i) => ({
                             month: i + 1,
                             fortune: `${i + 1}월 운세 분석 중...`
                         }));
-                        dom.nextMonthlyFortuneContainer.innerHTML = defaultMonthlyFortune.map(m => `
-                            <div class="p-3 bg-gray-800 rounded-lg text-center monthly-fortune-card">
-                                <p class="font-bold text-sm monthly-fortune-month">${m.month}월</p>
-                                <p class="text-xs mt-1 text-gray-400 monthly-fortune-text">${m.fortune}</p>
-                            </div>
-                        `).join('');
+                        dom.nextMonthlyFortuneContainer.innerHTML = defaultMonthlyFortune.map(renderMonthCard).join('');
                     }
                     console.log(`✅ ${nextYear}년 운세 렌더링 완료`);
                 } catch (e) {
@@ -1052,25 +1127,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // 9. 직업운 & 재물운
+            // 9. 직업운 & 재물운 - ✨ 2025 Premium Style
             console.log('9. 직업운 & 재물운 렌더링 시도...');
             if (data.career_finance_analysis && dom.careerSummary && dom.suitableJobs && dom.financeSummary) {
                 try {
-                    dom.careerSummary.innerHTML = `<p>${data.career_finance_analysis.career_summary || ''}</p>`;
-                    dom.suitableJobs.innerHTML = (data.career_finance_analysis.suitable_jobs || []).map(j => `<span class="bg-green-800/50 text-green-300 text-sm font-medium px-3 py-1 rounded-full">${j}</span>`).join('');
-                    dom.financeSummary.innerHTML = `<p>${data.career_finance_analysis.finance_summary || ''}</p>`;
+                    dom.careerSummary.innerHTML = `<p class="leading-relaxed">${data.career_finance_analysis.career_summary || ''}</p>`;
+                    dom.suitableJobs.innerHTML = (data.career_finance_analysis.suitable_jobs || []).map(j => `
+                        <span class="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 text-sm font-medium px-4 py-2 rounded-xl border border-emerald-500/30 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20">
+                            ${j}
+                        </span>
+                    `).join('');
+                    dom.financeSummary.innerHTML = `<p class="leading-relaxed">${data.career_finance_analysis.finance_summary || ''}</p>`;
                     console.log('✅ 직업운 & 재물운 렌더링 완료');
                 } catch (e) {
                     console.error('❌ 직업운 & 재물운 렌더링 오류:', e);
                 }
             }
             
-            // 10. 건강운 & 학업운
+            // 10. 건강운 & 학업운 - ✨ 2025 Premium Style
             console.log('10. 건강운 & 학업운 렌더링 시도...');
             if (data.health_education_analysis && dom.healthSummary && dom.educationSummary) {
                 try {
-                    dom.healthSummary.innerHTML = `<p>${data.health_education_analysis.health_summary || ''}</p>`;
-                    dom.educationSummary.innerHTML = `<p>${data.health_education_analysis.education_summary || ''}</p>`;
+                    dom.healthSummary.innerHTML = `<p class="leading-relaxed">${data.health_education_analysis.health_summary || ''}</p>`;
+                    dom.educationSummary.innerHTML = `<p class="leading-relaxed">${data.health_education_analysis.education_summary || ''}</p>`;
                     console.log('✅ 건강운 & 학업운 렌더링 완료');
                 } catch (e) {
                     console.error('❌ 건강운 & 학업운 렌더링 오류:', e);
