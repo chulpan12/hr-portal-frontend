@@ -1032,6 +1032,71 @@ export function renderProblem(skipMessage = false) {
         }
     }
     // --- [수정 완료] ---
+    
+    // [신규] problem_json.table 필드가 있으면 데이터 테이블 렌더링
+    if (state.problemJSON.table && state.problemJSON.table.headers && state.problemJSON.table.rows) {
+      const tableData = state.problemJSON.table;
+      
+      // 기존 테이블 컨테이너가 있으면 제거
+      const existingTable = dom.problemDescriptionMd.querySelector('.problem-excel-table-container');
+      if (existingTable) existingTable.remove();
+      
+      // 테이블 컨테이너 생성
+      const tableContainer = document.createElement('div');
+      tableContainer.className = 'problem-excel-table-container my-4';
+      
+      const table = document.createElement('table');
+      table.className = 'mcq-excel-table';  // 기존 스타일 재사용
+      
+      const headers = tableData.headers || [];
+      const rows = tableData.rows || [];
+      
+      // 헤더 행 (A, B, C, ...)
+      if (headers.length > 0) {
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        
+        // 행 번호 칸 추가
+        const cornerCell = document.createElement('th');
+        cornerCell.textContent = '';
+        headerRow.appendChild(cornerCell);
+        
+        headers.forEach(h => {
+          const th = document.createElement('th');
+          th.textContent = h;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+      }
+      
+      // 데이터 행
+      const tbody = document.createElement('tbody');
+      rows.forEach((row, rowIdx) => {
+        const tr = document.createElement('tr');
+        
+        // 행 번호
+        const rowNumCell = document.createElement('th');
+        rowNumCell.textContent = String(rowIdx + 1);
+        tr.appendChild(rowNumCell);
+        
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          const cellValue = String(cell);
+          // 수식인지 체크 (=로 시작)
+          if (cellValue.startsWith('=')) {
+            td.className = 'formula';
+          }
+          td.textContent = cellValue;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      
+      tableContainer.appendChild(table);
+      dom.problemDescriptionMd.appendChild(tableContainer);
+    }
   }
   if (dom.outputContainer) dom.outputContainer.textContent = '';
   if (dom.outputIframe) dom.outputIframe.srcdoc = '<!DOCTYPE html><html><head></head><body></body></html>';

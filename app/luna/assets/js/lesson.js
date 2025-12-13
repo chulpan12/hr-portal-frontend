@@ -1467,6 +1467,15 @@ function renderMcqStep(step) {
     };
   }
   
+  // [수정] step.text가 있으면 먼저 출력 (문제 내용/설명)
+  if (step.text) {
+    const textDiv = document.createElement('div');
+    textDiv.className = 'mb-4 markdown-content text-sm text-slate-300';
+    const textHtml = window.marked ? window.marked.parse(String(step.text)) : String(step.text);
+    textDiv.innerHTML = textHtml;
+    content.appendChild(textDiv);
+  }
+  
   const q = document.createElement('div');
   q.className = 'mb-3 font-semibold markdown-content text-sm';
   // 질문도 마크다운으로 렌더링 (백틱 코드 지원)
